@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Reading Room</title>
+    <style>
+        body {
+            font-family: Georgia, serif;
+            background-color: #f5f0e8;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #5c3d2e;
+            text-align: center;
+            font-size: 2.5em;
+        }
+        .add-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .add-form input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        .add-form button {
+            padding: 8px 16px;
+            background-color: #5c3d2e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .search-bar input {
+            padding: 8px;
+            width: 60%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        .search-bar button {
+            padding: 8px 16px;
+            background-color: #5c3d2e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .book {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .book-info {
+            flex: 1;
+        }
+        .book-title {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .book-author {
+            color: #777;
+            font-size: 0.9em;
+        }
+        .status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        .status-to-read { background: #ffeeba; color: #856404; }
+        .status-reading { background: #bee5eb; color: #0c5460; }
+        .status-finished { background: #c3e6cb; color: #155724; }
+        .actions a {
+            margin-left: 8px;
+            text-decoration: none;
+            color: #5c3d2e;
+            font-size: 0.85em;
+        }
+        .actions a:hover { text-decoration: underline; }
+        .remove { color: #dc3545 !important; }
+        .empty { text-align: center; color: #999; margin-top: 40px; }
+    </style>
+</head>
+<body>
+    <h1>📚 My Reading Room</h1>
+
+    <div class="add-form">
+        <form action="/add" method="POST">
+            <input type="text" name="title" placeholder="Book title" required>
+            <input type="text" name="author" placeholder="Author" required>
+            <button type="submit">Add Book</button>
+        </form>
+    </div>
+
+    <div class="search-bar">
+        <form action="/" method="GET">
+            <input type="text" name="q" placeholder="Search by title or author..." value="{{ query }}">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+    {% if books %}
+        {% for i, book in books|enumerate %}
+        <div class="book">
+            <div class="book-info">
+                <div class="book-title">{{ book.title }}</div>
+                <div class="book-author">by {{ book.author }}</div>
+            </div>
+            <span class="status status-{{ book.status.lower().replace(' ', '-') }}">{{ book.status }}</span>
+            <div class="actions">
+                <a href="/status/{{ i }}/To Read">To Read</a>
+                <a href="/status/{{ i }}/Reading">Reading</a>
+                <a href="/status/{{ i }}/Finished">Finished</a>
+                <a href="/remove/{{ i }}" class="remove">Remove</a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="empty">No books yet. Add one above!</p>
+    {% endif %}
+</body>
+</html>
