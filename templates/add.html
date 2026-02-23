@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Book — My Reading Room</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0e0e12; --surface: #16161c; --card: #1c1c24; --border: #2a2a36;
+      --accent: #e8c97e; --text: #f0ede8; --muted: #8a8795;
+      --paper: #7ec8b5; --ebook: #7eaae8; --audio: #c87eb5;
+      --radius: 12px;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(14,14,18,0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px; display: flex; align-items: center; gap: 16px; height: 64px;
+    }
+    .nav-back {
+      display: flex; align-items: center; gap: 6px;
+      color: var(--muted); text-decoration: none; font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--text); }
+    .nav-back svg { width: 16px; height: 16px; }
+    .nav-title { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--accent); }
+
+    .page { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; margin-bottom: 8px; }
+    .sub { color: var(--muted); font-size: 0.875rem; margin-bottom: 32px; }
+
+    .search-section {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; margin-bottom: 28px;
+    }
+    .search-section h2 {
+      font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--muted); margin-bottom: 14px;
+    }
+    .search-row { display: flex; gap: 8px; }
+    .search-row input {
+      flex: 1; background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 14px;
+      color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+      outline: none; transition: border-color 0.2s;
+    }
+    .search-row input:focus { border-color: var(--accent); }
+    .search-row input::placeholder { color: var(--muted); }
+    .search-row select {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px;
+      color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.875rem;
+      outline: none; cursor: pointer;
+    }
+    .btn-search {
+      background: var(--accent); color: #0e0e12;
+      border: none; border-radius: 8px;
+      padding: 10px 18px; font-weight: 600; font-size: 0.875rem;
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      transition: background 0.2s; white-space: nowrap;
+    }
+    .btn-search:hover { background: #f0d898; }
+    .btn-search:disabled { opacity: 0.5; cursor: wait; }
+
+    #results { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .result-item {
+      display: flex; gap: 12px; align-items: center;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px;
+      cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    }
+    .result-item:hover { border-color: var(--accent); background: #21212c; }
+    .result-item img {
+      width: 40px; height: 56px; object-fit: cover;
+      border-radius: 4px; flex-shrink: 0; background: var(--surface);
+    }
+    .result-text { flex: 1; min-width: 0; }
+    .result-title { font-size: 0.875rem; font-weight: 600; line-height: 1.3; }
+    .result-author { font-size: 0.775rem; color: var(--muted); margin-top: 2px; }
+    .result-meta { font-size: 0.7rem; color: var(--muted); margin-top: 4px; }
+    .result-select { font-size: 0.75rem; color: var(--accent); font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+    #no-results { color: var(--muted); font-size: 0.875rem; padding: 8px 0; text-align: center; display: none; }
+    #searching  { color: var(--muted); font-size: 0.875rem; padding: 8px 0; text-align: center; display: none; }
+
+    #preview {
+      display: none; background: var(--surface); border: 1px solid var(--accent);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 28px;
+      flex-direction: column; gap: 16px;
+    }
+    #preview.show { display: flex; }
+    .preview-top { display: flex; gap: 16px; align-items: flex-start; }
+    #preview-cover {
+      width: 72px; height: 100px; object-fit: cover;
+      border-radius: 6px; flex-shrink: 0; background: var(--card);
+    }
+    .preview-text { flex: 1; }
+    .preview-text h3 { font-family: 'DM Serif Display', serif; font-size: 1.1rem; line-height: 1.3; }
+    .preview-text p  { font-size: 0.825rem; color: var(--muted); margin-top: 4px; }
+    .preview-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+    .pmeta { font-size: 0.75rem; color: var(--muted); }
+    .pmeta strong { color: var(--text); }
+    .preview-summary { font-size: 0.8rem; color: var(--muted); line-height: 1.6; border-top: 1px solid var(--border); padding-top: 12px; }
+    .btn-clear {
+      align-self: flex-start; background: none; border: 1px solid var(--border);
+      color: var(--muted); border-radius: 6px; padding: 4px 10px;
+      font-size: 0.75rem; cursor: pointer; font-family: 'DM Sans', sans-serif;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-clear:hover { border-color: var(--text); color: var(--text); }
+
+    .form-section {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px;
+    }
+    .form-section h2 {
+      font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--muted); margin-bottom: 20px;
+    }
+    .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+    label { font-size: 0.775rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    input[type=text], input[type=date], input[type=number], textarea {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 14px;
+      color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+      outline: none; transition: border-color 0.2s; width: 100%;
+    }
+    input:focus, textarea:focus { border-color: var(--accent); }
+    input::placeholder, textarea::placeholder { color: var(--muted); }
+    textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+    input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
+
+    .format-group { display: flex; gap: 8px; }
+    .format-btn {
+      flex: 1; padding: 10px 8px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--card);
+      color: var(--muted); font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem; font-weight: 500; cursor: pointer;
+      transition: all 0.15s; text-align: center;
+    }
+    .format-btn:hover { border-color: var(--text); color: var(--text); }
+    .format-btn.active-paper  { border-color: var(--paper);  color: var(--paper);  background: rgba(126,200,181,0.1); }
+    .format-btn.active-ebook  { border-color: var(--ebook);  color: var(--ebook);  background: rgba(126,170,232,0.1); }
+    .format-btn.active-audio  { border-color: var(--audio);  color: var(--audio);  background: rgba(200,126,181,0.1); }
+
+    .audio-field { display: none; }
+    .audio-field.show { display: flex; }
+
+    .btn-save {
+      margin-top: 24px; width: 100%;
+      background: var(--accent); color: #0e0e12;
+      border: none; border-radius: 8px; padding: 14px;
+      font-family: 'DM Serif Display', serif; font-size: 1.05rem;
+      cursor: pointer; transition: background 0.2s, transform 0.1s;
+    }
+    .btn-save:hover { background: #f0d898; transform: translateY(-1px); }
+
+    @media (max-width: 600px) {
+      nav { padding: 0 16px; }
+      .page { padding: 24px 16px 60px; }
+      .fields { grid-template-columns: 1fr; }
+      .field.full { grid-column: 1; }
+      .search-row { flex-wrap: wrap; }
+      .search-row select { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-back" href="/">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    Library
+  </a>
+  <span class="nav-title">Add Book</span>
+</nav>
+
+<div class="page">
+  <h1>Add a book</h1>
+  <p class="sub">Search Open Library to auto-fill details, or enter them manually below.</p>
+
+  <div class="search-section">
+    <h2>Search Open Library</h2>
+    <div class="search-row">
+      <input type="text" id="ol-query" placeholder="Title, author, or ISBN…">
+      <select id="ol-field">
+        <option value="q">All</option>
+        <option value="title">Title</option>
+        <option value="author">Author</option>
+        <option value="isbn">ISBN</option>
+      </select>
+      <button class="btn-search" id="btn-search" onclick="doSearch()">Search</button>
+    </div>
+    <div id="searching">Searching…</div>
+    <div id="no-results">No results found.</div>
+    <div id="results"></div>
+  </div>
+
+  <div id="preview">
+    <div class="preview-top">
+      <img id="preview-cover" src="" alt="Cover">
+      <div class="preview-text">
+        <h3 id="preview-title"></h3>
+        <p  id="preview-author"></p>
+        <div class="preview-meta">
+          <span class="pmeta">Pages: <strong id="preview-pages">—</strong></span>
+          <span class="pmeta">Year: <strong id="preview-year">—</strong></span>
+          <span class="pmeta">ISBN: <strong id="preview-isbn">—</strong></span>
+        </div>
+      </div>
+      <button class="btn-clear" onclick="clearSelection()">✕ Clear</button>
+    </div>
+    <div class="preview-summary" id="preview-summary" style="display:none"></div>
+  </div>
+
+  <form class="form-section" action="/add" method="POST" id="add-form">
+    <h2>Book details</h2>
+    <div class="fields">
+      <div class="field full">
+        <label>Title *</label>
+        <input type="text" name="title" id="f-title" required placeholder="Book title">
+      </div>
+      <div class="field full">
+        <label>Author *</label>
+        <input type="text" name="author" id="f-author" required placeholder="Author name">
+      </div>
+      <div class="field">
+        <label>ISBN</label>
+        <input type="text" name="isbn" id="f-isbn" placeholder="ISBN">
+      </div>
+      <div class="field">
+        <label>Copyright Year</label>
+        <input type="text" name="copyright_year" id="f-year" placeholder="e.g. 1984">
+      </div>
+      <div class="field">
+        <label>Pages</label>
+        <input type="text" name="pages" id="f-pages" placeholder="e.g. 320">
+      </div>
+      <div class="field">
+        <label>Read Date</label>
+        <input type="date" name="read_date" id="f-date" value="{{ today }}">
+      </div>
+      <div class="field full">
+        <label>Format</label>
+        <div class="format-group">
+          <button type="button" class="format-btn active-paper" id="btn-paper"  onclick="setFormat('Paper')">📖 Paper</button>
+          <button type="button" class="format-btn"              id="btn-ebook"  onclick="setFormat('Ebook')">📱 Ebook</button>
+          <button type="button" class="format-btn"              id="btn-audio"  onclick="setFormat('Audiobook')">🎧 Audiobook</button>
+        </div>
+        <input type="hidden" name="format" id="f-format" value="Paper">
+      </div>
+      <div class="field full audio-field" id="audio-field">
+        <label>Run Time (hours)</label>
+        <input type="number" name="read_time_hrs" id="f-runtime" placeholder="e.g. 12.5" step="0.1" min="0">
+      </div>
+      <div class="field full">
+        <label>Plot Summary</label>
+        <textarea name="plot_summary" id="f-summary" placeholder="Brief description…"></textarea>
+      </div>
+      <input type="hidden" name="cover_url" id="f-cover">
+    </div>
+    <button type="submit" class="btn-save">Save to My Library</button>
+  </form>
+</div>
+
+<script>
+  function setFormat(fmt) {
+    document.getElementById('f-format').value = fmt;
+    ['Paper','Ebook','Audiobook'].forEach(f => {
+      const id = f === 'Audiobook' ? 'btn-audio' : 'btn-' + f.toLowerCase();
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      btn.className = 'format-btn';
+      if (f === fmt) btn.classList.add(fmt === 'Paper' ? 'active-paper' : fmt === 'Ebook' ? 'active-ebook' : 'active-audio');
+    });
+    document.getElementById('audio-field').className = 'field full audio-field' + (fmt === 'Audiobook' ? ' show' : '');
+  }
+
+  async function doSearch() {
+    const q = document.getElementById('ol-query').value.trim();
+    const field = document.getElementById('ol-field').value;
+    if (!q) return;
+    const btn = document.getElementById('btn-search');
+    const resDiv = document.getElementById('results');
+    const noRes = document.getElementById('no-results');
+    const searching = document.getElementById('searching');
+    btn.disabled = true; btn.textContent = 'Searching…';
+    resDiv.innerHTML = ''; noRes.style.display = 'none'; searching.style.display = 'block';
+    try {
+      const r = await fetch(`/api/search?q=${encodeURIComponent(q)}&field=${field}`);
+      const data = await r.json();
+      searching.style.display = 'none';
+      if (!data.length) { noRes.style.display = 'block'; return; }
+      data.forEach(book => {
+        const div = document.createElement('div');
+        div.className = 'result-item';
+        div.innerHTML = `
+          <img src="${book.cover_url || ''}" alt="" onerror="this.style.opacity=0">
+          <div class="result-text">
+            <div class="result-title">${book.title}</div>
+            <div class="result-author">${book.author}</div>
+            <div class="result-meta">${book.pages ? book.pages + ' pages · ' : ''}${book.copyright_year || ''}</div>
+          </div>
+          <span class="result-select">Select →</span>`;
+        div.onclick = () => selectBook(book);
+        resDiv.appendChild(div);
+      });
+    } catch(e) {
+      searching.style.display = 'none';
+      noRes.textContent = 'Search failed. Fill in manually.';
+      noRes.style.display = 'block';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Search';
+    }
+  }
+
+  async function selectBook(book) {
+    document.getElementById('f-title').value  = book.title;
+    document.getElementById('f-author').value = book.author;
+    document.getElementById('f-isbn').value   = book.isbn;
+    document.getElementById('f-pages').value  = book.pages;
+    document.getElementById('f-year').value   = book.copyright_year;
+    document.getElementById('f-cover').value  = book.cover_url;
+    const preview = document.getElementById('preview');
+    document.getElementById('preview-cover').src   = book.cover_url || '';
+    document.getElementById('preview-title').textContent  = book.title;
+    document.getElementById('preview-author').textContent = book.author;
+    document.getElementById('preview-pages').textContent  = book.pages || '—';
+    document.getElementById('preview-year').textContent   = book.copyright_year || '—';
+    document.getElementById('preview-isbn').textContent   = book.isbn || '—';
+    preview.classList.add('show');
+    document.getElementById('results').innerHTML = '';
+    document.getElementById('ol-query').value = book.title;
+    if (book.work_key) {
+      try {
+        const r = await fetch(`/api/summary?key=${encodeURIComponent(book.work_key)}`);
+        const d = await r.json();
+        if (d.summary) {
+          document.getElementById('f-summary').value = d.summary;
+          const ps = document.getElementById('preview-summary');
+          ps.textContent = d.summary;
+          ps.style.display = 'block';
+        }
+      } catch(e) {}
+    }
+  }
+
+  function clearSelection() {
+    ['f-title','f-author','f-isbn','f-pages','f-year','f-cover','f-summary'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('preview').classList.remove('show');
+    document.getElementById('preview-summary').style.display = 'none';
+    document.getElementById('ol-query').value = '';
+  }
+
+  document.getElementById('ol-query').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
+  });
+</script>
+</body>
+</html>

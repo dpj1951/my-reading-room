@@ -1,142 +1,401 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Reading Room</title>
-    <style>
-        body {
-            font-family: Georgia, serif;
-            background-color: #f5f0e8;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        h1 {
-            color: #5c3d2e;
-            text-align: center;
-            font-size: 2.5em;
-        }
-        .add-form {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .add-form input {
-            padding: 8px;
-            margin: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1em;
-        }
-        .add-form button {
-            padding: 8px 16px;
-            background-color: #5c3d2e;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-        .search-bar {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .search-bar input {
-            padding: 8px;
-            width: 60%;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1em;
-        }
-        .search-bar button {
-            padding: 8px 16px;
-            background-color: #5c3d2e;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .book {
-            background: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .book-info {
-            flex: 1;
-        }
-        .book-title {
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-        .book-author {
-            color: #777;
-            font-size: 0.9em;
-        }
-        .status {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.85em;
-            font-weight: bold;
-        }
-        .status-to-read { background: #ffeeba; color: #856404; }
-        .status-reading { background: #bee5eb; color: #0c5460; }
-        .status-finished { background: #c3e6cb; color: #155724; }
-        .actions a {
-            margin-left: 8px;
-            text-decoration: none;
-            color: #5c3d2e;
-            font-size: 0.85em;
-        }
-        .actions a:hover { text-decoration: underline; }
-        .remove { color: #dc3545 !important; }
-        .empty { text-align: center; color: #999; margin-top: 40px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Reading Room</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0e0e12;
+      --surface:   #16161c;
+      --card:      #1c1c24;
+      --border:    #2a2a36;
+      --accent:    #e8c97e;
+      --accent2:   #b5845a;
+      --text:      #f0ede8;
+      --muted:     #8a8795;
+      --paper:     #7ec8b5;
+      --ebook:     #7eaae8;
+      --audio:     #c87eb5;
+      --radius:    12px;
+      --shadow:    0 8px 32px rgba(0,0,0,0.5);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(14,14,18,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .nav-brand {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      text-decoration: none;
+    }
+    .nav-brand span { color: var(--muted); font-size: 0.85rem; font-family: 'DM Sans', sans-serif; margin-left: 10px; font-weight: 300; }
+    .nav-add {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--accent);
+      color: #0e0e12;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.875rem;
+      padding: 8px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .nav-add:hover { background: #f0d898; transform: translateY(-1px); }
+    .nav-add svg { width: 16px; height: 16px; }
+
+    .hero {
+      padding: 48px 24px 0;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      line-height: 1.1;
+      color: var(--text);
+    }
+    .hero h1 em { color: var(--accent); font-style: italic; }
+    .stat-row {
+      display: flex; gap: 24px; margin-top: 20px; flex-wrap: wrap;
+    }
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 20px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .stat strong { font-size: 1.2rem; color: var(--text); font-weight: 600; margin-right: 2px; }
+    .stat .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot-paper { background: var(--paper); }
+    .dot-ebook { background: var(--ebook); }
+    .dot-audio { background: var(--audio); }
+
+    .controls {
+      max-width: 1200px;
+      margin: 28px auto 0;
+      padding: 0 24px;
+      display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    }
+    .search-wrap {
+      flex: 1; min-width: 200px;
+      position: relative;
+    }
+    .search-wrap svg {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--muted); width: 16px; height: 16px; pointer-events: none;
+    }
+    .search-wrap input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px 10px 40px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-wrap input:focus { border-color: var(--accent); }
+    .search-wrap input::placeholder { color: var(--muted); }
+
+    select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      appearance: none;
+      padding-right: 32px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8795' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+    select:focus { border-color: var(--accent); }
+
+    .format-tabs {
+      display: flex; gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px;
+    }
+    .format-tab {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .format-tab:hover { color: var(--text); }
+    .format-tab.active { background: var(--card); color: var(--text); }
+    .format-tab.paper.active  { color: var(--paper); }
+    .format-tab.ebook.active  { color: var(--ebook); }
+    .format-tab.audio.active  { color: var(--audio); }
+
+    .grid-wrap {
+      max-width: 1200px;
+      margin: 28px auto 60px;
+      padding: 0 24px;
+    }
+    .results-count {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 20px;
+    }
+
+    .book-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      display: flex; flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      position: relative;
+    }
+    .book-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+      border-color: var(--accent);
+    }
+    .cover-wrap {
+      position: relative;
+      padding-top: 145%;
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .cover-wrap img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .book-card:hover .cover-wrap img { transform: scale(1.04); }
+    .cover-placeholder {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px;
+      background: linear-gradient(145deg, #1e1e28, #252530);
+    }
+    .cover-placeholder svg { color: var(--border); width: 32px; height: 32px; }
+    .cover-placeholder span {
+      font-family: 'DM Serif Display', serif;
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-align: center;
+      padding: 0 12px;
+      line-height: 1.4;
+    }
+    .format-pip {
+      position: absolute; top: 8px; right: 8px;
+      font-size: 0.65rem; font-weight: 600;
+      padding: 3px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .pip-Paper     { background: rgba(126,200,181,0.2); color: var(--paper); }
+    .pip-Ebook     { background: rgba(126,170,232,0.2); color: var(--ebook); }
+    .pip-Audiobook { background: rgba(200,126,181,0.2); color: var(--audio); }
+
+    .card-info {
+      padding: 12px;
+      display: flex; flex-direction: column; gap: 4px;
+      flex: 1;
+    }
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-author {
+      font-size: 0.75rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-date {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: auto;
+      padding-top: 6px;
+      border-top: 1px solid var(--border);
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--muted);
+    }
+    .empty svg { width: 48px; height: 48px; color: var(--border); margin-bottom: 16px; }
+    .empty h3 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--text); margin-bottom: 8px; }
+    .empty p { font-size: 0.875rem; }
+    .empty a {
+      display: inline-block; margin-top: 20px;
+      background: var(--accent); color: #0e0e12;
+      font-weight: 600; font-size: 0.875rem;
+      padding: 10px 22px; border-radius: 8px;
+      text-decoration: none;
+    }
+
+    @media (max-width: 600px) {
+      nav { padding: 0 16px; }
+      .hero, .controls, .grid-wrap { padding-left: 16px; padding-right: 16px; }
+      .grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; }
+      .format-tabs { display: none; }
+    }
+    @media (min-width: 1024px) {
+      .grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+    }
+  </style>
 </head>
 <body>
-    <h1>📚 My Reading Room</h1>
 
-    <div class="add-form">
-        <form action="/add" method="POST">
-            <input type="text" name="title" placeholder="Book title" required>
-            <input type="text" name="author" placeholder="Author" required>
-            <button type="submit">Add Book</button>
-        </form>
-    </div>
+<nav>
+  <a class="nav-brand" href="/">My Reading Room <span>personal library</span></a>
+  <a class="nav-add" href="/add">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+    Add Book
+  </a>
+</nav>
 
-    <div class="search-bar">
-        <form action="/" method="GET">
-            <input type="text" name="q" placeholder="Search by title or author..." value="{{ query }}">
-            <button type="submit">Search</button>
-        </form>
-    </div>
+<div class="hero">
+  <h1>Your <em>reading</em><br>collection.</h1>
+  {% set total = books|length %}
+  {% set paper_count = books|selectattr("format","equalto","Paper")|list|length %}
+  {% set ebook_count = books|selectattr("format","equalto","Ebook")|list|length %}
+  {% set audio_count = books|selectattr("format","equalto","Audiobook")|list|length %}
+  <div class="stat-row">
+    <div class="stat"><strong>{{ total }}</strong> total books</div>
+    <div class="stat"><span class="dot dot-paper"></span><strong>{{ paper_count }}</strong> paper</div>
+    <div class="stat"><span class="dot dot-ebook"></span><strong>{{ ebook_count }}</strong> ebook</div>
+    <div class="stat"><span class="dot dot-audio"></span><strong>{{ audio_count }}</strong> audio</div>
+  </div>
+</div>
 
-    {% if books %}
-        {% for i, book in books|enumerate %}
-        <div class="book">
-            <div class="book-info">
-                <div class="book-title">{{ book.title }}</div>
-                <div class="book-author">by {{ book.author }}</div>
-            </div>
-            <span class="status status-{{ book.status.lower().replace(' ', '-') }}">{{ book.status }}</span>
-            <div class="actions">
-                <a href="/status/{{ i }}/To Read">To Read</a>
-                <a href="/status/{{ i }}/Reading">Reading</a>
-                <a href="/status/{{ i }}/Finished">Finished</a>
-                <a href="/remove/{{ i }}" class="remove">Remove</a>
-            </div>
-        </div>
-        {% endfor %}
+<form class="controls" method="GET" action="/" id="filter-form">
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" name="q" placeholder="Search title or author…" value="{{ query }}" id="search-input">
+  </div>
+
+  <select name="sort" onchange="this.form.submit()">
+    <option value="date_desc" {% if sort == 'date_desc' %}selected{% endif %}>Newest first</option>
+    <option value="date_asc"  {% if sort == 'date_asc'  %}selected{% endif %}>Oldest first</option>
+    <option value="title"     {% if sort == 'title'     %}selected{% endif %}>Title A–Z</option>
+    <option value="author"    {% if sort == 'author'    %}selected{% endif %}>Author A–Z</option>
+  </select>
+
+  <div class="format-tabs">
+    <a href="/?q={{ query }}&sort={{ sort }}" class="format-tab {% if not selected_format %}active{% endif %}">All</a>
+    <a href="/?q={{ query }}&sort={{ sort }}&format=Paper"     class="format-tab paper {% if selected_format == 'Paper' %}active{% endif %}">Paper</a>
+    <a href="/?q={{ query }}&sort={{ sort }}&format=Ebook"     class="format-tab ebook {% if selected_format == 'Ebook' %}active{% endif %}">Ebook</a>
+    <a href="/?q={{ query }}&sort={{ sort }}&format=Audiobook" class="format-tab audio {% if selected_format == 'Audiobook' %}active{% endif %}">Audio</a>
+  </div>
+
+  <input type="hidden" name="format" value="{{ selected_format }}">
+</form>
+
+<div class="grid-wrap">
+  <p class="results-count">
+    {% if query or selected_format %}
+      {{ books|length }} result{{ 's' if books|length != 1 else '' }} found
     {% else %}
-        <p class="empty">No books yet. Add one above!</p>
+      {{ books|length }} book{{ 's' if books|length != 1 else '' }} in your library
     {% endif %}
+  </p>
+  <div class="grid">
+    {% if books %}
+      {% for book in books %}
+      <a class="book-card" href="/book/{{ book.id }}">
+        <div class="cover-wrap">
+          {% if book.cover_url %}
+            <img src="{{ book.cover_url }}" alt="{{ book.title }}" loading="lazy"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="cover-placeholder" style="display:none">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span>{{ book.title }}</span>
+            </div>
+          {% else %}
+            <div class="cover-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span>{{ book.title }}</span>
+            </div>
+          {% endif %}
+          <span class="format-pip pip-{{ book.format }}">{{ book.format }}</span>
+        </div>
+        <div class="card-info">
+          <div class="card-title">{{ book.title }}</div>
+          <div class="card-author">{{ book.author }}</div>
+          {% if book.read_date %}
+          <div class="card-date">{{ book.read_date }}</div>
+          {% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    {% else %}
+      <div class="empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <h3>{% if query %}No books found{% else %}Your shelf is empty{% endif %}</h3>
+        <p>{% if query %}Try a different search term.{% else %}Start building your reading room.{% endif %}</p>
+        {% if not query %}<a href="/add">Add your first book</a>{% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  let timer;
+  document.getElementById('search-input').addEventListener('input', function() {
+    clearTimeout(timer);
+    timer = setTimeout(() => document.getElementById('filter-form').submit(), 400);
+  });
+</script>
 </body>
 </html>

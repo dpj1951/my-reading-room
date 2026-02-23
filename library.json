@@ -1,7 +1,17 @@
 [
   {
-    "title": "pip3 install flask",
-    "author": "",
-    "status": "To Read"
+
+
+    "id": "c1576697-20cd-4392-8d66-fe357beab9f2",
+    "title": "The 6:20 Man",
+    "author": "David Baldacci",
+    "isbn": "9781538739792",
+    "cover_url": "https://covers.openlibrary.org/b/id/13012447-M.jpg",
+    "pages": "528",
+    "copyright_year": "2022",
+    "plot_summary": "",
+    "format": "Ebook",
+    "read_time_hrs": "",
+    "read_date": "2026-02-23"
   }
 ]
