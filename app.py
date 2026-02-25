@@ -24,15 +24,17 @@ def find_book(library, book_id):
     return next((b for b in library if b.get("id") == book_id), None)
 
 # ── routes ────────────────────────────────────────────────────────────────────
-
 @app.route("/")
+def home():
+    return render_template("home.html")
+
+@app.route("/books")
 def index():
     library = load_library()
     query  = request.args.get("q", "").strip().lower()
     fmt    = request.args.get("format", "").strip()
     sort   = request.args.get("sort", "date_desc")
 
-    # filter
     if query:
         library = [b for b in library if
                    query in b.get("title", "").lower() or
@@ -40,19 +42,14 @@ def index():
     if fmt:
         library = [b for b in library if b.get("format", "") == fmt]
 
-    # sort
     def sort_key(b):
-        if sort == "author":
-            return b.get("author", "").lower()
+        if sort == "author": return b.get("author", "").lower()
         if sort == "title":
             t = b.get("title", "").lower()
             for art in ("the ", "a ", "an "):
-                if t.startswith(art):
-                    t = t[len(art):]
+                if t.startswith(art): t = t[len(art):]
             return t
-        if sort == "date_asc":
-            return b.get("read_date", "0000-00-00")
-        # default: date_desc (newest first)
+        if sort == "date_asc": return b.get("read_date", "0000-00-00")
         return b.get("read_date", "0000-00-00")
 
     reverse = sort == "date_desc"
@@ -62,70 +59,13 @@ def index():
                            selected_format=fmt, sort=sort,
                            today=date.today().isoformat())
 
-@app.route("/add", methods=["GET", "POST"])
-def add():
-    if request.method == "GET":
-        return render_template("add.html", today=date.today().isoformat())
+@app.route("/authors")
+def authors():
+    return "Authors page coming soon", 200
 
-    library = load_library()
-    fmt = request.form.get("format", "Paper")
-    book = {
-        "id":             str(uuid.uuid4()),
-        "title":          request.form.get("title", "").strip(),
-        "author":         request.form.get("author", "").strip(),
-        "isbn":           request.form.get("isbn", "").strip(),
-        "cover_url":      request.form.get("cover_url", "").strip(),
-        "pages":          request.form.get("pages", "").strip(),
-        "copyright_year": request.form.get("copyright_year", "").strip(),
-        "plot_summary":   request.form.get("plot_summary", "").strip(),
-        "format":         fmt,
-        "read_time_hrs":  request.form.get("read_time_hrs", "").strip() if fmt == "Audiobook" else "",
-        "read_date":      request.form.get("read_date", date.today().isoformat()),
-    }
-    library.append(book)
-    save_library(library)
-    return redirect(url_for("index"))
-
-@app.route("/book/<book_id>")
-def detail(book_id):
-    library = load_library()
-    book = find_book(library, book_id)
-    if not book:
-        return redirect(url_for("index"))
-    return render_template("detail.html", book=book)
-
-@app.route("/edit/<book_id>", methods=["GET", "POST"])
-def edit(book_id):
-    library = load_library()
-    book = find_book(library, book_id)
-    if not book:
-        return redirect(url_for("index"))
-
-    if request.method == "GET":
-        return render_template("edit.html", book=book, today=date.today().isoformat())
-
-    fmt = request.form.get("format", book["format"])
-    book.update({
-        "title":          request.form.get("title", book["title"]).strip(),
-        "author":         request.form.get("author", book["author"]).strip(),
-        "isbn":           request.form.get("isbn", book.get("isbn", "")).strip(),
-        "cover_url":      request.form.get("cover_url", book.get("cover_url", "")).strip(),
-        "pages":          request.form.get("pages", book.get("pages", "")).strip(),
-        "copyright_year": request.form.get("copyright_year", book.get("copyright_year", "")).strip(),
-        "plot_summary":   request.form.get("plot_summary", book.get("plot_summary", "")).strip(),
-        "format":         fmt,
-        "read_time_hrs":  request.form.get("read_time_hrs", "").strip() if fmt == "Audiobook" else "",
-        "read_date":      request.form.get("read_date", book.get("read_date", date.today().isoformat())),
-    })
-    save_library(library)
-    return redirect(url_for("detail", book_id=book_id))
-
-@app.route("/delete/<book_id>", methods=["POST"])
-def delete(book_id):
-    library = load_library()
-    library = [b for b in library if b.get("id") != book_id]
-    save_library(library)
-    return redirect(url_for("index"))
+@app.route("/utilities")
+def utilities():
+    return "Utilities page coming soon", 200
 
 # ── Open Library API proxy ─────────────────────────────────────────────────────
 
