@@ -114,3 +114,11 @@ def api_summary():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+@app.route("/settings")
+def settings():
+    return "Settings page coming soon"
+
+@app.route("/help_page")
+def help_page():
+    return "Help page coming soon"

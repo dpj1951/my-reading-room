@@ -9,74 +9,51 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #0e0e12; --surface: #16161c; --card: #1c1c24; --border: #2a2a36;
+      --bg: #b0b0b0; --surface: #16161c; --card: #3a3a3a; --border: #4a4a4a;
       --accent: #e8c97e; --text: #f0ede8; --muted: #8a8795;
-      --radius: 12px; --shadow: 0 8px 32px rgba(0,0,0,0.5);
+      --radius: 16px; --shadow: 0 6px 20px rgba(0,0,0,0.6);
     }
-    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
-    nav {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(14,14,18,0.85); backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px; display: flex; align-items: center; height: 64px;
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 24px;
     }
-    .nav-brand { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--accent); letter-spacing: 0.02em; text-decoration: none; }
-    .nav-brand span { color: var(--muted); font-size: 0.85rem; font-family: 'DM Sans', sans-serif; margin-left: 10px; font-weight: 300; }
-    .main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 24px; }
-    .welcome { text-align: center; margin-bottom: 56px; }
-    .welcome h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2.2rem, 6vw, 4rem); line-height: 1.1; margin-bottom: 16px; }
-    .welcome h1 em { color: var(--accent); font-style: italic; }
-    .welcome p { color: var(--muted); font-size: 1rem; font-weight: 300; }
-    .nav-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; max-width: 760px; }
-    .nav-card {
-      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 36px 24px; text-decoration: none; color: inherit;
-      display: flex; flex-direction: column; align-items: center; gap: 16px;
-      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    .brand { text-align: center; margin-bottom: 48px; }
+    .brand h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 8vw, 3.2rem);
+      color: var(--accent); letter-spacing: 0.04em; margin-bottom: 8px;
     }
-    .nav-card:hover { transform: translateY(-6px); box-shadow: var(--shadow); border-color: var(--accent); }
-    .nav-card-icon {
-      width: 56px; height: 56px; border-radius: 14px;
-      background: var(--surface); border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center; font-size: 1.6rem;
-      transition: background 0.2s, border-color 0.2s;
+    .brand p { color: var(--muted); font-size: 0.95rem; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; }
+    .menu { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 360px; }
+    .menu-btn {
+      display: block; background: var(--card);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 20px;
+      text-align: center; text-decoration: none; color: var(--text);
+      font-family: 'DM Serif Display', serif; font-size: 1.3rem; letter-spacing: 0.02em;
+      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, background 0.15s;
     }
-    .nav-card:hover .nav-card-icon { background: rgba(232,201,126,0.1); border-color: var(--accent); }
-    .nav-card-label { font-family: 'DM Serif Display', serif; font-size: 1.2rem; }
-    .nav-card-desc { font-size: 0.775rem; color: var(--muted); text-align: center; line-height: 1.5; }
-    @media (max-width: 600px) {
-      .nav-cards { grid-template-columns: 1fr; max-width: 320px; }
-      .nav-card { flex-direction: row; padding: 20px; gap: 16px; }
-      .nav-card-desc { display: none; }
-    }
+    .menu-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.7); border-color: var(--accent); background: #22222e; }
+    .menu-btn:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+    .shelf { margin-top: 56px; font-size: 3rem; letter-spacing: -4px; }
   </style>
 </head>
 <body>
-<nav>
-  <a class="nav-brand" href="/">My Reading Room <span>personal library</span></a>
-</nav>
-<main class="main">
-  <div class="welcome">
-    <h1>Welcome to your<br><em>Reading Room</em></h1>
-    <p>What would you like to explore today?</p>
+  <div class="brand">
+    <h1>My Reading Room</h1>
+    <p>Know what you read</p>
   </div>
-  <div class="nav-cards">
-    <a class="nav-card" href="/books">
-      <div class="nav-card-icon">📚</div>
-      <div class="nav-card-label">Books</div>
-      <div class="nav-card-desc">Browse and manage your reading collection</div>
-    </a>
-    <a class="nav-card" href="/authors">
-      <div class="nav-card-icon">✍️</div>
-      <div class="nav-card-label">Authors</div>
-      <div class="nav-card-desc">Explore authors from your library</div>
-    </a>
-    <a class="nav-card" href="/utilities">
-      <div class="nav-card-icon">⚙️</div>
-      <div class="nav-card-label">Utilities</div>
-      <div class="nav-card-desc">Tools and settings for your library</div>
-    </a>
-  </div>
-</main>
+  <nav class="menu">
+    <a class="menu-btn" href="/books">Books</a>
+    <a class="menu-btn" href="/authors">Authors</a>
+    <a class="menu-btn" href="/utilities">Utilities</a>
+    <a class="menu-btn" href="/settings">Settings</a>
+    <a class="menu-btn" href="/help">Help</a>
+  </nav>
+  <div class="shelf">📚📖🔖</div>
 </body>
 </html>

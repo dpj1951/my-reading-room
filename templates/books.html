@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Books</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background: #e8e8e8;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        /* ── TOP NAV BAR ── */
+        .navbar {
+            background: #2a2a2a;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23222'/%3E%3Ccircle cx='1' cy='1' r='0.8' fill='%23333'/%3E%3Ccircle cx='3' cy='3' r='0.8' fill='%23333'/%3E%3C/svg%3E");
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-back {
+            color: #4a9eff;
+            font-size: 1rem;
+            font-weight: 400;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 70px;
+        }
+
+        .nav-back::before {
+            content: '‹';
+            font-size: 1.5rem;
+            line-height: 1;
+            margin-top: -2px;
+        }
+
+        .nav-title {
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #fff;
+            letter-spacing: 0.02em;
+        }
+
+        .nav-add {
+            color: #4a9eff;
+            font-size: 1.6rem;
+            font-weight: 300;
+            text-decoration: none;
+            min-width: 70px;
+            text-align: right;
+            line-height: 1;
+        }
+
+        /* ── FILTER/SORT BAR ── */
+        .filter-bar {
+            background: #c8c8c8;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .filter-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #333;
+            font-size: 0.95rem;
+            font-weight: 400;
+            cursor: pointer;
+        }
+
+        .filter-arrow {
+            width: 0; height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid #555;
+        }
+
+        .filter-toggle {
+            display: flex;
+            gap: 6px;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.95rem;
+            color: #555;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: background 0.15s;
+        }
+
+        .toggle-btn.active {
+            background: #aaa;
+            color: #222;
+            font-weight: 700;
+        }
+
+        /* ── PAGE LAYOUT: list + alpha index ── */
+        .page-body {
+            display: flex;
+            position: relative;
+        }
+
+        /* ── BOOK LIST ── */
+        .book-list {
+            flex: 1;
+            padding-right: 28px; /* room for alpha index */
+        }
+
+        /* ── AUTHOR GROUP HEADER ── */
+        .author-group-header {
+            padding: 8px 16px 4px;
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #333;
+            background: #e8e8e8;
+        }
+
+        /* ── BOOK ROW ── */
+        .book-row {
+            display: flex;
+            align-items: flex-start;
+            background: #f2f2f2;
+            border-bottom: 1px solid #ddd;
+            padding: 10px 12px;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.12s;
+        }
+
+        .book-row:hover { background: #eaeaea; }
+
+        .book-cover {
+            width: 58px;
+            height: 82px;
+            object-fit: cover;
+            flex-shrink: 0;
+            border-radius: 2px;
+            background: #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .book-cover-placeholder {
+            width: 58px;
+            height: 82px;
+            flex-shrink: 0;
+            border-radius: 2px;
+            background: linear-gradient(135deg, #7a4030, #4a2018);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 4px;
+        }
+
+        .book-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .book-title-link {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #2060c0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+            text-decoration: none;
+            margin-bottom: 3px;
+        }
+
+        .book-author-name {
+            font-size: 0.9rem;
+            color: #222;
+            margin-bottom: 2px;
+        }
+
+        .book-isbn {
+            font-size: 0.88rem;
+            color: #444;
+            margin-bottom: 2px;
+        }
+
+        .book-meta {
+            font-size: 0.88rem;
+            color: #444;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ── GROUP TOTAL ── */
+        .group-total {
+            padding: 6px 16px 10px;
+            font-size: 0.88rem;
+            color: #555;
+            background: #e8e8e8;
+        }
+
+        /* ── ALPHA INDEX SCRUBBER ── */
+        .alpha-index {
+            position: fixed;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            z-index: 50;
+        }
+
+        .alpha-index a {
+            font-size: 0.72rem;
+            color: #555;
+            text-decoration: none;
+            line-height: 1.4;
+            padding: 0 3px;
+            font-weight: 400;
+        }
+
+        .alpha-index a:hover { color: #2060c0; }
+
+        /* ── EMPTY STATE ── */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #888;
+            font-style: italic;
+        }
+
+        /* ── STATUS BADGE ── */
+        .status-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            padding: 2px 7px;
+            border-radius: 10px;
+            margin-top: 4px;
+            font-weight: 700;
+        }
+        .status-to-read  { background: #fef4d0; color: #8a6d00; }
+        .status-reading  { background: #d4ecf7; color: #1a5c7a; }
+        .status-finished { background: #d4edda; color: #1a5c30; }
+    </style>
+</head>
+<body>
+
+    <!-- Nav bar -->
+    <div class="navbar">
+        <a href="/" class="nav-back">Back</a>
+        <span class="nav-title">Books</span>
+        <a href="/add-book" class="nav-add">+</a>
+    </div>
+
+    <!-- Filter/Sort bar -->
+    <div class="filter-bar">
+        <div class="filter-left">
+            <div class="filter-arrow"></div>
+            <span>Filter/Sort</span>
+        </div>
+        <div class="filter-toggle">
+            <button class="toggle-btn active">Authors</button>
+            <button class="toggle-btn">Title</button>
+        </div>
+    </div>
+
+    <!-- Page body -->
+    <div class="page-body">
+        <div class="book-list">
+
+            {% if books %}
+                {% set ns = namespace(current_author=None, author_count=0, author_start=0) %}
+
+                {% for i, book in books|enumerate %}
+                    {% set last_name = book.author.split(' ')[-1] + ', ' + book.author.split(' ')[0] if ' ' in book.author else book.author %}
+
+                    {# New author group #}
+                    {% if book.author != ns.current_author %}
+                        {# Close previous group total #}
+                        {% if ns.current_author is not none %}
+                        <div class="group-total">Total: {{ ns.author_count }}</div>
+                        {% endif %}
+                        {% set ns.current_author = book.author %}
+                        {% set ns.author_count = 0 %}
+                        <div class="author-group-header" id="letter-{{ book.author[0]|upper }}">{{ last_name }}</div>
+                    {% endif %}
+                    {% set ns.author_count = ns.author_count + 1 %}
+
+                    <div class="book-row">
+                        <div class="book-cover-placeholder">📖</div>
+                        <div class="book-details">
+                            <span class="book-title-link">{{ book.title }}</span>
+                            <div class="book-author-name">{{ book.author }}</div>
+                            {% if book.isbn is defined and book.isbn %}
+                            <div class="book-isbn">ISBN: {{ book.isbn }}</div>
+                            {% endif %}
+                            <div class="book-meta">
+                                {% if book.year is defined and book.year %}{{ book.year }}{% endif %}
+                                {% if book.series is defined and book.series %}  &nbsp;{{ book.series }}{% endif %}
+                            </div>
+                            <span class="status-badge status-{{ book.status.lower().replace(' ', '-') }}">{{ book.status }}</span>
+                        </div>
+                    </div>
+
+                    {# Print last group total #}
+                    {% if loop.last %}
+                    <div class="group-total">Total: {{ ns.author_count }}</div>
+                    {% endif %}
+                {% endfor %}
+
+            {% else %}
+                <div class="empty-state">
+                    No books yet.<br>Tap <strong>+</strong> to add your first book.
+                </div>
+            {% endif %}
+
+        </div>
+
+        <!-- Alpha index scrubber -->
+        <nav class="alpha-index">
+            {% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#' %}
+            <a href="#letter-{{ letter }}">{{ letter }}</a>
+            {% endfor %}
+        </nav>
+    </div>
+
+</body>
+</html>
