@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authors — My Reading Alcove</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #b0b0b0; --surface: #16161c; --card: #1c1c24; --border: #2a2a36;
+      --accent: #3b9eff; --text: #f0ede8; --muted: #8a8795;
+      --paper: #7ec8b5; --ebook: #7eaae8; --audio: #c87eb5;
+      --radius: 12px; --shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(14,14,18,0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px; display: flex; align-items: center; gap: 16px; height: 64px;
+    }
+    .nav-back { display: flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
+    .nav-back:hover { color: var(--text); }
+    .nav-back svg { width: 16px; height: 16px; }
+    .nav-title { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--accent); }
+    .nav-add { margin-left: auto; display: flex; align-items: center; gap: 8px; background: var(--accent); color: #0e0e12; font-weight: 600; font-size: 0.875rem; padding: 8px 18px; border-radius: 8px; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+    .nav-add:hover { background: #f0d898; transform: translateY(-1px); }
+    .nav-add svg { width: 16px; height: 16px; }
+    .hero { padding: 48px 24px 0; max-width: 900px; margin: 0 auto; }
+    .hero h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.1; }
+    .hero h1 em { color: var(--accent); font-style: italic; }
+    .stat-row { display: flex; gap: 24px; margin-top: 20px; flex-wrap: wrap; }
+    .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 20px; font-size: 0.8rem; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+    .stat strong { font-size: 1.2rem; color: var(--text); font-weight: 600; margin-right: 2px; }
+    .controls { max-width: 900px; margin: 28px auto 0; padding: 0 24px; }
+    .search-wrap { position: relative; max-width: 420px; }
+    .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); width: 16px; height: 16px; pointer-events: none; }
+    .search-wrap input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px 10px 40px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.875rem; outline: none; transition: border-color 0.2s; }
+    .search-wrap input:focus { border-color: var(--accent); }
+    .search-wrap input::placeholder { color: var(--muted); }
+    .page-body { max-width: 900px; margin: 28px auto 60px; padding: 0 24px; display: flex; gap: 16px; align-items: flex-start; }
+    .author-list { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 28px; }
+    .alpha-index { position: sticky; top: 80px; display: flex; flex-direction: column; align-items: center; gap: 1px; width: 22px; flex-shrink: 0; }
+    .alpha-index a { font-size: 0.68rem; font-weight: 600; color: var(--muted); text-decoration: none; line-height: 1.6; width: 100%; text-align: center; transition: color 0.15s; }
+    .alpha-index a:hover { color: var(--accent); }
+    .alpha-index a.has-entries { color: var(--text); }
+    .author-group { scroll-margin-top: 80px; }
+    .author-header { display: flex; align-items: baseline; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+    .author-name { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--accent); }
+    .author-count { font-size: 0.75rem; color: var(--muted); }
+    .book-row { display: flex; gap: 14px; align-items: center; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; text-decoration: none; color: inherit; transition: border-color 0.15s, background 0.15s, transform 0.15s; margin-bottom: 8px; }
+    .book-row:last-child { margin-bottom: 0; }
+    .book-row:hover { border-color: var(--accent); background: #21212c; transform: translateX(3px); }
+    .book-row img { width: 44px; height: 62px; object-fit: cover; border-radius: 5px; flex-shrink: 0; background: var(--surface); }
+    .row-cover-placeholder { width: 44px; height: 62px; flex-shrink: 0; border-radius: 5px; background: linear-gradient(145deg, #1e1e28, #252530); display: flex; align-items: center; justify-content: center; }
+    .row-cover-placeholder svg { width: 18px; height: 18px; color: var(--border); }
+    .row-info { flex: 1; min-width: 0; }
+    .row-title { font-size: 0.9rem; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--accent); }
+    .row-meta { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
+    .row-year { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .format-pip { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 7px; border-radius: 4px; flex-shrink: 0; align-self: flex-start; }
+    .pip-Paper     { background: rgba(126,200,181,0.2); color: var(--paper); }
+    .pip-Ebook     { background: rgba(126,170,232,0.2); color: var(--ebook); }
+    .pip-Audiobook { background: rgba(200,126,181,0.2); color: var(--audio); }
+    .empty { text-align: center; padding: 80px 20px; color: var(--muted); }
+    .empty svg { width: 48px; height: 48px; color: var(--border); margin-bottom: 16px; }
+    .empty h3 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--text); margin-bottom: 8px; }
+    .empty p { font-size: 0.875rem; }
+    .empty a { display: inline-block; margin-top: 20px; background: var(--accent); color: #0e0e12; font-weight: 600; font-size: 0.875rem; padding: 10px 22px; border-radius: 8px; text-decoration: none; }
+    @media (max-width: 600px) {
+      nav { padding: 0 16px; }
+      .hero, .controls { padding-left: 16px; padding-right: 16px; }
+      .page-body { padding: 0 8px 40px 16px; gap: 8px; }
+      .alpha-index { width: 18px; }
+      .alpha-index a { font-size: 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+<nav>
+  <a class="nav-back" href="/">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    Home
+  </a>
+  <span class="nav-title">Authors</span>
+  <a class="nav-add" href="/add">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+    Add Book
+  </a>
+</nav>
+
+<div class="hero">
+  <h1>Your <em>authors</em>.</h1>
+  <div class="stat-row">
+    <div class="stat"><strong>{{ author_count }}</strong> author{{ 's' if author_count != 1 else '' }}</div>
+    <div class="stat"><strong>{{ total_books }}</strong> book{{ 's' if total_books != 1 else '' }}</div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search-input" placeholder="Filter by author or title…">
+  </div>
+</div>
+
+<div class="page-body">
+  {% if grouped_authors %}
+  <div class="author-list" id="author-list">
+    {% for letter, authors_in_group in grouped_authors.items() %}
+      {% for author_name, books in authors_in_group %}
+      <div class="author-group" id="anchor-{{ letter }}-{{ loop.index }}" data-author="{{ author_name.lower() }}" data-titles="{{ books|map(attribute='title')|join(' ')|lower }}">
+        <div class="author-header">
+          <span class="author-name">{{ author_name }}</span>
+          <span class="author-count">{{ books|length }} book{{ 's' if books|length != 1 else '' }}</span>
+        </div>
+        {% for book in books %}
+        <a class="book-row" href="/book/{{ book.id }}">
+          {% if book.cover_url %}
+            <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="row-cover-placeholder" style="display:none">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            </div>
+          {% else %}
+            <div class="row-cover-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            </div>
+          {% endif %}
+          <div class="row-info">
+            <div class="row-title">{{ book.title }}</div>
+            {% if book.isbn %}<div class="row-meta">ISBN: {{ book.isbn }}</div>{% endif %}
+            <div class="row-year">{{ book.copyright_year or '' }}{% if book.copyright_year and book.pages %} · {% endif %}{{ book.pages ~ ' pages' if book.pages else '' }}</div>
+          </div>
+          <span class="format-pip pip-{{ book.format }}">{{ book.format }}</span>
+        </a>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+
+  <nav class="alpha-index" aria-label="Alphabetical index">
+    {% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' %}
+      <a href="#letter-{{ letter }}" class="{{ 'has-entries' if letter in grouped_authors else '' }}">{{ letter }}</a>
+    {% endfor %}
+    <a href="#letter-hash" class="{{ 'has-entries' if '#' in grouped_authors else '' }}">#</a>
+  </nav>
+
+  {% for letter in grouped_authors.keys() %}
+    <div id="letter-{{ letter }}" style="position:absolute;visibility:hidden;margin-top:-80px"></div>
+  {% endfor %}
+
+  {% else %}
+  <div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    <h3>No books yet</h3>
+    <p>Start adding books to see authors here.</p>
+    <a href="/add">Add your first book</a>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      const q = this.value.trim().toLowerCase();
+      document.querySelectorAll('.author-group').forEach(g => {
+        g.style.display = (!q || g.dataset.author.includes(q) || g.dataset.titles.includes(q)) ? '' : 'none';
+      });
+    });
+  }
+  document.querySelectorAll('.alpha-index a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      const letter = this.textContent.trim() === '#' ? 'hash' : this.textContent.trim();
+      const anchor = document.getElementById('letter-' + letter);
+      if (anchor) {
+        e.preventDefault();
+        const firstGroup = document.querySelector(`[id^="anchor-${this.textContent.trim()}-"]`);
+        if (firstGroup) firstGroup.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+</body>
+</html>
