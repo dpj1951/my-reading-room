@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add a Book – My Reading Alcove</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg: #b0b0b0; --card: #3a3a3a; --border: #4a4a4a; --accent: #2a6b6b; --text: #f0ede8; --muted: #8a8795; --radius: 16px; --shadow: 0 6px 20px rgba(0,0,0,0.6); }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
+    .back-link { position: absolute; top: 24px; left: 24px; color: var(--muted); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; transition: color 0.15s; }
+    .back-link:hover { color: var(--text); }
+    .heading { text-align: center; margin-bottom: 48px; }
+    .heading h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; font-weight: 400; color: var(--text); margin-bottom: 8px; }
+    .heading p { color: var(--muted); font-size: 0.95rem; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; }
+    .choices { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 360px; }
+    .choice-btn { display: flex; align-items: center; gap: 18px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px 20px; text-decoration: none; color: var(--text); transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, background 0.15s; }
+    .choice-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.7); border-color: var(--accent); background: #22222e; }
+    .choice-btn:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+    .choice-icon { font-size: 2rem; flex-shrink: 0; width: 48px; text-align: center; }
+    .choice-text h2 { font-family: 'DM Serif Display', serif; font-size: 1.3rem; font-weight: 400; margin-bottom: 4px; }
+    .choice-text p { font-size: 0.82rem; color: var(--muted); font-weight: 300; }
+  </style>
+</head>
+<body>
+  <a class="back-link" href="/books">← Back to Books</a>
+  <div class="heading">
+    <h1>Add a Book</h1>
+    <p>Choose how you'd like to add it</p>
+  </div>
+  <nav class="choices">
+    <a class="choice-btn" href="/add/manual">
+      <div class="choice-icon">✏️</div>
+      <div class="choice-text">
+        <h2>Manually</h2>
+        <p>Type in the book details yourself</p>
+      </div>
+    </a>
+    <a class="choice-btn" href="/add/scan">
+      <div class="choice-icon">📷</div>
+      <div class="choice-text">
+        <h2>Scanner</h2>
+        <p>Scan a barcode to look up the book</p>
+      </div>
+    </a>
+  </nav>
+</body>
+</html>

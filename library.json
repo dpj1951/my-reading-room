@@ -1,7 +1,5 @@
 [
   {
-
-
     "id": "c1576697-20cd-4392-8d66-fe357beab9f2",
     "title": "The 6:20 Man",
     "author": "David Baldacci",
@@ -13,5 +11,18 @@
     "format": "Ebook",
     "read_time_hrs": "",
     "read_date": "2026-02-23"
+  },
+  {
+    "id": "b4bc5efa-0983-4837-a765-4b7624c31fad",
+    "title": "Ranger",
+    "author": "Ace Atkins",
+    "isbn": "9781410464491",
+    "format": "Paper",
+    "pages": "368",
+    "copyright_year": "2013",
+    "read_date": "",
+    "rating": "",
+    "cover_url": "https://covers.openlibrary.org/b/id/11702629-M.jpg",
+    "summary": ""
   }
 ]

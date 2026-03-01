@@ -59,9 +59,50 @@ def index():
                            selected_format=fmt, sort=sort,
                            today=date.today().isoformat())
 
+@app.route("/add")
+def add_choice():
+    return render_template("add_choice.html")
+
+@app.route("/add/manual")
+def add_manual():
+    return render_template("add.html")
+
+@app.route("/add/scan")
+def add_scan():
+    return render_template("scan.html")
+
 @app.route("/authors")
 def authors():
-    return "Authors page coming soon", 200
+    from collections import defaultdict, OrderedDict
+    library = load_library()
+
+    def author_sort_key(name):
+        parts = name.strip().rsplit(" ", 1)
+        return (parts[-1].lower(), parts[0].lower()) if len(parts) == 2 else (name.lower(), "")
+
+    def display_name(name):
+        parts = name.strip().rsplit(" ", 1)
+        return f"{parts[1]}, {parts[0]}" if len(parts) == 2 else name
+
+    by_author = defaultdict(list)
+    for book in library:
+        by_author[book.get("author", "Unknown")].append(book)
+
+    sorted_authors = sorted(by_author.keys(), key=author_sort_key)
+
+    grouped = OrderedDict()
+    for author in sorted_authors:
+        parts = author.strip().rsplit(" ", 1)
+        last = parts[-1] if parts else author
+        letter = last[0].upper() if last and last[0].isalpha() else "#"
+        if letter not in grouped:
+            grouped[letter] = []
+        grouped[letter].append((display_name(author), by_author[author]))
+
+    return render_template("authors.html",
+                           grouped_authors=grouped,
+                           author_count=len(by_author),
+                           total_books=len(library))
 
 @app.route("/utilities")
 def utilities():
@@ -112,6 +153,26 @@ def api_summary():
     except Exception:
         return jsonify({"summary": ""})
 
+
+@app.route("/add/manual/save", methods=["POST"])
+def add_manual_save():
+    library = load_library()
+    book = {
+        "id": str(uuid.uuid4()),
+        "title": request.form.get("title", ""),
+        "author": request.form.get("author", ""),
+        "isbn": request.form.get("isbn", ""),
+        "format": request.form.get("format", "paper"),
+        "pages": request.form.get("pages", ""),
+        "copyright_year": request.form.get("copyright_year", ""),
+        "read_date": request.form.get("read_date", ""),
+        "rating": request.form.get("rating", ""),
+        "cover_url": request.form.get("cover_url", ""),
+        "summary": request.form.get("summary", ""),
+    }
+    library.append(book)
+    save_library(library)
+    return redirect(url_for("index"))
 if __name__ == "__main__":
     app.run(debug=True)
 
@@ -122,3 +183,4 @@ def settings():
 @app.route("/help_page")
 def help_page():
     return "Help page coming soon"
+

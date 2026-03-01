@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scan a Book – My Reading Alcove</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg: #b0b0b0; --card: #3a3a3a; --border: #4a4a4a; --accent: #2a6b6b; --text: #f0ede8; --muted: #8a8795; --radius: 16px; --shadow: 0 6px 20px rgba(0,0,0,0.6); }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; text-align: center; }
+    .back-link { position: absolute; top: 24px; left: 24px; color: var(--muted); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; transition: color 0.15s; }
+    .back-link:hover { color: var(--text); }
+    .icon { font-size: 4rem; margin-bottom: 24px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; font-weight: 400; margin-bottom: 12px; }
+    p { color: var(--muted); font-size: 0.95rem; font-weight: 300; max-width: 280px; }
+  </style>
+</head>
+<body>
+  <a class="back-link" href="/add">← Back</a>
+  <div class="icon">📷</div>
+  <h1>Scanner</h1>
+  <p>Barcode scanning is coming soon. For now, please add books manually.</p>
+</body>
+</html>
