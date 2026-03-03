@@ -13,30 +13,26 @@ if DATABASE_URL.startswith("postgres://"):
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db = SQLAlchemy(app)
 
+db = SQLAlchemy(app)
 
 class Book(db.Model):
     __tablename__ = "books"
-    id             = db.Column(db.String(36),  primary_key=True, default=lambda: str(uuid.uuid4()))
-    title          = db.Column(db.String(500), nullable=False)
-    author         = db.Column(db.String(500), nullable=False)
-    isbn           = db.Column(db.String(20),  default="")
-    format         = db.Column(db.String(20),  default="Paper")
-    pages          = db.Column(db.String(10),  default="")
-    copyright_year = db.Column(db.String(10),  default="")
-    read_date      = db.Column(db.String(10),  default="")
-    rating         = db.Column(db.String(5),   default="")
-    cover_url      = db.Column(db.String(500), default="")
-    summary        = db.Column(db.Text,        default="")
-    read_time_hrs  = db.Column(db.String(10),  default="")
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    title = db.Column(db.String(500), nullable=False)
+    author = db.Column(db.String(500), nullable=False)
+    isbn = db.Column(db.String(20), default="")
+    format = db.Column(db.String(20), default="Paper")
+    pages = db.Column(db.String(10), default="")
+    copyright_year = db.Column(db.String(10), default="")
+    read_date = db.Column(db.String(10), default="")
+    rating = db.Column(db.String(5), default="")
+    cover_url = db.Column(db.String(500), default="")
+    summary = db.Column(db.Text, default="")
+    read_time_hrs = db.Column(db.String(10), default="")
 
     def to_dict(self):
-        return {"id": self.id, "title": self.title, "author": self.author,
-                "isbn": self.isbn, "format": self.format, "pages": self.pages,
-                "copyright_year": self.copyright_year, "read_date": self.read_date,
-                "rating": self.rating, "cover_url": self.cover_url,
-                "summary": self.summary, "read_time_hrs": self.read_time_hrs}
+        return {"id": self.id, "title": self.title, "author": self.author, "isbn": self.isbn, "format": self.format, "pages": self.pages, "copyright_year": self.copyright_year, "read_date": self.read_date, "rating": self.rating, "cover_url": self.cover_url, "summary": self.summary, "read_time_hrs": self.read_time_hrs}
 
 
 def migrate_from_json():
@@ -50,15 +46,7 @@ def migrate_from_json():
         with open(json_path) as f:
             books = json.load(f)
         for b in books:
-            book = Book(
-                id=b.get("id", str(uuid.uuid4())), title=b.get("title", ""),
-                author=b.get("author", ""), isbn=b.get("isbn", ""),
-                format=b.get("format", "Paper"), pages=b.get("pages", ""),
-                copyright_year=b.get("copyright_year", ""), read_date=b.get("read_date", ""),
-                rating=b.get("rating", ""), cover_url=b.get("cover_url", ""),
-                summary=b.get("summary", b.get("plot_summary", "")),
-                read_time_hrs=b.get("read_time_hrs", ""),
-            )
+            book = Book(id=b.get("id", str(uuid.uuid4())), title=b.get("title", ""), author=b.get("author", ""), isbn=b.get("isbn", ""), format=b.get("format", "Paper"), pages=b.get("pages", ""), copyright_year=b.get("copyright_year", ""), read_date=b.get("read_date", ""), rating=b.get("rating", ""), cover_url=b.get("cover_url", ""), summary=b.get("summary", b.get("plot_summary", "")), read_time_hrs=b.get("read_time_hrs", ""))
             db.session.add(book)
         db.session.commit()
         print(f"Migrated {len(books)} books from library.json")
@@ -67,9 +55,19 @@ def migrate_from_json():
         print(f"Migration error: {e}")
 
 
-with app.app_context():
-    db.create_all()
-    migrate_from_json()
+def init_db():
+    try:
+        db.create_all()
+        migrate_from_json()
+    except Exception as e:
+        print(f"DB init error: {e}")
+
+
+@app.before_request
+def ensure_db():
+    if not getattr(app, '_db_initialized', False):
+        init_db()
+        app._db_initialized = True
 
 
 @app.route("/")
@@ -80,15 +78,14 @@ def home():
 @app.route("/books")
 def index():
     query = request.args.get("q", "").strip().lower()
-    fmt   = request.args.get("format", "").strip()
-    sort  = request.args.get("sort", "date_desc")
+    fmt = request.args.get("format", "").strip()
+    sort = request.args.get("sort", "date_desc")
     q = Book.query
     if query:
         q = q.filter(db.or_(Book.title.ilike(f"%{query}%"), Book.author.ilike(f"%{query}%")))
     if fmt:
         q = q.filter(Book.format == fmt)
     books = q.all()
-
     def sort_key(b):
         if sort == "author": return b.author.lower()
         if sort == "title":
@@ -97,11 +94,9 @@ def index():
                 if t.startswith(art): t = t[len(art):]
             return t
         return b.read_date or "0000-00-00"
-
     books = sorted(books, key=sort_key, reverse=(sort == "date_desc"))
     books = [b.to_dict() for b in books]
-    return render_template("index.html", books=books, query=query,
-                           selected_format=fmt, sort=sort, today=date.today().isoformat())
+    return render_template("index.html", books=books, query=query, selected_format=fmt, sort=sort, today=date.today().isoformat())
 
 
 @app.route("/book/<book_id>")
@@ -161,19 +156,15 @@ def add_scan():
 def authors():
     from collections import defaultdict, OrderedDict
     books = Book.query.all()
-
     def author_sort_key(name):
         parts = name.strip().rsplit(" ", 1)
         return (parts[-1].lower(), parts[0].lower()) if len(parts) == 2 else (name.lower(), "")
-
     def display_name(name):
         parts = name.strip().rsplit(" ", 1)
         return f"{parts[1]}, {parts[0]}" if len(parts) == 2 else name
-
     by_author = defaultdict(list)
     for book in books:
         by_author[book.author or "Unknown"].append(book.to_dict())
-
     sorted_authors = sorted(by_author.keys(), key=author_sort_key)
     grouped = OrderedDict()
     for author in sorted_authors:
@@ -183,26 +174,12 @@ def authors():
         if letter not in grouped:
             grouped[letter] = []
         grouped[letter].append((display_name(author), by_author[author]))
-
-    return render_template("authors.html", grouped_authors=grouped,
-                           author_count=len(by_author), total_books=len(books))
+    return render_template("authors.html", grouped_authors=grouped, author_count=len(by_author), total_books=len(books))
 
 
 @app.route("/add/manual/save", methods=["POST"])
 def add_manual_save():
-    book = Book(
-        title=request.form.get("title", ""),
-        author=request.form.get("author", ""),
-        isbn=request.form.get("isbn", ""),
-        format=request.form.get("format", "Paper"),
-        pages=request.form.get("pages", ""),
-        copyright_year=request.form.get("copyright_year", ""),
-        read_date=request.form.get("read_date", ""),
-        rating=request.form.get("rating", ""),
-        cover_url=request.form.get("cover_url", ""),
-        summary=request.form.get("summary", request.form.get("plot_summary", "")),
-        read_time_hrs=request.form.get("read_time_hrs", ""),
-    )
+    book = Book(title=request.form.get("title", ""), author=request.form.get("author", ""), isbn=request.form.get("isbn", ""), format=request.form.get("format", "Paper"), pages=request.form.get("pages", ""), copyright_year=request.form.get("copyright_year", ""), read_date=request.form.get("read_date", ""), rating=request.form.get("rating", ""), cover_url=request.form.get("cover_url", ""), summary=request.form.get("summary", request.form.get("plot_summary", "")), read_time_hrs=request.form.get("read_time_hrs", ""))
     db.session.add(book)
     db.session.commit()
     return redirect(url_for("index"))
@@ -214,8 +191,7 @@ def api_search():
     field = request.args.get("field", "q")
     if not q:
         return jsonify([])
-    params = {field: q, "limit": 10,
-              "fields": "title,author_name,isbn,cover_i,first_publish_year,key,number_of_pages_median"}
+    params = {field: q, "limit": 10, "fields": "title,author_name,isbn,cover_i,first_publish_year,key,number_of_pages_median"}
     try:
         r = requests.get("https://openlibrary.org/search.json", params=params, timeout=6)
         r.raise_for_status()
@@ -223,14 +199,7 @@ def api_search():
         results = []
         for d in docs:
             cover_id = d.get("cover_i")
-            results.append({
-                "title": d.get("title", ""), "author": ", ".join(d.get("author_name", [])),
-                "isbn": (d.get("isbn") or [""])[0],
-                "cover_url": f"https://covers.openlibrary.org/b/id/{cover_id}-M.jpg" if cover_id else "",
-                "pages": str(d.get("number_of_pages_median", "")),
-                "copyright_year": str(d.get("first_publish_year", "")),
-                "work_key": d.get("key", ""),
-            })
+            results.append({"title": d.get("title", ""), "author": ", ".join(d.get("author_name", [])), "isbn": (d.get("isbn") or [""])[0], "cover_url": f"https://covers.openlibrary.org/b/id/{cover_id}-M.jpg" if cover_id else "", "pages": str(d.get("number_of_pages_median", "")), "copyright_year": str(d.get("first_publish_year", "")), "work_key": d.get("key", "")})
         return jsonify(results)
     except Exception:
         return jsonify([])
@@ -269,4 +238,5 @@ def help_page():
 
 
 if __name__ == "__main__":
+    init_db()
     app.run(debug=True)
