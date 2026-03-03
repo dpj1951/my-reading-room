@@ -158,7 +158,7 @@
     Library
   </a>
   <div class="nav-actions">
-    <a class="btn-edit" href="/edit/{{ book.id }}">Edit</a>
+    <a class="btn-edit" href="/book/{{ book.id }}/edit">Edit</a>
     <button class="btn-delete" onclick="document.getElementById('delete-modal').classList.add('show')">Delete</button>
   </div>
 </nav>
@@ -217,7 +217,7 @@
 <div class="summary-section">
   <div class="summary-card">
     <h2>Plot Summary</h2>
-    {% if book.plot_summary %}
+    {% if book.summary %}
       <p>{{ book.plot_summary }}</p>
     {% else %}
       <p class="no-summary">No summary available.</p>
@@ -231,7 +231,7 @@
     <p>This will permanently remove <strong>{{ book.title }}</strong> from your library. This action cannot be undone.</p>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="document.getElementById('delete-modal').classList.remove('show')">Cancel</button>
-      <form action="/delete/{{ book.id }}" method="POST" style="display:inline">
+      <form action="/book/{{ book.id }}/delete" method="POST" style="display:inline">
         <button type="submit" class="btn-confirm-delete">Yes, Remove</button>
       </form>
     </div>
