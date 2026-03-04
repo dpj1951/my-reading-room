@@ -1,11 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, send_file
 import os
 import uuid
 import requests
+import csv
+import io
 from datetime import date
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///library.db")
 if DATABASE_URL.startswith("postgres://"):
@@ -224,7 +227,74 @@ def api_summary():
 
 @app.route("/utilities")
 def utilities():
-    return "Utilities page coming soon", 200
+    return render_template("utilities.html")
+
+
+@app.route("/utilities/export")
+def export_csv():
+    books = Book.query.all()
+    fields = ["id","title","author","isbn","format","pages",
+              "copyright_year","read_date","rating","cover_url",
+              "summary","read_time_hrs"]
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=fields)
+    writer.writeheader()
+    for book in books:
+        writer.writerow(book.to_dict())
+    output.seek(0)
+    return send_file(
+        io.BytesIO(output.getvalue().encode("utf-8")),
+        mimetype="text/csv",
+        as_attachment=True,
+        download_name="my_reading_alcove.csv"
+    )
+
+
+@app.route("/utilities/import", methods=["POST"])
+def import_csv():
+    file = request.files.get("file")
+    if not file or not file.filename.endswith(".csv"):
+        flash("Please upload a valid .csv file.", "error")
+        return redirect(url_for("utilities"))
+    try:
+        stream = io.StringIO(file.stream.read().decode("utf-8"))
+        reader = csv.DictReader(stream)
+        added = 0
+        skipped = 0
+        for row in reader:
+            book_id = row.get("id", "").strip()
+            if book_id and Book.query.get(book_id):
+                skipped += 1
+                continue
+            existing = Book.query.filter_by(
+                title=row.get("title","").strip(),
+                author=row.get("author","").strip()
+            ).first()
+            if existing:
+                skipped += 1
+                continue
+            book = Book(
+                id=book_id or str(uuid.uuid4()),
+                title=row.get("title","").strip(),
+                author=row.get("author","").strip(),
+                isbn=row.get("isbn","").strip(),
+                format=row.get("format","Paper").strip(),
+                pages=row.get("pages","").strip(),
+                copyright_year=row.get("copyright_year","").strip(),
+                read_date=row.get("read_date","").strip(),
+                rating=row.get("rating","").strip(),
+                cover_url=row.get("cover_url","").strip(),
+                summary=row.get("summary","").strip(),
+                read_time_hrs=row.get("read_time_hrs","").strip(),
+            )
+            db.session.add(book)
+            added += 1
+        db.session.commit()
+        flash(f"Import complete: {added} book(s) added, {skipped} skipped (already exist).", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Import failed: {str(e)}", "error")
+    return redirect(url_for("utilities"))
 
 
 @app.route("/settings")
