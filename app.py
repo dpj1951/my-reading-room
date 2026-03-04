@@ -8,7 +8,6 @@ from datetime import date
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///library.db")
 if DATABASE_URL.startswith("postgres://"):
@@ -16,6 +15,7 @@ if DATABASE_URL.startswith("postgres://"):
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 
 db = SQLAlchemy(app)
 
