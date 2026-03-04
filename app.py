@@ -263,7 +263,7 @@ def import_csv():
         skipped = 0
         for row in reader:
             book_id = row.get("id", "").strip()
-            if book_id and Book.query.get(book_id):
+            if book_id and db.session.get(Book, book_id):
                 skipped += 1
                 continue
             existing = Book.query.filter_by(
