@@ -35,8 +35,10 @@ class Book(db.Model):
     read_time_hrs = db.Column(db.String(10), default="")
 
     def to_dict(self):
-        return {"id": self.id, "title": self.title, "author": self.author, "isbn": self.isbn, "format": self.format, "pages": self.pages, "copyright_year": self.copyright_year, "read_date": self.read_date, "rating": self.rating, "cover_url": self.cover_url, "summary": self.summary, "read_time_hrs": self.read_time_hrs}
-
+        return {"id": self.id, "title": self.title, "author": self.author, "isbn": self.isbn,
+                "format": self.format, "pages": self.pages, "copyright_year": self.copyright_year,
+                "read_date": self.read_date, "rating": self.rating, "cover_url": self.cover_url,
+                "summary": self.summary, "read_time_hrs": self.read_time_hrs}
 
 def migrate_from_json():
     import json
@@ -49,14 +51,19 @@ def migrate_from_json():
         with open(json_path) as f:
             books = json.load(f)
         for b in books:
-            book = Book(id=b.get("id", str(uuid.uuid4())), title=b.get("title", ""), author=b.get("author", ""), isbn=b.get("isbn", ""), format=b.get("format", "Paper"), pages=b.get("pages", ""), copyright_year=b.get("copyright_year", ""), read_date=b.get("read_date", ""), rating=b.get("rating", ""), cover_url=b.get("cover_url", ""), summary=b.get("summary", b.get("plot_summary", "")), read_time_hrs=b.get("read_time_hrs", ""))
+            book = Book(id=b.get("id", str(uuid.uuid4())), title=b.get("title", ""),
+                        author=b.get("author", ""), isbn=b.get("isbn", ""),
+                        format=b.get("format", "Paper"), pages=b.get("pages", ""),
+                        copyright_year=b.get("copyright_year", ""), read_date=b.get("read_date", ""),
+                        rating=b.get("rating", ""), cover_url=b.get("cover_url", ""),
+                        summary=b.get("summary", b.get("plot_summary", "")),
+                        read_time_hrs=b.get("read_time_hrs", ""))
             db.session.add(book)
         db.session.commit()
         print(f"Migrated {len(books)} books from library.json")
     except Exception as e:
         db.session.rollback()
         print(f"Migration error: {e}")
-
 
 def init_db():
     try:
@@ -65,18 +72,15 @@ def init_db():
     except Exception as e:
         print(f"DB init error: {e}")
 
-
 @app.before_request
 def ensure_db():
     if not getattr(app, '_db_initialized', False):
         init_db()
         app._db_initialized = True
 
-
 @app.route("/")
 def home():
     return render_template("home.html")
-
 
 @app.route("/books")
 def index():
@@ -101,18 +105,15 @@ def index():
     books = [b.to_dict() for b in books]
     return render_template("index.html", books=books, query=query, selected_format=fmt, sort=sort, today=date.today().isoformat())
 
-
 @app.route("/book/<book_id>")
 def book_detail(book_id):
     book = Book.query.get_or_404(book_id)
     return render_template("detail.html", book=book.to_dict(), today=date.today().isoformat())
 
-
 @app.route("/book/<book_id>/edit", methods=["GET"])
 def edit_book(book_id):
     book = Book.query.get_or_404(book_id)
     return render_template("edit.html", book=book.to_dict(), today=date.today().isoformat())
-
 
 @app.route("/book/<book_id>/edit", methods=["POST"])
 def edit_book_save(book_id):
@@ -131,7 +132,6 @@ def edit_book_save(book_id):
     db.session.commit()
     return redirect(url_for("book_detail", book_id=book_id))
 
-
 @app.route("/book/<book_id>/delete", methods=["POST"])
 def delete_book(book_id):
     book = Book.query.get_or_404(book_id)
@@ -139,21 +139,17 @@ def delete_book(book_id):
     db.session.commit()
     return redirect(url_for("index"))
 
-
 @app.route("/add")
 def add_choice():
     return render_template("add_choice.html")
-
 
 @app.route("/add/manual")
 def add_manual():
     return render_template("add.html", today=date.today().isoformat())
 
-
 @app.route("/add/scan")
 def add_scan():
     return render_template("scan.html")
-
 
 @app.route("/authors")
 def authors():
@@ -179,14 +175,18 @@ def authors():
         grouped[letter].append((display_name(author), by_author[author]))
     return render_template("authors.html", grouped_authors=grouped, author_count=len(by_author), total_books=len(books))
 
-
 @app.route("/add/manual/save", methods=["POST"])
 def add_manual_save():
-    book = Book(title=request.form.get("title", ""), author=request.form.get("author", ""), isbn=request.form.get("isbn", ""), format=request.form.get("format", "Paper"), pages=request.form.get("pages", ""), copyright_year=request.form.get("copyright_year", ""), read_date=request.form.get("read_date", ""), rating=request.form.get("rating", ""), cover_url=request.form.get("cover_url", ""), summary=request.form.get("summary", request.form.get("plot_summary", "")), read_time_hrs=request.form.get("read_time_hrs", ""))
+    book = Book(title=request.form.get("title", ""), author=request.form.get("author", ""),
+                isbn=request.form.get("isbn", ""), format=request.form.get("format", "Paper"),
+                pages=request.form.get("pages", ""), copyright_year=request.form.get("copyright_year", ""),
+                read_date=request.form.get("read_date", ""), rating=request.form.get("rating", ""),
+                cover_url=request.form.get("cover_url", ""),
+                summary=request.form.get("summary", request.form.get("plot_summary", "")),
+                read_time_hrs=request.form.get("read_time_hrs", ""))
     db.session.add(book)
     db.session.commit()
     return redirect(url_for("index"))
-
 
 @app.route("/api/search")
 def api_search():
@@ -202,11 +202,15 @@ def api_search():
         results = []
         for d in docs:
             cover_id = d.get("cover_i")
-            results.append({"title": d.get("title", ""), "author": ", ".join(d.get("author_name", [])), "isbn": (d.get("isbn") or [""])[0], "cover_url": f"https://covers.openlibrary.org/b/id/{cover_id}-M.jpg" if cover_id else "", "pages": str(d.get("number_of_pages_median", "")), "copyright_year": str(d.get("first_publish_year", "")), "work_key": d.get("key", "")})
+            results.append({"title": d.get("title", ""), "author": ", ".join(d.get("author_name", [])),
+                            "isbn": (d.get("isbn") or [""])[0],
+                            "cover_url": f"https://covers.openlibrary.org/b/id/{cover_id}-M.jpg" if cover_id else "",
+                            "pages": str(d.get("number_of_pages_median", "")),
+                            "copyright_year": str(d.get("first_publish_year", "")),
+                            "work_key": d.get("key", "")})
         return jsonify(results)
     except Exception:
         return jsonify([])
-
 
 @app.route("/api/summary")
 def api_summary():
@@ -224,31 +228,22 @@ def api_summary():
     except Exception:
         return jsonify({"summary": ""})
 
-
 @app.route("/utilities")
 def utilities():
     return render_template("utilities.html")
 
-
 @app.route("/utilities/export")
 def export_csv():
     books = Book.query.all()
-    fields = ["id","title","author","isbn","format","pages",
-              "copyright_year","read_date","rating","cover_url",
-              "summary","read_time_hrs"]
+    fields = ["id","title","author","isbn","format","pages","copyright_year","read_date","rating","cover_url","summary","read_time_hrs"]
     output = io.StringIO()
     writer = csv.DictWriter(output, fieldnames=fields)
     writer.writeheader()
     for book in books:
         writer.writerow(book.to_dict())
     output.seek(0)
-    return send_file(
-        io.BytesIO(output.getvalue().encode("utf-8")),
-        mimetype="text/csv",
-        as_attachment=True,
-        download_name="my_reading_alcove.csv"
-    )
-
+    return send_file(io.BytesIO(output.getvalue().encode("utf-8")), mimetype="text/csv",
+                     as_attachment=True, download_name="my_reading_alcove.csv")
 
 @app.route("/utilities/import", methods=["POST"])
 def import_csv():
@@ -266,27 +261,16 @@ def import_csv():
             if book_id and db.session.get(Book, book_id):
                 skipped += 1
                 continue
-            existing = Book.query.filter_by(
-                title=row.get("title","").strip(),
-                author=row.get("author","").strip()
-            ).first()
+            existing = Book.query.filter_by(title=row.get("title","").strip(), author=row.get("author","").strip()).first()
             if existing:
                 skipped += 1
                 continue
-            book = Book(
-                id=book_id or str(uuid.uuid4()),
-                title=row.get("title","").strip(),
-                author=row.get("author","").strip(),
-                isbn=row.get("isbn","").strip(),
-                format=row.get("format","Paper").strip(),
-                pages=row.get("pages","").strip(),
-                copyright_year=row.get("copyright_year","").strip(),
-                read_date=row.get("read_date","").strip(),
-                rating=row.get("rating","").strip(),
-                cover_url=row.get("cover_url","").strip(),
-                summary=row.get("summary","").strip(),
-                read_time_hrs=row.get("read_time_hrs","").strip(),
-            )
+            book = Book(id=book_id or str(uuid.uuid4()), title=row.get("title","").strip(),
+                        author=row.get("author","").strip(), isbn=row.get("isbn","").strip(),
+                        format=row.get("format","Paper").strip(), pages=row.get("pages","").strip(),
+                        copyright_year=row.get("copyright_year","").strip(), read_date=row.get("read_date","").strip(),
+                        rating=row.get("rating","").strip(), cover_url=row.get("cover_url","").strip(),
+                        summary=row.get("summary","").strip(), read_time_hrs=row.get("read_time_hrs","").strip())
             db.session.add(book)
             added += 1
         db.session.commit()
@@ -296,16 +280,24 @@ def import_csv():
         flash(f"Import failed: {str(e)}", "error")
     return redirect(url_for("utilities"))
 
+@app.route("/utilities/wipe", methods=["POST"])
+def wipe_library():
+    try:
+        num_deleted = Book.query.delete()
+        db.session.commit()
+        flash(f"Library wiped. {num_deleted} book(s) deleted. You're starting fresh!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Wipe failed: {str(e)}", "error")
+    return redirect(url_for("utilities"))
 
 @app.route("/settings")
 def settings():
     return "Settings page coming soon"
 
-
 @app.route("/help_page")
 def help_page():
     return "Help page coming soon"
-
 
 if __name__ == "__main__":
     init_db()
