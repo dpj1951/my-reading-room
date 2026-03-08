@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --bg: #d8d8d8; --card: #3a3a3a; --border: #4a4a4a; --accent: #3b9eff; --text: #f0ede8; --muted: #8a8795; --radius: 16px; --shadow: 0 6px 20px rgba(0,0,0,0.6); }
+    :root { --bg: #d8d8d8; --card: #3a3a3a; --border: #4a4a4a; --accent: #3b9eff; --danger: #ff4f4f; --danger-hover: #cc0000; --text: #f0ede8; --muted: #8a8795; --radius: 16px; --shadow: 0 6px 20px rgba(0,0,0,0.6); }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
     .brand { text-align: center; margin-bottom: 48px; }
     .brand h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 8vw, 3.2rem); color: var(--accent); letter-spacing: 0.04em; margin-bottom: 8px; }
@@ -19,6 +19,10 @@
     .menu-btn:active { transform: translateY(1px); }
     .menu-btn .icon { display: block; font-size: 2rem; margin-bottom: 8px; }
     .menu-btn .sub { display: block; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: var(--muted); font-weight: 300; margin-top: 4px; letter-spacing: 0.04em; }
+    .menu-btn.danger { border-color: #7a2a2a; background: #2e1a1a; }
+    .menu-btn.danger:hover { border-color: var(--danger); background: #3a1a1a; }
+    .divider { width: 100%; max-width: 360px; border: none; border-top: 1px solid #555; margin: 8px 0; }
+    .section-label { width: 100%; max-width: 360px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: -4px; }
     .back-link { margin-top: 32px; color: var(--muted); font-size: 0.85rem; text-decoration: none; letter-spacing: 0.04em; transition: color 0.15s; }
     .back-link:hover { color: var(--accent); }
     .flash { width: 100%; max-width: 360px; padding: 12px 16px; border-radius: 10px; font-size: 0.9rem; margin-bottom: 20px; text-align: center; }
@@ -27,12 +31,24 @@
     .import-form { width: 100%; }
     .import-btn { position: relative; overflow: hidden; }
     .import-btn input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: #2a2a2a; border: 1px solid #7a2a2a; border-radius: var(--radius); padding: 32px 28px; max-width: 340px; width: 90%; text-align: center; box-shadow: 0 16px 48px rgba(0,0,0,0.8); }
+    .modal .modal-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .modal h2 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--danger); margin-bottom: 12px; }
+    .modal p { font-size: 0.9rem; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+    .modal p strong { color: var(--text); }
+    .modal-actions { display: flex; gap: 12px; }
+    .btn-cancel { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; cursor: pointer; transition: background 0.15s; }
+    .btn-cancel:hover { background: #444; }
+    .btn-wipe { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--danger); background: #5a1a1a; color: #ffaaaa; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .btn-wipe:hover { background: var(--danger-hover); color: #fff; }
   </style>
 </head>
 <body>
   <div class="brand">
     <h1>Utilities</h1>
-    <p>Import &amp; Export your library</p>
+    <p>Import, Export &amp; Manage your library</p>
   </div>
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -42,20 +58,41 @@
     {% endif %}
   {% endwith %}
   <nav class="menu">
+    <p class="section-label">Data</p>
     <a class="menu-btn" href="/utilities/export">
-      <span class="icon">📤</span>
+      <span class="icon">&#x1F4E4;</span>
       Export CSV
       <span class="sub">Download your library as a spreadsheet</span>
     </a>
     <form class="import-form" action="/utilities/import" method="POST" enctype="multipart/form-data">
       <button type="button" class="menu-btn import-btn" onclick="this.querySelector('input[type=file]').click()">
-        <span class="icon">📥</span>
+        <span class="icon">&#x1F4E5;</span>
         Import CSV
         <span class="sub">Upload a CSV file to add books</span>
         <input type="file" name="file" accept=".csv" onchange="this.closest('form').submit()">
       </button>
     </form>
+    <hr class="divider">
+    <p class="section-label">Danger Zone</p>
+    <button type="button" class="menu-btn danger" onclick="document.getElementById('wipeModal').classList.add('active')">
+      <span class="icon">&#x1F5D1;&#xFE0F;</span>
+      Wipe Library
+      <span class="sub">Permanently delete all books and start fresh</span>
+    </button>
   </nav>
   <a class="back-link" href="/">&#8592; Back to Home</a>
+  <div class="modal-overlay" id="wipeModal">
+    <div class="modal">
+      <div class="modal-icon">&#x26A0;&#xFE0F;</div>
+      <h2>Wipe Entire Library?</h2>
+      <p>This will <strong>permanently delete every book</strong> in your library. This cannot be undone.<br><br>Consider exporting a backup first.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="document.getElementById('wipeModal').classList.remove('active')">Cancel</button>
+        <form action="/utilities/wipe" method="POST" style="flex:1">
+          <button type="submit" class="btn-wipe" style="width:100%">Yes, Wipe It</button>
+        </form>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
