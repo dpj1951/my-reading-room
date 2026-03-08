@@ -299,6 +299,64 @@ def settings():
 def help_page():
     return "Help page coming soon"
 
+
+@app.route("/utilities/enrich", methods=["POST"])
+def enrich_csv():
+    file = request.files.get("file")
+    if not file or not file.filename.endswith(".csv"):
+        flash("Please upload a valid .csv file with 'title' and 'author' columns.", "error")
+        return redirect(url_for("utilities"))
+    try:
+        import re
+        stream = io.StringIO(file.stream.read().decode("utf-8"))
+        reader = csv.DictReader(stream)
+        fieldnames_lower = [f.lower().strip() for f in (reader.fieldnames or [])]
+        if "title" not in fieldnames_lower or "author" not in fieldnames_lower:
+            flash("CSV must contain 'title' and 'author' columns.", "error")
+            return redirect(url_for("utilities"))
+        output_fields = ["title","author","isbn","publisher","published_year","pages","genre","summary","cover_url","google_books_id"]
+        results = []
+        for row in reader:
+            row_lower = {k.lower().strip(): v for k, v in row.items()}
+            title  = row_lower.get("title", "").strip()
+            author = row_lower.get("author", "").strip()
+            if not title:
+                continue
+            enriched = {"title": title, "author": author, "isbn": "", "publisher": "", "published_year": "", "pages": "", "genre": "", "summary": "", "cover_url": "", "google_books_id": ""}
+            try:
+                query = f"intitle:{title}"
+                if author:
+                    query += f"+inauthor:{author}"
+                resp = requests.get("https://www.googleapis.com/books/v1/volumes", params={"q": query, "maxResults": 1, "langRestrict": "en"}, timeout=8)
+                resp.raise_for_status()
+                items = resp.json().get("items", [])
+                if items:
+                    item = items[0]
+                    vol  = item.get("volumeInfo", {})
+                    isbns = vol.get("industryIdentifiers", [])
+                    isbn13 = next((x["identifier"] for x in isbns if x["type"] == "ISBN_13"), "")
+                    isbn10 = next((x["identifier"] for x in isbns if x["type"] == "ISBN_10"), "")
+                    pub_date = vol.get("publishedDate", "")
+                    pub_year = pub_date[:4] if pub_date else ""
+                    image_links = vol.get("imageLinks", {})
+                    cover = image_links.get("thumbnail", "") or image_links.get("smallThumbnail", "")
+                    cover = cover.replace("http://", "https://").replace("&zoom=1", "&zoom=2")
+                    raw_desc = vol.get("description", "")
+                    clean_desc = re.sub(r"<[^>]+>", "", raw_desc)
+                    enriched.update({"title": vol.get("title", title), "author": ", ".join(vol.get("authors", [author])), "isbn": isbn13 or isbn10, "publisher": vol.get("publisher", ""), "published_year": pub_year, "pages": str(vol.get("pageCount", "")), "genre": ", ".join(vol.get("categories", [])), "summary": clean_desc[:800], "cover_url": cover, "google_books_id": item.get("id", "")})
+            except Exception:
+                pass
+            results.append(enriched)
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=output_fields)
+        writer.writeheader()
+        writer.writerows(results)
+        output.seek(0)
+        return send_file(io.BytesIO(output.getvalue().encode("utf-8")), mimetype="text/csv", as_attachment=True, download_name="enriched_books.csv")
+    except Exception as e:
+        flash(f"Enrichment failed: {str(e)}", "error")
+        return redirect(url_for("utilities"))
+
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
