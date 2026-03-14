@@ -6,7 +6,6 @@ import csv
 import io
 from datetime import date
 from flask_sqlalchemy import SQLAlchemy
-
 app = Flask(__name__)
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///library.db")
@@ -16,6 +15,7 @@ if DATABASE_URL.startswith("postgres://"):
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
+GOOGLE_BOOKS_API_KEY = os.environ.get("GOOGLE_BOOKS_API_KEY", "")
 
 db = SQLAlchemy(app)
 
@@ -327,7 +327,7 @@ def enrich_csv():
                 query = f"intitle:{title}"
                 if author:
                     query += f"+inauthor:{author}"
-                resp = requests.get("https://www.googleapis.com/books/v1/volumes", params={"q": query, "maxResults": 1, "langRestrict": "en"}, timeout=8)
+                resp = requests.get("https://www.googleapis.com/books/v1/volumes", params={"q": query, "maxResults": 1, "langRestrict": "en", "key": GOOGLE_BOOKS_API_KEY}, timeout=8)
                 resp.raise_for_status()
                 items = resp.json().get("items", [])
                 if items:
