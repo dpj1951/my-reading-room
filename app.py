@@ -358,6 +358,7 @@ def enrich_csv():
             except Exception:
                 pass
             results.append(enriched)
+            time.sleep(0.3)
         output = io.StringIO()
         writer = csv.DictWriter(output, fieldnames=output_fields)
         writer.writeheader()
