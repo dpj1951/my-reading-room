@@ -258,6 +258,7 @@ def import_csv():
             content = raw.decode("utf-8-sig")
         except UnicodeDecodeError:
             content = raw.decode("latin-1")
+        content = content.replace('\r\n', '\n').replace('\r', '\n')
         stream = io.StringIO(content)
         reader = csv.DictReader(stream)
         added = 0
