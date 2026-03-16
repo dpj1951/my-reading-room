@@ -313,7 +313,12 @@ def enrich_csv():
         return redirect(url_for("utilities"))
     try:
         import re
-        stream = io.StringIO(file.stream.read().decode("utf-8"))
+        raw = file.stream.read()
+        try:
+            content = raw.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            content = raw.decode("latin-1")
+        stream = io.StringIO(content)
         reader = csv.DictReader(stream)
         fieldnames_lower = [f.lower().strip() for f in (reader.fieldnames or [])]
         if "title" not in fieldnames_lower or "author" not in fieldnames_lower:
