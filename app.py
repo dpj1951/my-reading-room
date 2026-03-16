@@ -252,7 +252,12 @@ def import_csv():
         flash("Please upload a valid .csv file.", "error")
         return redirect(url_for("utilities"))
     try:
-        stream = io.StringIO(file.stream.read().decode("utf-8"))
+        raw = file.stream.read()
+        try:
+            content = raw.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            content = raw.decode("latin-1")
+        stream = io.StringIO(content)
         reader = csv.DictReader(stream)
         added = 0
         skipped = 0
