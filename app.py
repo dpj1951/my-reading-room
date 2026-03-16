@@ -6,7 +6,7 @@ import csv
 import io
 from datetime import date
 from flask_sqlalchemy import SQLAlchemy
-app = Flask(__name__)
+app = Flask(__name__
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///library.db")
 if DATABASE_URL.startswith("postgres://"):
