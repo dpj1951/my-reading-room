@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Book</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#d8d8d8;--surface:#16161c;--card:#1c1c24;--border:#2a2a36;--accent:#3b9eff;--text:#f0ede8;--muted:#8a8795;--radius:12px}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    nav{position:sticky;top:0;z-index:100;background:rgba(14,14,18,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:12px;height:64px}
+    .nav-back{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:.875rem;text-decoration:none}.nav-back:hover{color:var(--text)}
+    .nav-back svg{width:16px;height:16px}
+    .nav-title{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--text);margin-left:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:500px}
+    .page{max-width:760px;margin:40px auto;padding:0 24px 80px}
+    .page-header{margin-bottom:32px}
+    .page-header h1{font-family:'DM Serif Display',serif;font-size:2rem;color:var(--text);margin-bottom:4px}
+    .page-header p{font-size:.875rem;color:var(--muted)}
+    .form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;margin-bottom:24px}
+    .form-card h2{font-size:.7rem;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    .form-row.single{grid-template-columns:1fr}
+    .form-row.triple{grid-template-columns:1fr 1fr 1fr}
+    .field{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
+    .field:last-child{margin-bottom:0}
+    label{font-size:.72rem;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+    input[type=text],input[type=date],input[type=url],select,textarea{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s;width:100%}
+    input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+    input::placeholder,textarea::placeholder{color:var(--muted)}
+    select{appearance:none;padding-right:32px;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8795' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-color:var(--card)}
+    textarea{resize:vertical;min-height:120px;line-height:1.6}
+    .star-row{display:flex;gap:6px}
+    .star-btn{background:none;border:none;cursor:pointer;font-size:1.8rem;line-height:1;color:var(--border);padding:2px}
+    .star-btn.on{color:#f0c040}
+    .cover-preview{display:flex;gap:16px;align-items:flex-start}
+    .cover-thumb{width:72px;height:104px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex-shrink:0}
+    .no-cover{width:72px;height:104px;background:var(--card);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .no-cover svg{width:28px;height:28px;color:var(--border)}
+    .url-wrap{flex:1;display:flex;flex-direction:column;gap:6px}
+    .actions{display:flex;gap:12px;margin-top:32px}
+    .btn-save{background:var(--accent);color:#0e0e12;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.9rem;padding:12px 28px;border-radius:8px;border:none;cursor:pointer}
+    .btn-save:hover{background:#f0d898}
+    .btn-cancel{background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:500;font-size:.9rem;padding:12px 20px;border-radius:8px;border:1px solid var(--border);text-decoration:none}
+    .btn-cancel:hover{color:var(--text)}
+    @media(max-width:600px){.form-row,.form-row.triple{grid-template-columns:1fr}.form-card{padding:20px}.page{padding:0 16px 60px}}
+  </style>
+</head>
+<body>
+<nav>
+  <a class="nav-back" href="/book/{{ book.id }}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    Back
+  </a>
+  <span class="nav-title">Editing: {{ book.title }}</span>
+</nav>
+<div class="page">
+  <div class="page-header"><h1>Edit Book</h1><p>Update the details for this entry.</p></div>
+  <form method="POST" action="/book/{{ book.id }}/edit">
+    <div class="form-card">
+      <h2>Book Details</h2>
+      <div class="form-row single"><div class="field"><label>Title</label><input type="text" name="title" value="{{ book.title }}" required></div></div>
+      <div class="form-row single"><div class="field"><label>Author</label><input type="text" name="author" value="{{ book.author }}" required></div></div>
+      <div class="form-row triple">
+        <div class="field"><label>Format</label>
+          <select name="format">
+            <option value="Paper" {% if book.format == 'Paper' %}selected{% endif %}>Paper</option>
+            <option value="Ebook" {% if book.format == 'Ebook' %}selected{% endif %}>Ebook</option>
+            <option value="Audiobook" {% if book.format == 'Audiobook' %}selected{% endif %}>Audiobook</option>
+          </select>
+        </div>
+        <div class="field"><label>Pages</label><input type="text" name="pages" value="{{ book.pages }}"></div>
+        <div class="field"><label>Published Year</label><input type="text" name="copyright_year" value="{{ book.copyright_year }}"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>ISBN</label><input type="text" name="isbn" value="{{ book.isbn }}"></div>
+        <div class="field"><label>Read Time (hrs)</label><input type="text" name="read_time_hrs" value="{{ book.read_time_hrs }}"></div>
+      </div>
+    </div>
+    <div class="form-card">
+      <h2>Reading Record</h2>
+      <div class="form-row">
+        <div class="field"><label>Date Read</label><input type="date" name="read_date" value="{{ book.read_date }}" max="{{ today }}"></div>
+        <div class="field"><label>Rating</label>
+          <div class="star-row">
+            <button type="button" class="star-btn" data-v="1" onclick="setRating(1)">&#9733;</button>
+            <button type="button" class="star-btn" data-v="2" onclick="setRating(2)">&#9733;</button>
+            <button type="button" class="star-btn" data-v="3" onclick="setRating(3)">&#9733;</button>
+            <button type="button" class="star-btn" data-v="4" onclick="setRating(4)">&#9733;</button>
+            <button type="button" class="star-btn" data-v="5" onclick="setRating(5)">&#9733;</button>
+            <input type="hidden" id="rating" name="rating" value="{{ book.rating }}">
+          </div>
+        </div>
+      </div>
+      <div class="form-row single"><div class="field"><label>Summary / Notes</label><textarea name="summary">{{ book.summary }}</textarea></div></div>
+    </div>
+    <div class="form-card">
+      <h2>Cover Image</h2>
+      <div class="cover-preview">
+        {% if book.cover_url %}
+          <img id="cover-img" class="cover-thumb" src="{{ book.cover_url }}" alt="Cover">
+          <div id="no-cover" class="no-cover" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+        {% else %}
+          <div id="no-cover" class="no-cover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+        {% endif %}
+        <div class="url-wrap"><label>Cover URL</label><input type="url" name="cover_url" value="{{ book.cover_url }}" oninput="previewCover(this.value)"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="submit" class="btn-save">Save Changes</button>
+      <a class="btn-cancel" href="/book/{{ book.id }}">Cancel</a>
+    </div>
+  </form>
+</div>
+<script>
+  var r = parseInt("{{ book.rating }}") || 0;
+  if (r) setRating(r);
+  function setRating(v) {
+    document.getElementById('rating').value = v;
+    document.querySelectorAll('.star-btn').forEach(function(b){ b.classList.toggle('on', parseInt(b.dataset.v) <= v); });
+  }
+  function previewCover(url) {
+    var img = document.getElementById('cover-img');
+    var nc = document.getElementById('no-cover');
+    if (!url) return;
+    if (!img) { img = document.createElement('img'); img.id='cover-img'; img.className='cover-thumb'; img.alt='Cover'; nc.parentNode.insertBefore(img,nc); }
+    img.style.display='block'; if(nc) nc.style.display='none'; img.src=url;
+  }
+</script>
+</body>
+</html>

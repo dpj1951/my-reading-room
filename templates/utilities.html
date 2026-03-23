@@ -9,16 +9,11 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #d8d8d8; --card: #3a3a3a; --border: #4a4a4a;
-      --accent: #3b9eff; --danger: #ff4f4f; --danger-hover: #cc0000;
-      --text: #f0ede8; --muted: #8a8795; --radius: 16px;
-      --shadow: 0 6px 20px rgba(0,0,0,0.6);
+      --bg: #d8d8d8; --card: #3a3a3a; --border: #4a4a4a; --accent: #3b9eff;
+      --danger: #ff4f4f; --danger-hover: #cc0000; --text: #f0ede8; --muted: #8a8795;
+      --radius: 16px; --shadow: 0 6px 20px rgba(0,0,0,0.6);
     }
-    body {
-      font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text);
-      min-height: 100vh; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; padding: 40px 24px;
-    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
     .brand { text-align: center; margin-bottom: 48px; }
     .brand h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 8vw, 3.2rem); color: var(--accent); letter-spacing: 0.04em; margin-bottom: 8px; }
     .brand p { color: var(--muted); font-size: 0.95rem; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; }
@@ -65,6 +60,7 @@
     <h1>Utilities</h1>
     <p>Import, Export &amp; Manage your library</p>
   </div>
+
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, message in messages %}
@@ -72,49 +68,58 @@
       {% endfor %}
     {% endif %}
   {% endwith %}
+
   <nav class="menu">
     <p class="section-label">Data</p>
     <a class="menu-btn" href="/utilities/export">
-      <span class="icon">📤</span>
-      Export CSV
+      <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span> Export CSV
       <span class="sub">Download your library as a spreadsheet</span>
     </a>
+
     <form class="import-form" action="/utilities/import" method="POST" enctype="multipart/form-data">
-      <button type="button" class="menu-btn import-btn" onclick="submitEnrich()">
-        <span class="icon">📥</span>
-        Import CSV
+      <label class="menu-btn import-btn" for="importFile">
+        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Import CSV
         <span class="sub">Upload a CSV file to add books</span>
-        <input type="file" name="file" accept=".csv" onchange="this.closest('form').submit()">
-      </button>
+        <input type="file" id="importFile" name="file" accept=".csv"
+               style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;"
+               onchange="this.closest('form').submit()">
+      </label>
     </form>
+
     <hr class="divider">
+
     <p class="section-label">Google Books Lookup</p>
-    <form class="import-form" action="/utilities/enrich" method="POST" enctype="multipart/form-data" id="enrichForm">
-      <input type="text" name="api_key" class="api-key-input" placeholder="Paste your Google Books API key first…" autocomplete="off" style="width:100%;padding:12px 16px;margin-bottom:10px;background:#2a2a2a;border:1px solid #555;border-radius:10px;color:#f0ede8;font-size:0.85rem;outline:none;">
-      <button type="button" class="menu-btn import-btn" onclick="this.querySelector('input[type=file]').click()">
-        <span class="icon">🔍</span>
+    <form class="import-form" action="/utilities/enrich" method="POST" enctype="multipart/form-data">
+      <label class="menu-btn import-btn" for="enrichFile">
+        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
         Enrich from Google Books
         <span class="sub">Upload a CSV with title &amp; author — download back full book data</span>
-        <input type="file" name="file" accept=".csv" id="enrichFileInput">
-      </button>
+        <input type="file" id="enrichFile" name="file" accept=".csv"
+               style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;"
+               onchange="document.getElementById('spinnerOverlay').classList.add('active'); this.closest('form').submit()">
+      </label>
     </form>
+
     <hr class="divider">
-    <p class="section-label">Danger Zone</p>
+
+    <p class="section-label" style="color:#ff4f4f;font-weight:700;">Danger Zone</p>
     <button type="button" class="menu-btn danger" onclick="document.getElementById('wipeModal').classList.add('active')">
-      <span class="icon">🗑️</span>
-      Wipe Library
+      <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span> Wipe Library
       <span class="sub">Permanently delete all books and start fresh</span>
     </button>
   </nav>
+
   <a class="back-link" href="/">&#8592; Back to Home</a>
+
   <div class="spinner-overlay" id="spinnerOverlay">
     <div class="spinner"></div>
     <p>Looking up books…</p>
     <small>This may take a moment for large lists</small>
   </div>
+
   <div class="modal-overlay" id="wipeModal">
     <div class="modal">
-      <div class="modal-icon">⚠️</div>
+      <div class="modal-icon">&#9888;&#65039;</div>
       <h2>Wipe Entire Library?</h2>
       <p>This will <strong>permanently delete every book</strong> in your library. This cannot be undone.<br><br>Consider exporting a backup first.</p>
       <div class="modal-actions">
