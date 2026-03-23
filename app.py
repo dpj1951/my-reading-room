@@ -103,23 +103,39 @@ def books():
     return render_template("books.html", books=library, query=query, sort=sort)
 
 # ── ADD BOOK (page) ──
-@app.route("/add-book")
-def add_book():
-    return render_template("add_book.html")
+@app.route("/add")
+def add_choice():
+    return render_template("add_choice.html")
 
-# ── ADD BOOK (form submit) ──
-@app.route("/add", methods=["POST"])
-def add():
-    library = load_library()
-    library.append({
-        "title":  request.form.get("title", "").strip(),
-        "author": request.form.get("author", "").strip(),
-        "isbn":   request.form.get("isbn",  "").strip(),
-        "year":   request.form.get("year",  "").strip(),
-        "series": request.form.get("series","").strip(),
-        "status": request.form.get("status","To Read"),
-    })
-    save_library(library)
+# ── ADD: SCANNER ──
+@app.route("/add/scan")
+def add_scan():
+    return render_template("scan.html")
+
+# ── ADD: MANUAL FORM ──
+@app.route("/add/manual")
+def add_manual():
+    isbn_prefill = request.args.get("isbn", "")
+    return render_template("add.html", isbn_prefill=isbn_prefill)
+
+# ── ADD: SAVE (form submit) ──
+@app.route("/add/manual/save", methods=["POST"])
+def add_manual_save():
+    new_book = Book(
+        title         = request.form.get("title", "").strip(),
+        author        = request.form.get("author", "").strip(),
+        isbn          = request.form.get("isbn", "").strip(),
+        copyright_year= request.form.get("copyright_year", "").strip(),
+        pages         = request.form.get("pages", "").strip() or None,
+        read_date     = request.form.get("read_date") or None,
+        format        = request.form.get("format", "Paper"),
+        read_time_hrs = request.form.get("read_time_hrs") or None,
+        plot_summary  = request.form.get("plot_summary", "").strip(),
+        cover_url     = request.form.get("cover_url", "").strip(),
+        rating        = request.form.get("rating") or None,
+    )
+    db.session.add(new_book)
+    db.session.commit()
     return redirect(url_for("books"))
 
 # ── REMOVE ──
