@@ -37,7 +37,7 @@ class Book(db.Model):
     rating = db.Column(db.String(5), default="")
     cover_url = db.Column(db.String(500), default="")
     summary = db.Column(db.Text, default="")
-    read_time_hrs = db.Column(db.String(10), default="")
+    read_time_hrs = db.Column(db.String(10), defalt="")
 
     def to_dict(self):
         return {"id": self.id, "title": self.title, "author": self.author, "isbn": self.isbn,
