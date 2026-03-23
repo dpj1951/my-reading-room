@@ -10,6 +10,7 @@ from datetime import date
 from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.jinja_env.filters['enumerate'] = enumerate
+LIBRARY_FILE = "library.json"
 
 def load_library():
     if os.path.exists(LIBRARY_FILE):
