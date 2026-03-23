@@ -130,5 +130,14 @@
       </div>
     </div>
   </div>
+  <script>
+    function submitEnrich() {
+      var k = document.querySelector('#enrichForm input[name="api_key"]').value.trim();
+      if (!k) { alert('Please paste your Google Books API key first.'); return; }
+      var fi = document.getElementById('enrichFileInput');
+      fi.onchange = function() { if (fi.files.length > 0) { document.getElementById('spinnerOverlay').classList.add('active'); document.getElementById('enrichForm').submit(); } };
+      fi.click();
+    }
+  </script>
 </body>
 </html>

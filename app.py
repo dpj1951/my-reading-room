@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, send_file
+from flask import Flask, render_template, request, redirect, url_for
+import json
 import os
 import uuid
 import requests
@@ -8,10 +9,13 @@ import io
 from datetime import date
 from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
+app.jinja_env.filters['enumerate'] = enumerate
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///library.db")
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+def load_library():
+    if os.path.exists(LIBRARY_FILE):
+        with open(LIBRARY_FILE, "r") as f:
+            return json.load(f)
+    return []
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -79,156 +83,73 @@ def ensure_db():
         init_db()
         app._db_initialized = True
 
+# ── HOME ──
 @app.route("/")
-def home():
-    return render_template("home.html")
-
-@app.route("/books")
 def index():
-    query = request.args.get("q", "").strip().lower()
-    fmt = request.args.get("format", "").strip()
-    sort = request.args.get("sort", "date_desc")
-    q = Book.query
+    return render_template("index.html")
+
+# ── BOOKS ──
+@app.route("/books")
+def books():
+    library = load_library()
+    query = request.args.get("q", "").lower()
+    sort  = request.args.get("sort", "author")
     if query:
-        q = q.filter(db.or_(Book.title.ilike(f"%{query}%"), Book.author.ilike(f"%{query}%")))
-    if fmt:
-        q = q.filter(Book.format == fmt)
-    books = q.all()
-    def sort_key(b):
-        if sort == "author": return b.author.lower()
-        if sort == "title":
-            t = b.title.lower()
-            for art in ("the ", "a ", "an "):
-                if t.startswith(art): t = t[len(art):]
-            return t
-        return b.read_date or "0000-00-00"
-    books = sorted(books, key=sort_key, reverse=(sort == "date_desc"))
-    books = [b.to_dict() for b in books]
-    return render_template("index.html", books=books, query=query, selected_format=fmt, sort=sort, today=date.today().isoformat())
+        library = [b for b in library if query in b["title"].lower() or query in b["author"].lower()]
+    if sort == "title":
+        library = sorted(library, key=lambda b: b["title"].lower())
+    else:
+        library = sorted(library, key=lambda b: b["author"].lower())
+    return render_template("books.html", books=library, query=query, sort=sort)
 
-@app.route("/book/<book_id>")
-def book_detail(book_id):
-    book = Book.query.get_or_404(book_id)
-    return render_template("detail.html", book=book.to_dict(), today=date.today().isoformat())
+# ── ADD BOOK (page) ──
+@app.route("/add-book")
+def add_book():
+    return render_template("add_book.html")
 
-@app.route("/book/<book_id>/edit", methods=["GET"])
-def edit_book(book_id):
-    book = Book.query.get_or_404(book_id)
-    return render_template("edit.html", book=book.to_dict(), today=date.today().isoformat())
+# ── ADD BOOK (form submit) ──
+@app.route("/add", methods=["POST"])
+def add():
+    library = load_library()
+    library.append({
+        "title":  request.form.get("title", "").strip(),
+        "author": request.form.get("author", "").strip(),
+        "isbn":   request.form.get("isbn",  "").strip(),
+        "year":   request.form.get("year",  "").strip(),
+        "series": request.form.get("series","").strip(),
+        "status": request.form.get("status","To Read"),
+    })
+    save_library(library)
+    return redirect(url_for("books"))
 
-@app.route("/book/<book_id>/edit", methods=["POST"])
-def edit_book_save(book_id):
-    book = Book.query.get_or_404(book_id)
-    book.title = request.form.get("title", book.title)
-    book.author = request.form.get("author", book.author)
-    book.isbn = request.form.get("isbn", "")
-    book.format = request.form.get("format", "Paper")
-    book.pages = request.form.get("pages", "")
-    book.copyright_year = request.form.get("copyright_year", "")
-    book.read_date = request.form.get("read_date", "")
-    book.rating = request.form.get("rating", "")
-    book.cover_url = request.form.get("cover_url", "")
-    book.summary = request.form.get("summary", "")
-    book.read_time_hrs = request.form.get("read_time_hrs", "")
-    db.session.commit()
-    return redirect(url_for("book_detail", book_id=book_id))
+# ── REMOVE ──
+@app.route("/remove/<int:index>")
+def remove(index):
+    library = load_library()
+    library.pop(index)
+    save_library(library)
+    return redirect(url_for("books"))
 
-@app.route("/book/<book_id>/delete", methods=["POST"])
-def delete_book(book_id):
-    book = Book.query.get_or_404(book_id)
-    db.session.delete(book)
-    db.session.commit()
-    return redirect(url_for("index"))
+# ── UPDATE STATUS ──
+@app.route("/status/<int:index>/<status>")
+def update_status(index, status):
+    library = load_library()
+    library[index]["status"] = status
+    save_library(library)
+    return redirect(url_for("books"))
 
-@app.route("/add")
-def add_choice():
-    return render_template("add_choice.html")
-
-@app.route("/add/manual")
-def add_manual():
-    return render_template("add.html", today=date.today().isoformat())
-
-@app.route("/add/scan")
-def add_scan():
-    return render_template("scan.html")
-
+# ── AUTHORS ──
 @app.route("/authors")
 def authors():
-    from collections import defaultdict, OrderedDict
-    books = Book.query.all()
-    def author_sort_key(name):
-        parts = name.strip().rsplit(" ", 1)
-        return (parts[-1].lower(), parts[0].lower()) if len(parts) == 2 else (name.lower(), "")
-    def display_name(name):
-        parts = name.strip().rsplit(" ", 1)
-        return f"{parts[1]}, {parts[0]}" if len(parts) == 2 else name
-    by_author = defaultdict(list)
-    for book in books:
-        by_author[book.author or "Unknown"].append(book.to_dict())
-    sorted_authors = sorted(by_author.keys(), key=author_sort_key)
-    grouped = OrderedDict()
-    for author in sorted_authors:
-        parts = author.strip().rsplit(" ", 1)
-        last = parts[-1] if parts else author
-        letter = last[0].upper() if last and last[0].isalpha() else "#"
-        if letter not in grouped:
-            grouped[letter] = []
-        grouped[letter].append((display_name(author), by_author[author]))
-    return render_template("authors.html", grouped_authors=grouped, author_count=len(by_author), total_books=len(books))
+    library = load_library()
+    author_map = {}
+    for book in library:
+        a = book["author"]
+        author_map.setdefault(a, []).append(book)
+    authors_sorted = sorted(author_map.items(), key=lambda x: x[0].lower())
+    return render_template("authors.html", authors=authors_sorted)
 
-@app.route("/add/manual/save", methods=["POST"])
-def add_manual_save():
-    book = Book(title=request.form.get("title", ""), author=request.form.get("author", ""),
-                isbn=request.form.get("isbn", ""), format=request.form.get("format", "Paper"),
-                pages=request.form.get("pages", ""), copyright_year=request.form.get("copyright_year", ""),
-                read_date=request.form.get("read_date", ""), rating=request.form.get("rating", ""),
-                cover_url=request.form.get("cover_url", ""),
-                summary=request.form.get("summary", request.form.get("plot_summary", "")),
-                read_time_hrs=request.form.get("read_time_hrs", ""))
-    db.session.add(book)
-    db.session.commit()
-    return redirect(url_for("index"))
-
-@app.route("/api/search")
-def api_search():
-    q = request.args.get("q", "").strip()
-    field = request.args.get("field", "q")
-    if not q:
-        return jsonify([])
-    params = {field: q, "limit": 10, "fields": "title,author_name,isbn,cover_i,first_publish_year,key,number_of_pages_median"}
-    try:
-        r = requests.get("https://openlibrary.org/search.json", params=params, timeout=6)
-        r.raise_for_status()
-        docs = r.json().get("docs", [])
-        results = []
-        for d in docs:
-            cover_id = d.get("cover_i")
-            results.append({"title": d.get("title", ""), "author": ", ".join(d.get("author_name", [])),
-                            "isbn": (d.get("isbn") or [""])[0],
-                            "cover_url": f"https://covers.openlibrary.org/b/id/{cover_id}-M.jpg" if cover_id else "",
-                            "pages": str(d.get("number_of_pages_median", "")),
-                            "copyright_year": str(d.get("first_publish_year", "")),
-                            "work_key": d.get("key", "")})
-        return jsonify(results)
-    except Exception:
-        return jsonify([])
-
-@app.route("/api/summary")
-def api_summary():
-    work_key = request.args.get("key", "").strip()
-    if not work_key:
-        return jsonify({"summary": ""})
-    try:
-        r = requests.get(f"https://openlibrary.org{work_key}.json", timeout=6)
-        r.raise_for_status()
-        data = r.json()
-        desc = data.get("description", "")
-        if isinstance(desc, dict):
-            desc = desc.get("value", "")
-        return jsonify({"summary": desc[:600]})
-    except Exception:
-        return jsonify({"summary": ""})
-
+# ── UTILITIES ──
 @app.route("/utilities")
 def utilities():
     return render_template("utilities.html")
@@ -300,12 +221,7 @@ def wipe_library():
 
 @app.route("/settings")
 def settings():
-    return "Settings page coming soon"
-
-@app.route("/help_page")
-def help_page():
-    return "Help page coming soon"
-
+    return render_template("settings.html")
 
 @app.route("/utilities/enrich", methods=["POST"])
 def enrich_csv():
@@ -372,5 +288,4 @@ def enrich_csv():
         return redirect(url_for("utilities"))
 
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)
