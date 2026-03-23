@@ -11,6 +11,9 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.jinja_env.filters['enumerate'] = enumerate
 LIBRARY_FILE = "library.json"
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///library.db")
+if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 def load_library():
     if os.path.exists(LIBRARY_FILE):
