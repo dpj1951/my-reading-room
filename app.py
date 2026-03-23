@@ -115,26 +115,24 @@ def add_scan():
 # ── ADD: MANUAL FORM ──
 @app.route("/add/manual")
 def add_manual():
-    isbn_prefill = request.args.get("isbn", "")
-    return render_template("add.html", isbn_prefill=isbn_prefill)
+    return render_template("add.html", isbn_prefill=request.args.get("isbn", ""))
 
-# ── ADD: SAVE (form submit) ──
+# ── ADD: SAVE ──
 @app.route("/add/manual/save", methods=["POST"])
 def add_manual_save():
-    new_book = Book(
-        title         = request.form.get("title", "").strip(),
-        author        = request.form.get("author", "").strip(),
-        isbn          = request.form.get("isbn", "").strip(),
-        copyright_year= request.form.get("copyright_year", "").strip(),
-        pages         = request.form.get("pages", "").strip() or None,
-        read_date     = request.form.get("read_date") or None,
-        format        = request.form.get("format", "Paper"),
-        read_time_hrs = request.form.get("read_time_hrs") or None,
-        plot_summary  = request.form.get("plot_summary", "").strip(),
-        cover_url     = request.form.get("cover_url", "").strip(),
-        rating        = request.form.get("rating") or None,
-    )
-    db.session.add(new_book)
+    db.session.add(Book(
+        title          = request.form.get("title", "").strip(),
+        author         = request.form.get("author", "").strip(),
+        isbn           = request.form.get("isbn", "").strip(),
+        copyright_year = request.form.get("copyright_year", "").strip(),
+        pages          = request.form.get("pages", "").strip() or None,
+        read_date      = request.form.get("read_date") or None,
+        format         = request.form.get("format", "Paper"),
+        read_time_hrs  = request.form.get("read_time_hrs") or None,
+        summary        = request.form.get("plot_summary", "").strip(),
+        cover_url      = request.form.get("cover_url", "").strip(),
+        rating         = request.form.get("rating") or None,
+    ))
     db.session.commit()
     return redirect(url_for("books"))
 
