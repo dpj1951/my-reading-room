@@ -19,12 +19,12 @@ def save_library(library):
 # ── HOME ──
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("home.html")
 
 # ── BOOKS ──
 @app.route("/books")
 def books():
-    library = load_library()
+    library = [b.to_dict() for b in Book.query.all()]
     query = request.args.get("q", "").lower()
     sort  = request.args.get("sort", "author")
     if query:
@@ -74,7 +74,7 @@ def update_status(index, status):
 # ── AUTHORS ──
 @app.route("/authors")
 def authors():
-    library = load_library()
+    library = [b.to_dict() for b in Book.query.all()]
     author_map = {}
     for book in library:
         a = book["author"]
