@@ -6,7 +6,6 @@
   <title>Scan a Book – My Reading Alcove</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"><\/script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -438,6 +437,7 @@ $btnAdd.addEventListener('click', () => {
   document.getElementById('f-summary').value  = bookData.summary || '';
   document.getElementById('submit-form').submit();
 });
-<\/script>
-</body>
+
+  <\/script>
+<script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>    </body>
   </html>
