@@ -24,7 +24,7 @@ def index():
 # ── BOOKS ──
 @app.route("/books")
 def books():
-    library = [b.to_dict() for b in Book.query.all()]
+    library = [b.to_dict() for b in Book.query.order_by(Book.author).all()]
     query = request.args.get("q", "").lower()
     sort  = request.args.get("sort", "author")
     if query:
@@ -74,7 +74,7 @@ def update_status(index, status):
 # ── AUTHORS ──
 @app.route("/authors")
 def authors():
-    library = [b.to_dict() for b in Book.query.all()]
+    library = [b.to_dict() for b in Book.query.order_by(Book.author).all()]
     author_map = {}
     for book in library:
         a = book["author"]
