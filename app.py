@@ -19,7 +19,7 @@ def save_library(library):
 # ── HOME ──
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("home.html")
 
 # ── BOOKS ──
 @app.route("/books")
