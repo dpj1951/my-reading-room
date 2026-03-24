@@ -4,440 +4,315 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Scan a Book – My Reading Alcove</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #b0b0b0; --card: #3a3a3a; --border: #4a4a4a; --accent: #2a6b6b;
-      --text: #f0ede8; --muted: #8a8795; --radius: 16px;
-      --shadow: 0 6px 20px rgba(0,0,0,0.6);
-      --success: #2a7a4a; --danger: #c0392b;
+      --bg: #1a1a2e; --card: #16213e; --border: #0f3460;
+      --accent: #e94560; --text: #eaeaea; --muted: #a0a0b0;
+      --radius: 16px; --shadow: 0 6px 24px rgba(0,0,0,0.5);
     }
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 0 0 4rem;
-    }
-    .back-link {
-      display: inline-flex; align-items: center; gap: 6px;
-      color: var(--muted); text-decoration: none; font-size: 0.9rem;
-      padding: 1rem 1.25rem; transition: color 0.15s;
-    }
-    .back-link:hover { color: var(--text); }
-    .page-header { padding: 1rem 1.5rem 1.5rem; text-align: center; }
-    .page-header h1 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 2rem; font-weight: 400; margin-bottom: 0.4rem;
-    }
-    .page-header p { color: var(--muted); font-size: 0.9rem; }
-    .container { max-width: 480px; margin: 0 auto; padding: 0 1.25rem; }
-    .scanner-card {
-      background: var(--card); border: 1px solid var(--border);
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh; padding: 0 0 4rem; }
+    .back { display: inline-flex; align-items: center; gap: 6px; color: var(--muted);
+      text-decoration: none; font-size: 0.9rem; padding: 1rem 1.25rem; }
+    .header { padding: 0.5rem 1.5rem 1.5rem; text-align: center; }
+    .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+    .header p { color: var(--muted); font-size: 0.88rem; }
+    .wrap { max-width: 480px; margin: 0 auto; padding: 0 1.25rem; }
+    .card { background: var(--card); border: 1px solid var(--border);
       border-radius: var(--radius); overflow: hidden; margin-bottom: 1.25rem;
-      box-shadow: var(--shadow);
-    }
-    #viewfinder-wrap { position: relative; width: 100%; background: #000; display: none; }
-    #viewfinder-wrap video { width: 100%; display: block; max-height: 320px; object-fit: cover; }
-    .reticle {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      pointer-events: none;
-    }
-    .reticle-box {
-      width: 72%; height: 90px;
-      border: 2.5px solid rgba(255,255,255,0.85); border-radius: 6px;
-      box-shadow: 0 0 0 9999px rgba(0,0,0,0.45);
-      position: relative;
-    }
-    .reticle-box::after {
-      content: ''; position: absolute;
-      left: 4px; right: 4px; top: 0; height: 2px;
-      background: #4fc3f7; border-radius: 2px;
-      animation: scan 1.8s ease-in-out infinite;
-    }
-    @keyframes scan {
-      0%   { top: 6px; }
-      50%  { top: calc(100% - 8px); }
-      100% { top: 6px; }
-    }
-    .reticle-label {
-      position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%);
-      white-space: nowrap; color: rgba(255,255,255,0.8); font-size: 0.78rem;
-    }
-    #start-prompt { padding: 2.5rem 1.5rem; text-align: center; }
-    .camera-icon { font-size: 3.5rem; display: block; margin-bottom: 1rem; }
-    #start-prompt p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.5; }
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-      padding: 0.75rem 1.75rem; border-radius: 8px; border: none;
-      font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500;
-      cursor: pointer; transition: opacity 0.15s, transform 0.1s; text-decoration: none; width: 100%;
-    }
-    .btn:active { transform: scale(0.97); }
-    .btn-primary { background: var(--accent); color: var(--text); }
-    .btn-primary:hover { opacity: 0.88; }
-    .btn-ghost {
-      background: transparent; border: 1.5px solid var(--border);
-      color: var(--text);
-    }
-    .btn-ghost:hover { background: rgba(255,255,255,0.07); }
-    .btn-success { background: var(--success); color: #fff; }
-    #scan-controls { padding: 1rem 1.25rem; display: none; flex-direction: column; gap: 0.75rem; }
-    #status-msg {
-      padding: 0.7rem 1rem; border-radius: 8px;
-      font-size: 0.88rem; text-align: center; display: none;
-    }
-    #status-msg.info    { background: rgba(42,107,107,0.25); color: #a0d4d4; }
-    #status-msg.error   { background: rgba(192,57,43,0.25);  color: #f1948a; }
-    #status-msg.success { background: rgba(42,122,74,0.25);  color: #82e0aa; }
-    #result-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 1.25rem;
-      display: none; box-shadow: var(--shadow);
-    }
-    .result-inner { display: flex; gap: 1rem; margin-bottom: 1.25rem; }
-    .result-cover {
-      flex-shrink: 0; width: 70px; height: 100px;
-      object-fit: cover; border-radius: 4px; border: 1px solid var(--border);
-    }
-    .result-cover-ph {
-      width: 70px; height: 100px; border-radius: 4px;
-      border: 1px solid var(--border); background: rgba(255,255,255,0.05);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.8rem; flex-shrink: 0;
-    }
-    .result-meta { flex: 1; min-width: 0; }
-    .result-title {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.1rem; line-height: 1.3; margin-bottom: 0.3rem;
-    }
-    .result-author { color: var(--muted); font-size: 0.88rem; margin-bottom: 0.5rem; }
-    .result-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-    .badge {
-      background: rgba(255,255,255,0.1); color: var(--muted);
-      font-size: 0.75rem; padding: 0.2rem 0.55rem; border-radius: 20px;
-    }
-    .format-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-    .format-btn {
-      flex: 1; padding: 0.55rem 0; border-radius: 8px;
-      border: 1.5px solid var(--border); background: transparent;
-      font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
-      cursor: pointer; transition: all 0.15s; text-align: center; color: var(--text);
-    }
-    .format-btn.active {
-      border-color: var(--accent); background: rgba(42,107,107,0.25);
-      color: #a0d4d4; font-weight: 600;
-    }
-    .date-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
-    .date-row label { font-size: 0.88rem; color: var(--muted); white-space: nowrap; }
-    .date-row input[type=date] {
-      flex: 1; padding: 0.5rem 0.75rem;
-      border: 1.5px solid var(--border); border-radius: 8px;
-      font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
-      background: rgba(255,255,255,0.07); color: var(--text);
-    }
-    .result-actions { display: flex; flex-direction: column; gap: 0.65rem; }
-    .manual-fallback { text-align: center; padding: 1rem 0 0; }
-    .manual-fallback p { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.5rem; }
-    .spinner {
-      display: inline-block; width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
-      border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle;
-    }
+      box-shadow: var(--shadow); }
+    .prompt { padding: 2.5rem 1.5rem; text-align: center; }
+    .icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
+    .prompt p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.5; }
+    .btn { display: inline-flex; align-items: center; justify-content: center;
+      gap: 0.5rem; padding: 0.8rem 1.75rem; border-radius: 10px; border: none;
+      font-family: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer;
+      transition: opacity 0.15s; width: 100%; text-decoration: none; }
+    .btn:active { opacity: 0.8; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-ghost { background: transparent; border: 1.5px solid var(--border); color: var(--text); margin-top: 0.65rem; }
+    .btn-success { background: #2a7a4a; color: #fff; }
+    #viewfinder-wrap { display: none; position: relative; width: 100%; background: #000; }
+    #viewfinder-wrap video { width: 100%; display: block; max-height: 300px; object-fit: cover; }
+    .reticle { position: absolute; inset: 0; display: flex; align-items: center;
+      justify-content: center; pointer-events: none; }
+    .reticle-box { width: 72%; height: 80px; border: 2px solid rgba(255,255,255,0.9);
+      border-radius: 6px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.4); }
+    #controls { display: none; padding: 0.75rem 1rem; flex-direction: column; gap: 0.6rem; }
+    #status { padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.85rem;
+      text-align: center; display: none; }
+    #status.info { background: rgba(233,69,96,0.15); color: #f48fb1; }
+    #status.error { background: rgba(192,57,43,0.2); color: #f1948a; }
+    #status.success { background: rgba(42,122,74,0.2); color: #82e0aa; }
+    #result { display: none; padding: 1.25rem; }
+    .r-inner { display: flex; gap: 1rem; margin-bottom: 1rem; }
+    .r-cover { width: 65px; height: 95px; object-fit: cover; border-radius: 4px;
+      border: 1px solid var(--border); flex-shrink: 0; }
+    .r-ph { width: 65px; height: 95px; border-radius: 4px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05); display: flex; align-items: center;
+      justify-content: center; font-size: 1.8rem; flex-shrink: 0; }
+    .r-meta { flex: 1; min-width: 0; }
+    .r-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.3rem; line-height: 1.3; }
+    .r-author { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.5rem; }
+    .badges { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .badge { background: rgba(255,255,255,0.08); color: var(--muted);
+      font-size: 0.73rem; padding: 0.18rem 0.5rem; border-radius: 20px; }
+    .formats { display: flex; gap: 0.5rem; margin-bottom: 0.9rem; }
+    .fmt { flex: 1; padding: 0.5rem; border-radius: 8px; border: 1.5px solid var(--border);
+      background: transparent; font-family: inherit; font-size: 0.8rem; cursor: pointer;
+      color: var(--text); text-align: center; }
+    .fmt.on { border-color: var(--accent); background: rgba(233,69,96,0.15); color: #f48fb1; font-weight: 600; }
+    .date-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.9rem; }
+    .date-row label { font-size: 0.85rem; color: var(--muted); white-space: nowrap; }
+    .date-row input { flex: 1; padding: 0.5rem 0.75rem; border: 1.5px solid var(--border);
+      border-radius: 8px; font-family: inherit; font-size: 0.88rem;
+      background: rgba(255,255,255,0.05); color: var(--text); }
+    .actions { display: flex; flex-direction: column; gap: 0.6rem; }
+    .manual-note { text-align: center; padding: 0.75rem 0 0; }
+    .manual-note p { font-size: 0.83rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    #submit-form { display: none; }
-    .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+    #sub-form { display: none; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 0.75rem 0; }
   </style>
 </head>
 <body>
-
-  <a class="back-link" href="/add">← Back</a>
-
-  <div class="page-header">
+  <a class="back" href="/add">← Back</a>
+  <div class="header">
     <h1>📷 Scan a Book</h1>
     <p>Point your camera at the barcode on the back cover</p>
   </div>
-
-  <div class="container">
-
-    <!-- Scanner card -->
-    <div class="scanner-card">
-      <div id="start-prompt">
-        <span class="camera-icon">📚</span>
+  <div class="wrap">
+    <div class="card">
+      <div class="prompt" id="prompt">
+        <span class="icon">📚</span>
         <p>Tap the button below, then point your camera at the book's ISBN barcode.</p>
         <button class="btn btn-primary" id="btn-start">📷 Start Camera</button>
       </div>
-
       <div id="viewfinder-wrap">
-        <video id="preview" autoplay playsinline muted></video>
-        <div class="reticle">
-          <div class="reticle-box">
-            <span class="reticle-label">Align barcode here</span>
-          </div>
-        </div>
+        <video id="vid" autoplay playsinline muted></video>
+        <div class="reticle"><div class="reticle-box"></div></div>
       </div>
-
-      <div id="scan-controls">
-        <div id="status-msg"></div>
+      <div id="controls">
+        <div id="status"></div>
         <button class="btn btn-ghost" id="btn-stop">✕ Cancel</button>
       </div>
     </div>
 
-    <!-- Result card (shown after scan + lookup) -->
-    <div id="result-card">
-      <div class="result-inner">
-        <img id="r-cover" class="result-cover" src="" alt="Cover" style="display:none" />
-        <div id="r-cover-ph" class="result-cover-ph">📖</div>
-        <div class="result-meta">
-          <div id="r-title" class="result-title">—</div>
-          <div id="r-author" class="result-author">—</div>
-          <div class="result-badges">
-            <span id="r-year"  class="badge" style="display:none"></span>
+    <div class="card" id="result" style="display:none">
+      <div class="r-inner">
+        <img id="r-cover" class="r-cover" src="" alt="" style="display:none">
+        <div id="r-ph" class="r-ph">📖</div>
+        <div class="r-meta">
+          <div id="r-title" class="r-title">—</div>
+          <div id="r-author" class="r-author">—</div>
+          <div class="badges">
+            <span id="r-year" class="badge" style="display:none"></span>
             <span id="r-pages" class="badge" style="display:none"></span>
-            <span id="r-isbn"  class="badge" style="display:none"></span>
+            <span id="r-isbn" class="badge" style="display:none"></span>
           </div>
         </div>
       </div>
-
-      <div class="format-row">
-        <button class="format-btn active" data-format="Paper">📖 Paper</button>
-        <button class="format-btn"        data-format="Ebook">📱 Ebook</button>
-        <button class="format-btn"        data-format="Audiobook">🎧 Audio</button>
+      <div class="formats">
+        <button class="fmt on" data-f="Paper">📖 Paper</button>
+        <button class="fmt" data-f="Ebook">📱 Ebook</button>
+        <button class="fmt" data-f="Audiobook">🎧 Audio</button>
       </div>
-
       <div class="date-row">
-        <label for="r-date">Date read</label>
-        <input type="date" id="r-date" />
+        <label>Date read</label>
+        <input type="date" id="r-date">
       </div>
-
-      <div class="result-actions">
+      <div class="actions">
         <button class="btn btn-success" id="btn-add">✓ Add to My Library</button>
-        <button class="btn btn-ghost"   id="btn-scan-again">🔄 Scan a Different Book</button>
+        <button class="btn btn-ghost" id="btn-again">🔄 Scan Another</button>
       </div>
     </div>
 
     <hr class="divider">
-
-    <div class="manual-fallback">
+    <div class="manual-note">
       <p>Can't scan? No problem.</p>
       <a href="/add/manual" class="btn btn-ghost" style="width:auto;padding:0.6rem 1.4rem;display:inline-flex;">✏️ Add Manually</a>
     </div>
-
   </div>
 
-  <!-- Hidden POST form -->
-  <form id="submit-form" method="POST" action="/add/manual/save">
-    <input type="hidden" name="title"          id="f-title" />
-    <input type="hidden" name="author"         id="f-author" />
-    <input type="hidden" name="isbn"           id="f-isbn" />
-    <input type="hidden" name="copyright_year" id="f-year" />
-    <input type="hidden" name="pages"          id="f-pages" />
-    <input type="hidden" name="read_date"      id="f-readdate" />
-    <input type="hidden" name="format"         id="f-format" value="Paper" />
-    <input type="hidden" name="cover_url"      id="f-cover" />
-    <input type="hidden" name="plot_summary"   id="f-summary" />
-    <input type="hidden" name="rating"         id="f-rating" value="" />
-    <input type="hidden" name="read_time_hrs"  id="f-runtime" value="" />
+  <form id="sub-form" method="POST" action="/add/manual/save">
+    <input type="hidden" name="title" id="f-title">
+    <input type="hidden" name="author" id="f-author">
+    <input type="hidden" name="isbn" id="f-isbn">
+    <input type="hidden" name="copyright_year" id="f-year">
+    <input type="hidden" name="pages" id="f-pages">
+    <input type="hidden" name="read_date" id="f-date">
+    <input type="hidden" name="format" id="f-format" value="Paper">
+    <input type="hidden" name="cover_url" id="f-cover">
+    <input type="hidden" name="plot_summary" id="f-summary">
+    <input type="hidden" name="rating" id="f-rating" value="">
+    <input type="hidden" name="read_time_hrs" id="f-hrs" value="">
   </form>
 
-<script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
-<script>
-// ── State ──
-let codeReader = null, scanning = false, bookData = {}, selectedFormat = 'Paper';
-const today = new Date().toISOString().split('T')[0];
+  <script>
+    const today = new Date().toISOString().split('T')[0];
+    let book = {}, fmt = 'Paper', stream = null, scanning = false, scanTimer = null;
+    document.getElementById('r-date').value = today;
 
-// ── Refs ──
-const $startPrompt    = document.getElementById('start-prompt');
-const $viewfinder     = document.getElementById('viewfinder-wrap');
-const $preview        = document.getElementById('preview');
-const $scanControls   = document.getElementById('scan-controls');
-const $statusMsg      = document.getElementById('status-msg');
-const $resultCard     = document.getElementById('result-card');
-const $btnStart       = document.getElementById('btn-start');
-const $btnStop        = document.getElementById('btn-stop');
-const $btnAdd         = document.getElementById('btn-add');
-const $btnScanAgain   = document.getElementById('btn-scan-again');
-const $rTitle         = document.getElementById('r-title');
-const $rAuthor        = document.getElementById('r-author');
-const $rCover         = document.getElementById('r-cover');
-const $rCoverPh       = document.getElementById('r-cover-ph');
-const $rYear          = document.getElementById('r-year');
-const $rPages         = document.getElementById('r-pages');
-const $rIsbn          = document.getElementById('r-isbn');
-const $rDate          = document.getElementById('r-date');
-const $formatBtns     = document.querySelectorAll('.format-btn');
+    // Format buttons
+    document.querySelectorAll('.fmt').forEach(b => b.addEventListener('click', () => {
+      document.querySelectorAll('.fmt').forEach(x => x.classList.remove('on'));
+      b.classList.add('on'); fmt = b.dataset.f;
+    }));
 
-$rDate.value = today;
-const originalPromptHTML = $startPrompt.innerHTML;
+    function showStatus(msg, type='info') {
+      const el = document.getElementById('status');
+      el.textContent = msg; el.className = type; el.style.display = 'block';
+    }
+    function hideStatus() { document.getElementById('status').style.display = 'none'; }
 
-// ── Helpers ──
-function showStatus(msg, type='info') {
-  $statusMsg.textContent = msg;
-  $statusMsg.className = type;
-  $statusMsg.style.display = 'block';
-}
-function hideStatus() { $statusMsg.style.display = 'none'; }
+    // ── Start camera ──
+    document.getElementById('btn-start').addEventListener('click', startScan);
 
-// ── Format picker ──
-$formatBtns.forEach(btn => btn.addEventListener('click', () => {
-  $formatBtns.forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  selectedFormat = btn.dataset.format;
-}));
+    async function startScan() {
+      document.getElementById('prompt').style.display = 'none';
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('viewfinder-wrap').style.display = 'block';
+      document.getElementById('controls').style.display = 'flex';
+      showStatus('🔍 Scanning… point at barcode', 'info');
 
-// ── Start scanning ──
-$btnStart.addEventListener('click', startScanning);
-
-async function startScanning() {
-  if (!navigator.mediaDevices?.getUserMedia) {
-    $scanControls.style.display = 'flex';
-    showStatus('Camera not supported. Please use Chrome or Safari.', 'error');
-    return;
-  }
-  $startPrompt.style.display = 'none';
-  $resultCard.style.display  = 'none';
-  $viewfinder.style.display  = 'block';
-  $scanControls.style.display = 'flex';
-  showStatus('🔍 Scanning… point camera at barcode', 'info');
-
-  try {
-    codeReader = new ZXing.BrowserMultiFormatReader();
-    const devices  = await ZXing.BrowserCodeReader.listVideoInputDevices();
-    const deviceId = devices.length > 1 ? devices[devices.length - 1].deviceId
-                   : devices[0]?.deviceId;
-    scanning = true;
-
-    await codeReader.decodeFromVideoDevice(deviceId, $preview, (result, err) => {
-      if (!scanning || !result) return;
-      const raw = result.getText();
-      if (/^97[89]\d{10}$/.test(raw) || /^\d{9}[\dX]$/.test(raw)) {
-        stopScanning();
-        lookupISBN(raw);
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment', width: { ideal: 1280 } }
+        });
+        const vid = document.getElementById('vid');
+        vid.srcObject = stream;
+        await vid.play();
+        scanning = true;
+        detectLoop(vid);
+      } catch(e) {
+        let msg = 'Camera error.';
+        if (e.name === 'NotAllowedError') msg = 'Camera permission denied. Please allow and try again.';
+        if (e.name === 'NotFoundError') msg = 'No camera found.';
+        showStatus(msg, 'error');
+        document.getElementById('viewfinder-wrap').style.display = 'none';
       }
+    }
+
+    // ── Detection loop (native BarcodeDetector) ──
+    async function detectLoop(vid) {
+      if (!('BarcodeDetector' in window)) {
+        showStatus('⚠️ Auto-scan not supported on this browser. Enter ISBN manually.', 'error');
+        setTimeout(() => {
+          stopScan();
+          document.getElementById('prompt').style.display = 'block';
+        }, 3000);
+        return;
+      }
+      const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'] });
+      const scan = async () => {
+        if (!scanning) return;
+        try {
+          const codes = await detector.detect(vid);
+          for (const c of codes) {
+            const raw = c.rawValue;
+            if (/^97[89]\d{10}$/.test(raw) || /^\d{9}[\dX]$/.test(raw)) {
+              stopScan();
+              lookupISBN(raw);
+              return;
+            }
+          }
+        } catch(e) {}
+        if (scanning) scanTimer = setTimeout(scan, 250);
+      };
+      scan();
+    }
+
+    function stopScan() {
+      scanning = false;
+      if (scanTimer) { clearTimeout(scanTimer); scanTimer = null; }
+      if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+      document.getElementById('vid').srcObject = null;
+      document.getElementById('viewfinder-wrap').style.display = 'none';
+      document.getElementById('controls').style.display = 'none';
+      hideStatus();
+    }
+
+    document.getElementById('btn-stop').addEventListener('click', () => {
+      stopScan();
+      document.getElementById('prompt').style.display = 'block';
     });
-  } catch(err) {
-    let msg = 'Could not access camera.';
-    if (err.name === 'NotAllowedError')  msg = 'Camera permission denied. Please allow access and try again.';
-    if (err.name === 'NotFoundError')    msg = 'No camera found on this device.';
-    if (err.name === 'NotReadableError') msg = 'Camera is in use by another app.';
-    showStatus(msg, 'error');
-    $viewfinder.style.display = 'none';
-  }
-}
 
-// ── Stop scanning ──
-function stopScanning() {
-  scanning = false;
-  if (codeReader) { codeReader.reset(); codeReader = null; }
-  $viewfinder.style.display  = 'none';
-  $scanControls.style.display = 'none';
-  hideStatus();
-}
-$btnStop.addEventListener('click', () => { stopScanning(); $startPrompt.style.display = 'block'; });
+    // ── ISBN lookup ──
+    async function lookupISBN(isbn) {
+      document.getElementById('prompt').style.display = 'none';
+      document.getElementById('controls').style.display = 'flex';
+      showStatus('📚 Looking up book…', 'info');
+      try {
+        const r = await fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:' + isbn + '&maxResults=1');
+        const d = await r.json();
+        if (d.items?.length) {
+          const v = d.items[0].volumeInfo;
+          book = { title: v.title||'', author:(v.authors||[]).join(', '),
+            isbn, year: v.publishedDate?.substring(0,4)||'',
+            pages: v.pageCount||'',
+            cover:(v.imageLinks?.thumbnail||v.imageLinks?.smallThumbnail||'').replace('http://','https://'),
+            summary: v.description||'' };
+          showResult();
+        } else { await lookupOL(isbn); }
+      } catch(e) { await lookupOL(isbn); }
+    }
 
-// ── Google Books lookup ──
-async function lookupISBN(isbn) {
-  $startPrompt.style.display  = 'none';
-  $scanControls.style.display = 'flex';
-  showStatus('📚 Found barcode — looking up book…', 'info');
-  try {
-    const res  = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&maxResults=1`);
-    const data = await res.json();
-    if (!data.items?.length) return lookupOpenLibrary(isbn);
-    const vol = data.items[0].volumeInfo;
-    bookData = {
-      title:   vol.title || '',
-      author:  (vol.authors || []).join(', '),
-      isbn,
-      year:    vol.publishedDate?.substring(0,4) || '',
-      pages:   vol.pageCount || '',
-      cover:   (vol.imageLinks?.thumbnail || vol.imageLinks?.smallThumbnail || '').replace('http://','https://'),
-      summary: vol.description || '',
-    };
-    showResult(bookData);
-  } catch(e) { lookupOpenLibrary(isbn); }
-}
+    async function lookupOL(isbn) {
+      try {
+        const r = await fetch('https://openlibrary.org/api/books?bibkeys=ISBN:'+isbn+'&format=json&jscmd=data');
+        const d = await r.json(); const bk = d['ISBN:'+isbn];
+        if (bk) {
+          book = { title:bk.title||'', author:(bk.authors||[]).map(a=>a.name).join(', '),
+            isbn, year:bk.publish_date?.replace(/.*?(\d{4}).*/,'$1')||'',
+            pages:bk.number_of_pages||'', cover:bk.cover?.large||bk.cover?.medium||'', summary:'' };
+          showResult();
+        } else { notFound(isbn); }
+      } catch(e) { notFound(isbn); }
+    }
 
-// ── Open Library fallback ──
-async function lookupOpenLibrary(isbn) {
-  try {
-    const res  = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
-    const data = await res.json();
-    const book = data[`ISBN:${isbn}`];
-    if (!book) { hideStatus(); $scanControls.style.display='none'; showNotFound(isbn); return; }
-    bookData = {
-      title:   book.title || '',
-      author:  (book.authors||[]).map(a=>a.name).join(', '),
-      isbn,
-      year:    book.publish_date?.replace(/.*(\/d{4}).*/,'$1') || '',
-      pages:   book.number_of_pages || '',
-      cover:   book.cover?.large || book.cover?.medium || '',
-      summary: '',
-    };
-    showResult(bookData);
-  } catch(e) { hideStatus(); $scanControls.style.display='none'; showNotFound(isbn); }
-}
+    function showResult() {
+      hideStatus();
+      document.getElementById('controls').style.display = 'none';
+      const $ = id => document.getElementById(id);
+      $('r-title').textContent = book.title||'Unknown Title';
+      $('r-author').textContent = book.author||'Unknown Author';
+      if (book.cover) { $('r-cover').src = book.cover; $('r-cover').style.display='block'; $('r-ph').style.display='none'; }
+      else { $('r-cover').style.display='none'; $('r-ph').style.display='flex'; }
+      if (book.year) { $('r-year').textContent=book.year; $('r-year').style.display='inline'; }
+      if (book.pages) { $('r-pages').textContent=book.pages+' pp'; $('r-pages').style.display='inline'; }
+      if (book.isbn) { $('r-isbn').textContent='ISBN '+book.isbn; $('r-isbn').style.display='inline'; }
+      document.getElementById('result').style.display = 'block';
+      document.getElementById('result').scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
 
-// ── Display result ──
-function showResult(book) {
-  hideStatus();
-  $scanControls.style.display = 'none';
-  $rTitle.textContent  = book.title  || 'Unknown Title';
-  $rAuthor.textContent = book.author || 'Unknown Author';
-  if (book.cover) {
-    $rCover.src = book.cover; $rCover.style.display = 'block'; $rCoverPh.style.display = 'none';
-  } else {
-    $rCover.style.display = 'none'; $rCoverPh.style.display = 'flex';
-  }
-  if (book.year)  { $rYear.textContent  = book.year;           $rYear.style.display  = 'inline'; }
-  if (book.pages) { $rPages.textContent = book.pages + ' pp';  $rPages.style.display = 'inline'; }
-  if (book.isbn)  { $rIsbn.textContent  = 'ISBN ' + book.isbn; $rIsbn.style.display  = 'inline'; }
-  $resultCard.style.display = 'block';
-  setTimeout(() => $resultCard.scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
-}
+    function notFound(isbn) {
+      hideStatus(); document.getElementById('controls').style.display='none';
+      const p = document.getElementById('prompt');
+      p.innerHTML = '<span class="icon">🤷</span><p>ISBN <strong>'+isbn+'</strong> not found.<br>Add it manually — ISBN pre-filled.</p><a href="/add/manual?isbn='+isbn+'" class="btn btn-primary" style="margin-bottom:0.65rem">✏️ Add Manually</a><button class="btn btn-ghost" onclick="location.reload()">🔄 Try Again</button>';
+      p.style.display = 'block';
+    }
 
-// ── Not found ──
-function showNotFound(isbn) {
-  $startPrompt.innerHTML = `
-    <span class="camera-icon">🤷</span>
-    <p>Scanned <strong>${isbn}</strong> but couldn't find book details.<br><br>You can add it manually — the ISBN will be pre-filled.</p>
-    <a href="/add/manual?isbn=${isbn}" class="btn btn-primary" style="margin-bottom:0.75rem">✏️ Add Manually</a>
-    <button class="btn btn-ghost" id="btn-retry">🔄 Try Again</button>
-  `;
-  $startPrompt.style.display = 'block';
-  document.getElementById('btn-retry').addEventListener('click', () => {
-    $startPrompt.innerHTML = originalPromptHTML;
-    document.getElementById('btn-start').addEventListener('click', startScanning);
-  });
-}
+    document.getElementById('btn-again').addEventListener('click', () => {
+      document.getElementById('result').style.display='none';
+      document.getElementById('prompt').style.display='block';
+      book={};
+    });
 
-// ── Scan again ──
-$btnScanAgain.addEventListener('click', () => {
-  $resultCard.style.display  = 'none';
-  $startPrompt.style.display = 'block';
-  bookData = {};
-});
-
-// ── Add to library ──
-$btnAdd.addEventListener('click', () => {
-  if (!bookData.title) return;
-  $btnAdd.innerHTML = '<span class="spinner"></span> Saving…';
-  $btnAdd.disabled  = true;
-  document.getElementById('f-title').value    = bookData.title   || '';
-  document.getElementById('f-author').value   = bookData.author  || '';
-  document.getElementById('f-isbn').value     = bookData.isbn    || '';
-  document.getElementById('f-year').value     = bookData.year    || '';
-  document.getElementById('f-pages').value    = bookData.pages   || '';
-  document.getElementById('f-readdate').value = $rDate.value     || today;
-  document.getElementById('f-format').value   = selectedFormat;
-  document.getElementById('f-cover').value    = bookData.cover   || '';
-  document.getElementById('f-summary').value  = bookData.summary || '';
-  document.getElementById('submit-form').submit();
-});
-
-  <\/script>
-<script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>    </body>
-  </html>
+    document.getElementById('btn-add').addEventListener('click', () => {
+      if (!book.title) return;
+      const btn = document.getElementById('btn-add');
+      btn.innerHTML = '<span class="spinner"></span> Saving…'; btn.disabled = true;
+      const $ = id => document.getElementById(id);
+      $('f-title').value=book.title||''; $('f-author').value=book.author||'';
+      $('f-isbn').value=book.isbn||''; $('f-year').value=book.year||'';
+      $('f-pages').value=book.pages||''; $('f-date').value=$('r-date').value||today;
+      $('f-format').value=fmt; $('f-cover').value=book.cover||'';
+      $('f-summary').value=book.summary||'';
+      document.getElementById('sub-form').submit();
+    });
+  </script>
+</body>
+</html>
