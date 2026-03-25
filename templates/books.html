@@ -321,7 +321,7 @@
                                 {% if book.year is defined and book.year %}{{ book.year }}{% endif %}
                                 {% if book.series is defined and book.series %}  &nbsp;{{ book.series }}{% endif %}
                             </div>
-                            
+                            <span class="status-badge status-{{ book.status.lower().replace(' ', '-') }}">{{ book.status }}</span>
                         </div>
                     </div>
 
