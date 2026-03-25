@@ -3,6 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your reading collection.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Lato', sans-serif; background: #1a1a1a; min-height: 100vh; padding-bottom: 40px; }
+    .navbar { background: #2a2a2a; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .nav-back { color: #4a9eff; font-size: 1rem; font-weight: 400; text-decoration: none; }
+    .nav-title { font-family: 'Lato', sans-serif; font-weight: 700; font-size: 1.1rem; color: #fff; letter-spacing: 0.02em; }
+    .nav-add { color: #4a9eff; font-size: 1.6rem; font-weight: 300; text-decoration: none; line-height: 1; }
+    .cover-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 6px; padding: 10px; }
+    .cover-grid a { display: block; text-decoration: none; }
+    .cover-grid a img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 3px; display: block; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .cover-grid a:hover img { transform: scale(1.06); box-shadow: 0 4px 14px rgba(0,0,0,0.6); }
+    .no-cover { width: 100%; aspect-ratio: 2/3; background: linear-gradient(135deg, #7a4030, #4a2018); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border-radius: 3px; }
+    .empty-state { text-align: center; padding: 80px 20px; color: #888; font-style: italic; }
+  </style>
+</head>
+<body>
+<div class="navbar">
+  <a href="/" class="nav-back">&#8592; Home</a>
+  <span class="nav-title">My Reading Alcove</span>
+  <a href="/add" class="nav-add">+</a>
+</div>
+<div class="cover-grid">
+  {% if books %}
+    {% for book in books %}
+      <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
+        {% if book.cover_url %}
+          <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
+        {% else %}
+          <div class="no-cover">📚</div>
+        {% endif %}
+      </a>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">No books yet. Tap <strong>+</strong> to add your first book.</div>
+  {% endif %}
+</div>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Books</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
   <style>
