@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, abort
 import json
 import os
 import uuid
@@ -309,13 +309,15 @@ def enrich_csv():
 # ── BOOK DETAIL ──
 @app.route("/book/<book_id>")
 def book_detail(book_id):
-    book = Book.query.get_or_404(book_id)
+    book = db.session.get(Book, book_id)
+    if not book: abort(404)
     return render_template("detail.html", book=book.to_dict())
 
 # ── BOOK EDIT ──
 @app.route("/book/<book_id>/edit", methods=["GET", "POST"])
 def book_edit(book_id):
-    book = Book.query.get_or_404(book_id)
+    book = db.session.get(Book, book_id)
+    if not book: abort(404)
     if request.method == "POST":
         book.title = request.form.get("title", "").strip()
         book.author = request.form.get("author", "").strip()
@@ -336,7 +338,8 @@ def book_edit(book_id):
 # ── BOOK DELETE ──
 @app.route("/book/<book_id>/delete", methods=["POST"])
 def book_delete(book_id):
-    book = Book.query.get_or_404(book_id)
+    book = db.session.get(Book, book_id)
+    if not book: abort(404)
     db.session.delete(book)
     db.session.commit()
     return redirect(url_for("books"))
