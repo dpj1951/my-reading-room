@@ -305,5 +305,74 @@ def enrich_csv():
         flash(f"Enrichment failed: {str(e)}", "error")
         return redirect(url_for("utilities"))
 
+
+# ── BOOK DETAIL ──
+@app.route("/book/<book_id>")
+def book_detail(book_id):
+    book = Book.query.get_or_404(book_id)
+    return render_template("detail.html", book=book.to_dict())
+
+# ── BOOK EDIT ──
+@app.route("/book/<book_id>/edit", methods=["GET", "POST"])
+def book_edit(book_id):
+    book = Book.query.get_or_404(book_id)
+    if request.method == "POST":
+        book.title = request.form.get("title", "").strip()
+        book.author = request.form.get("author", "").strip()
+        book.isbn = request.form.get("isbn", "").strip()
+        book.format = request.form.get("format", "Paper")
+        book.pages = request.form.get("pages", "").strip() or None
+        book.copyright_year = request.form.get("copyright_year", "").strip()
+        book.read_date = request.form.get("read_date") or None
+        book.rating = request.form.get("rating") or None
+        book.cover_url = request.form.get("cover_url", "").strip()
+        book.summary = request.form.get("summary", "").strip()
+        book.read_time_hrs = request.form.get("read_time_hrs") or None
+        db.session.commit()
+        return redirect(url_for("book_detail", book_id=book_id))
+    from datetime import date
+    return render_template("edit.html", book=book.to_dict(), today=str(date.today()))
+
+# ── BOOK DELETE ──
+@app.route("/book/<book_id>/delete", methods=["POST"])
+def book_delete(book_id):
+    book = Book.query.get_or_404(book_id)
+    db.session.delete(book)
+    db.session.commit()
+    return redirect(url_for("books"))
+
+# ── API SEARCH (Open Library) ──
+@app.route("/api/search")
+def api_search():
+    import requests as req_lib
+    q = request.args.get("q", "")
+    field = request.args.get("field", "q")
+    try:
+        r = req_lib.get("https://openlibrary.org/search.json",
+            params={field: q, "limit": 8, "fields": "key,title,author_name,isbn,first_publish_year,number_of_pages_median,cover_i"},
+            timeout=8)
+        results = []
+        for d in r.json().get("docs", [])[:6]:
+            cover = f"https://covers.openlibrary.org/b/id/{d['cover_i']}-M.jpg" if d.get("cover_i") else ""
+            results.append({"title": d.get("title",""), "author": (d.get("author_name") or [""])[0],
+                "isbn": ((d.get("isbn") or [""])[0]), "pages": str(d.get("number_of_pages_median","") or ""),
+                "copyright_year": str(d.get("first_publish_year","") or ""), "cover_url": cover, "work_key": d.get("key","")})
+        return jsonify(results)
+    except:
+        return jsonify([])
+
+# ── API SUMMARY ──
+@app.route("/api/summary")
+def api_summary():
+    import requests as req_lib
+    key = request.args.get("key", "")
+    try:
+        r = req_lib.get(f"https://openlibrary.org{key}.json", timeout=8)
+        desc = r.json().get("description", "")
+        if isinstance(desc, dict): desc = desc.get("value", "")
+        return jsonify({"summary": desc[:800]})
+    except:
+        return jsonify({"summary": ""})
+
 if __name__ == "__main__":
     app.run(debug=True)
