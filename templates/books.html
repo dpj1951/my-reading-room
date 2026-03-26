@@ -11,7 +11,7 @@
     .navbar { background: #2a2a2a; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
     .nav-back { color: #4a9eff; font-size: 1rem; font-weight: 400; text-decoration: none; }
     .nav-title { font-family: 'Lato', sans-serif; font-weight: 700; font-size: 1.1rem; color: #fff; letter-spacing: 0.02em; }
-    .nav-add { color: #4a9eff; font-size: 1.6rem; font-weight: 300; text-decoration: none; line-height: 1; }
+    .nav-add { color: #4a9eff; font-size: 1rem; font-weight: 600; text-decoration: none; background: #4a9eff; color: #fff; padding: 6px 14px; border-radius: 8px; }
     .cover-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 6px; padding: 10px; }
     .cover-grid a { display: block; text-decoration: none; }
     .cover-grid a img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 3px; display: block; transition: transform 0.15s ease, box-shadow 0.15s ease; }
@@ -24,7 +24,7 @@
 <div class="navbar">
   <a href="/" class="nav-back">&#8592; Home</a>
   <span class="nav-title">My Reading Alcove</span>
-  <a href="/add" class="nav-add">+</a>
+  <a href="/add" class="nav-add">+ Add Book</a>
 </div>
 <div class="cover-grid">
   {% if books %}
