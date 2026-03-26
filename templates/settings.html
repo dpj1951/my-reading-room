@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Settings — My Reading Alcove</title>
+  <title>Settings â My Reading Alcove</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -18,7 +18,10 @@
     .menu-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.7); border-color: var(--accent); background: #22222e; }
     .menu-btn .icon { display: block; font-size: 2rem; margin-bottom: 8px; }
     .menu-btn .sub { display: block; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: var(--muted); font-weight: 300; margin-top: 4px; letter-spacing: 0.04em; }
-    .menu-btn.drag-over { border-color: var(--accent); background: #1a2a3a; transform: translateY(-3px); box-shadow: 0 12px 32px rgba(59,158,255,0.3); }
+    .restore-drop-area { position: relative; display: block; }
+    .restore-drop-area input[type="file"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2; }
+    .restore-drop-area .menu-btn { position: relative; z-index: 1; pointer-events: none; }
+    .restore-drop-area.drag-over .menu-btn { border-color: var(--accent); background: #1a2a3a; transform: translateY(-3px); box-shadow: 0 12px 32px rgba(59,158,255,0.3); }
     .divider { width: 100%; max-width: 360px; border: none; border-top: 1px solid #555; margin: 8px 0; }
     .section-label { width: 100%; max-width: 360px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: -4px; }
     .back-link { margin-top: 32px; color: var(--muted); font-size: 0.85rem; text-decoration: none; letter-spacing: 0.04em; transition: color 0.15s; }
@@ -71,13 +74,18 @@
     <p class="section-label">Restore</p>
     <form id="restoreForm" action="/settings/restore" method="POST" enctype="multipart/form-data">
       <input type="hidden" name="mode" id="restoreMode" value="merge">
-      <button type="button" class="menu-btn" id="restoreDropBtn"
-        onclick="document.getElementById('restoreFileInput').click()">
-        <span class="icon">&#x1F504;</span>
-        Restore from Backup
-        <span class="sub">Click or drag &amp; drop a .json backup file</span>
-      </button>
-      <input type="file" name="file" accept=".json" id="restoreFileInput" style="display:none" onchange="handleFileChosen(this)">
+      <div class="restore-drop-area" id="restoreDropArea">
+        <input type="file" name="file" accept=".json" id="restoreFileInput"
+          onchange="handleFileChosen(this)"
+          ondragenter="document.getElementById('restoreDropArea').classList.add('drag-over')"
+          ondragleave="document.getElementById('restoreDropArea').classList.remove('drag-over')"
+          ondrop="document.getElementById('restoreDropArea').classList.remove('drag-over')">
+        <div class="menu-btn">
+          <span class="icon">&#x1F504;</span>
+          Restore from Backup
+          <span class="sub">Click or drag &amp; drop a .json backup file</span>
+        </div>
+      </div>
     </form>
   </nav>
 
@@ -106,44 +114,6 @@
   </div>
 
   <script>
-    // Block Chrome from navigating to dropped files anywhere on the page
-    window.addEventListener('dragover', function(e) { e.preventDefault(); }, false);
-    window.addEventListener('drop', function(e) {
-      e.preventDefault();
-      // If drop landed outside the restore button, ignore it
-    }, false);
-
-    // Highlight restore button when dragging anywhere over the page
-    var dragCounter = 0;
-    window.addEventListener('dragenter', function(e) {
-      dragCounter++;
-      if (e.dataTransfer && e.dataTransfer.types && e.dataTransfer.types.includes('Files')) {
-        document.getElementById('restoreDropBtn').classList.add('drag-over');
-      }
-    }, false);
-    window.addEventListener('dragleave', function(e) {
-      dragCounter--;
-      if (dragCounter === 0) {
-        document.getElementById('restoreDropBtn').classList.remove('drag-over');
-      }
-    }, false);
-    window.addEventListener('drop', function(e) {
-      dragCounter = 0;
-      document.getElementById('restoreDropBtn').classList.remove('drag-over');
-      const files = e.dataTransfer && e.dataTransfer.files;
-      if (files && files.length > 0) {
-        const file = files[0];
-        if (!file.name.endsWith('.json')) {
-          alert('Please drop a .json backup file.');
-          return;
-        }
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        document.getElementById('restoreFileInput').files = dt.files;
-        handleFileChosen(document.getElementById('restoreFileInput'));
-      }
-    }, false);
-
     function handleFileChosen(input) {
       if (input.files && input.files.length > 0) {
         document.getElementById('backupFileName').textContent = '"' + input.files[0].name + '"';
