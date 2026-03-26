@@ -245,6 +245,70 @@ def wipe_library():
 def settings():
     return render_template("settings.html")
 
+@app.route("/settings/backup")
+def settings_backup():
+    from datetime import date
+    books = [b.to_dict() for b in Book.query.all()]
+    payload = json.dumps({"version": 1, "exported": str(date.today()), "books": books}, indent=2)
+    return send_file(
+        io.BytesIO(payload.encode("utf-8")),
+        mimetype="application/json",
+        as_attachment=True,
+        download_name=f"reading-alcove-backup-{date.today()}.json"
+    )
+
+@app.route("/settings/restore", methods=["POST"])
+def settings_restore():
+    from flask import flash
+    file = request.files.get("file")
+    mode = request.form.get("mode", "merge")
+    if not file or not file.filename.endswith(".json"):
+        flash("Please upload a valid .json backup file.", "error")
+        return redirect(url_for("settings"))
+    try:
+        data = json.loads(file.stream.read().decode("utf-8"))
+        books_data = data if isinstance(data, list) else data.get("books", [])
+        if not isinstance(books_data, list):
+            raise ValueError("Invalid backup format")
+        if mode == "overwrite":
+            Book.query.delete()
+            db.session.flush()
+        added = 0
+        skipped = 0
+        for b in books_data:
+            book_id = b.get("id", "").strip()
+            if mode == "merge":
+                if book_id and db.session.get(Book, book_id):
+                    skipped += 1
+                    continue
+                if Book.query.filter_by(title=b.get("title", "").strip(), author=b.get("author", "").strip()).first():
+                    skipped += 1
+                    continue
+            book = Book(
+                id=book_id or str(uuid.uuid4()),
+                title=b.get("title", "").strip(),
+                author=b.get("author", "").strip(),
+                isbn=b.get("isbn", "").strip(),
+                format=b.get("format", "Paper"),
+                pages=b.get("pages", "").strip(),
+                copyright_year=b.get("copyright_year", "").strip(),
+                read_date=b.get("read_date", "").strip(),
+                rating=b.get("rating", "").strip(),
+                cover_url=b.get("cover_url", "").strip(),
+                summary=b.get("summary", "").strip(),
+                read_time_hrs=b.get("read_time_hrs", "").strip()
+            )
+            db.session.add(book)
+            added += 1
+        db.session.commit()
+        action = "Overwrite" if mode == "overwrite" else "Merge"
+        flash(f"{action} complete: {added} book(s) restored, {skipped} skipped.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Restore failed: {str(e)}", "error")
+    return redirect(url_for("settings"))
+
+
 @app.route("/utilities/enrich", methods=["POST"])
 def enrich_csv():
     file = request.files.get("file")
