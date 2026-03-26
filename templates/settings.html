@@ -18,6 +18,7 @@
     .menu-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.7); border-color: var(--accent); background: #22222e; }
     .menu-btn .icon { display: block; font-size: 2rem; margin-bottom: 8px; }
     .menu-btn .sub { display: block; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: var(--muted); font-weight: 300; margin-top: 4px; letter-spacing: 0.04em; }
+    .menu-btn.drag-over { border-color: var(--accent); background: #1a2a3a; transform: translateY(-3px); box-shadow: 0 12px 32px rgba(59,158,255,0.3); }
     .divider { width: 100%; max-width: 360px; border: none; border-top: 1px solid #555; margin: 8px 0; }
     .section-label { width: 100%; max-width: 360px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: -4px; }
     .back-link { margin-top: 32px; color: var(--muted); font-size: 0.85rem; text-decoration: none; letter-spacing: 0.04em; transition: color 0.15s; }
@@ -50,11 +51,13 @@
     <h1>Settings</h1>
     <p>Backup &amp; Restore your library</p>
   </div>
+
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}{% for category, message in messages %}
-        <div class="flash {{ category }}">{{ message }}</div>
+      <div class="flash {{ category }}">{{ message }}</div>
     {% endfor %}{% endif %}
   {% endwith %}
+
   <nav class="menu">
     <p class="section-label">Backup</p>
     <a class="menu-btn" href="/settings/backup">
@@ -62,19 +65,27 @@
       Download Backup
       <span class="sub">Save a full JSON snapshot of your library</span>
     </a>
+
     <hr class="divider">
+
     <p class="section-label">Restore</p>
     <form id="restoreForm" action="/settings/restore" method="POST" enctype="multipart/form-data">
       <input type="hidden" name="mode" id="restoreMode" value="merge">
-      <button type="button" class="menu-btn" onclick="document.getElementById('restoreFileInput').click()">
+      <button type="button" class="menu-btn" id="restoreDropBtn"
+        onclick="document.getElementById('restoreFileInput').click()"
+        ondragover="handleDragOver(event)"
+        ondragleave="handleDragLeave(event)"
+        ondrop="handleDrop(event)">
         <span class="icon">&#x1F504;</span>
         Restore from Backup
-        <span class="sub">Upload a .json backup file to restore your library</span>
+        <span class="sub">Click or drag &amp; drop a .json backup file</span>
       </button>
       <input type="file" name="file" accept=".json" id="restoreFileInput" style="display:none" onchange="handleFileChosen(this)">
     </form>
   </nav>
+
   <a class="back-link" href="/">&#8592; Back to Home</a>
+
   <div class="modal-overlay" id="restoreModal">
     <div class="modal">
       <div class="modal-icon">&#x1F504;</div>
@@ -96,7 +107,34 @@
       </div>
     </div>
   </div>
+
   <script>
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById('restoreDropBtn').classList.add('drag-over');
+    }
+    function handleDragLeave(e) {
+      e.preventDefault();
+      document.getElementById('restoreDropBtn').classList.remove('drag-over');
+    }
+    function handleDrop(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById('restoreDropBtn').classList.remove('drag-over');
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        const file = files[0];
+        if (!file.name.endsWith('.json')) {
+          alert('Please drop a .json backup file.');
+          return;
+        }
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        document.getElementById('restoreFileInput').files = dt.files;
+        handleFileChosen(document.getElementById('restoreFileInput'));
+      }
+    }
     function handleFileChosen(input) {
       if (input.files && input.files.length > 0) {
         document.getElementById('backupFileName').textContent = '"' + input.files[0].name + '"';
