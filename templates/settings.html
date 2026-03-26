@@ -72,10 +72,7 @@
     <form id="restoreForm" action="/settings/restore" method="POST" enctype="multipart/form-data">
       <input type="hidden" name="mode" id="restoreMode" value="merge">
       <button type="button" class="menu-btn" id="restoreDropBtn"
-        onclick="document.getElementById('restoreFileInput').click()"
-        ondragover="handleDragOver(event)"
-        ondragleave="handleDragLeave(event)"
-        ondrop="handleDrop(event)">
+        onclick="document.getElementById('restoreFileInput').click()">
         <span class="icon">&#x1F504;</span>
         Restore from Backup
         <span class="sub">Click or drag &amp; drop a .json backup file</span>
@@ -109,20 +106,31 @@
   </div>
 
   <script>
-    function handleDragOver(e) {
+    // Block Chrome from navigating to dropped files anywhere on the page
+    window.addEventListener('dragover', function(e) { e.preventDefault(); }, false);
+    window.addEventListener('drop', function(e) {
       e.preventDefault();
-      e.stopPropagation();
-      document.getElementById('restoreDropBtn').classList.add('drag-over');
-    }
-    function handleDragLeave(e) {
-      e.preventDefault();
+      // If drop landed outside the restore button, ignore it
+    }, false);
+
+    // Highlight restore button when dragging anywhere over the page
+    var dragCounter = 0;
+    window.addEventListener('dragenter', function(e) {
+      dragCounter++;
+      if (e.dataTransfer && e.dataTransfer.types && e.dataTransfer.types.includes('Files')) {
+        document.getElementById('restoreDropBtn').classList.add('drag-over');
+      }
+    }, false);
+    window.addEventListener('dragleave', function(e) {
+      dragCounter--;
+      if (dragCounter === 0) {
+        document.getElementById('restoreDropBtn').classList.remove('drag-over');
+      }
+    }, false);
+    window.addEventListener('drop', function(e) {
+      dragCounter = 0;
       document.getElementById('restoreDropBtn').classList.remove('drag-over');
-    }
-    function handleDrop(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      document.getElementById('restoreDropBtn').classList.remove('drag-over');
-      const files = e.dataTransfer.files;
+      const files = e.dataTransfer && e.dataTransfer.files;
       if (files && files.length > 0) {
         const file = files[0];
         if (!file.name.endsWith('.json')) {
@@ -134,7 +142,8 @@
         document.getElementById('restoreFileInput').files = dt.files;
         handleFileChosen(document.getElementById('restoreFileInput'));
       }
-    }
+    }, false);
+
     function handleFileChosen(input) {
       if (input.files && input.files.length > 0) {
         document.getElementById('backupFileName').textContent = '"' + input.files[0].name + '"';
