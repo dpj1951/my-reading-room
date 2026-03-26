@@ -90,7 +90,7 @@ def ensure_db():
 # ââ HOME ââ
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("home.html")
 
 # ââ BOOKS ââ
 @app.route("/books")
