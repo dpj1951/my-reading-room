@@ -87,12 +87,12 @@ def ensure_db():
         init_db()
         app._db_initialized = True
 
-# ââ HOME ââ
+# Ã¢ÂÂÃ¢ÂÂ HOME Ã¢ÂÂÃ¢ÂÂ
 @app.route("/")
 def index():
     return render_template("home.html")
 
-# ââ BOOKS ââ
+# Ã¢ÂÂÃ¢ÂÂ BOOKS Ã¢ÂÂÃ¢ÂÂ
 @app.route("/books")
 def books():
     from datetime import datetime
@@ -110,22 +110,22 @@ def books():
     library = sorted(library, key=parse_date, reverse=True)
     return render_template("books.html", books=library)
 
-# ââ ADD BOOK (page) ââ
+# Ã¢ÂÂÃ¢ÂÂ ADD BOOK (page) Ã¢ÂÂÃ¢ÂÂ
 @app.route("/add")
 def add_choice():
     return render_template("add_choice.html")
 
-# ââ ADD: SCANNER ââ
+# Ã¢ÂÂÃ¢ÂÂ ADD: SCANNER Ã¢ÂÂÃ¢ÂÂ
 @app.route("/add/scan")
 def add_scan():
     return render_template("scan.html")
 
-# ââ ADD: MANUAL FORM ââ
+# Ã¢ÂÂÃ¢ÂÂ ADD: MANUAL FORM Ã¢ÂÂÃ¢ÂÂ
 @app.route("/add/manual")
 def add_manual():
     return render_template("add.html", isbn_prefill=request.args.get("isbn", ""))
 
-# ââ ADD: SAVE ââ
+# Ã¢ÂÂÃ¢ÂÂ ADD: SAVE Ã¢ÂÂÃ¢ÂÂ
 @app.route("/add/manual/save", methods=["POST"])
 def add_manual_save():
     db.session.add(Book(
@@ -144,7 +144,7 @@ def add_manual_save():
     db.session.commit()
     return redirect(url_for("books"))
 
-# ââ REMOVE ââ
+# Ã¢ÂÂÃ¢ÂÂ REMOVE Ã¢ÂÂÃ¢ÂÂ
 @app.route("/remove/<int:index>")
 def remove(index):
     library = load_library()
@@ -152,7 +152,7 @@ def remove(index):
     save_library(library)
     return redirect(url_for("books"))
 
-# ââ UPDATE STATUS ââ
+# Ã¢ÂÂÃ¢ÂÂ UPDATE STATUS Ã¢ÂÂÃ¢ÂÂ
 @app.route("/status/<int:index>/<status>")
 def update_status(index, status):
     library = load_library()
@@ -160,7 +160,7 @@ def update_status(index, status):
     save_library(library)
     return redirect(url_for("books"))
 
-# ââ AUTHORS ââ
+# Ã¢ÂÂÃ¢ÂÂ AUTHORS Ã¢ÂÂÃ¢ÂÂ
 @app.route("/authors")
 def authors():
     library = [b.to_dict() for b in Book.query.order_by(Book.author).all()]
@@ -171,7 +171,7 @@ def authors():
     authors_sorted = sorted(author_map.items(), key=lambda x: x[0].lower())
     return render_template("authors.html", authors=authors_sorted)
 
-# ââ UTILITIES ââ
+# Ã¢ÂÂÃ¢ÂÂ UTILITIES Ã¢ÂÂÃ¢ÂÂ
 @app.route("/utilities")
 def utilities():
     return render_template("utilities.html")
@@ -363,7 +363,6 @@ def enrich_csv():
             except Exception as e:
                 enriched["summary"] = f"LOOKUP_ERROR: {str(e)}"
             results.append(enriched)
-            time.sleep(0.3)
         output = io.StringIO()
         writer = csv.DictWriter(output, fieldnames=output_fields)
         writer.writeheader()
@@ -375,7 +374,7 @@ def enrich_csv():
         return redirect(url_for("utilities"))
 
 
-# ââ BOOK DETAIL ââ
+# Ã¢ÂÂÃ¢ÂÂ BOOK DETAIL Ã¢ÂÂÃ¢ÂÂ
 @app.route("/utilities/test-google-books")
 def test_google_books():
     import requests as req
@@ -403,7 +402,7 @@ def book_detail(book_id):
     if not book: abort(404)
     return render_template("detail.html", book=book.to_dict())
 
-# ââ BOOK EDIT ââ
+# Ã¢ÂÂÃ¢ÂÂ BOOK EDIT Ã¢ÂÂÃ¢ÂÂ
 @app.route("/book/<book_id>/edit", methods=["GET", "POST"])
 def book_edit(book_id):
     book = db.session.get(Book, book_id)
@@ -425,7 +424,7 @@ def book_edit(book_id):
     from datetime import date
     return render_template("edit.html", book=book.to_dict(), today=str(date.today()))
 
-# ââ BOOK DELETE ââ
+# Ã¢ÂÂÃ¢ÂÂ BOOK DELETE Ã¢ÂÂÃ¢ÂÂ
 @app.route("/book/<book_id>/delete", methods=["POST"])
 def book_delete(book_id):
     book = db.session.get(Book, book_id)
@@ -434,7 +433,7 @@ def book_delete(book_id):
     db.session.commit()
     return redirect(url_for("books"))
 
-# ââ API SEARCH (Open Library) ââ
+# Ã¢ÂÂÃ¢ÂÂ API SEARCH (Open Library) Ã¢ÂÂÃ¢ÂÂ
 @app.route("/api/search")
 def api_search():
     import requests as req_lib
@@ -454,7 +453,7 @@ def api_search():
     except:
         return jsonify([])
 
-# ââ API SUMMARY ââ
+# Ã¢ÂÂÃ¢ÂÂ API SUMMARY Ã¢ÂÂÃ¢ÂÂ
 @app.route("/api/summary")
 def api_summary():
     import requests as req_lib
