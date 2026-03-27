@@ -146,15 +146,44 @@
   </div>
 
   <script>
+  // Proper RFC 4180 CSV parser
+  function parseCSV(text) {
+    const rows = [];
+    let row = [], cell = '', inQuotes = false;
+    // Normalize line endings
+    text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (inQuotes) {
+        if (ch === '"' && text[i+1] === '"') { cell += '"'; i++; }
+        else if (ch === '"') { inQuotes = false; }
+        else { cell += ch; }
+      } else {
+        if (ch === '"') { inQuotes = true; }
+        else if (ch === ',') { row.push(cell); cell = ''; }
+        else if (ch === '\n') {
+          row.push(cell); cell = '';
+          if (row.some(c => c !== '')) rows.push(row);
+          row = [];
+        } else { cell += ch; }
+      }
+    }
+    // Last cell/row
+    row.push(cell);
+    if (row.some(c => c !== '')) rows.push(row);
+    return rows;
+  }
+
   async function startEnrich(input) {
     if (!input.files.length) return;
     const file = input.files[0];
     const apiKey = document.getElementById('apiKeyInput').value.trim();
 
-    // Parse CSV
     const text = await file.text();
-    const lines = text.split(/\r?\n/).filter(l => l.trim());
-    const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g,'').toLowerCase().trim());
+    const rows = parseCSV(text);
+    if (rows.length < 2) { alert('CSV appears empty.'); return; }
+
+    const headers = rows[0].map(h => h.toLowerCase().trim());
     const titleIdx = headers.indexOf('title');
     const authorIdx = headers.indexOf('author');
     if (titleIdx === -1 || authorIdx === -1) {
@@ -162,25 +191,22 @@
       return;
     }
 
-    const rows = lines.slice(1).map(l => {
-      const cols = l.match(/(".*?"|[^,]+)(?=,|$)/g) || [];
-      return cols.map(c => c.replace(/^"|"$/g,'').trim());
-    }).filter(r => r[titleIdx]);
+    const dataRows = rows.slice(1).filter(r => (r[titleIdx] || '').trim());
+    const total = dataRows.length;
 
     // Show progress UI
     const box = document.getElementById('progressBox');
     box.classList.add('active');
     document.getElementById('downloadBtn').style.display = 'none';
+    document.getElementById('progressFill').style.width = '0%';
 
-    const total = rows.length;
-    const results = [];
     const outHeaders = ['title','author','isbn','publisher','published_year','pages','genre','summary','cover_url','google_books_id'];
+    const results = [];
 
     for (let i = 0; i < total; i++) {
-      const title = rows[i][titleIdx] || '';
-      const author = rows[i][authorIdx] || '';
+      const title = (dataRows[i][titleIdx] || '').trim();
+      const author = (dataRows[i][authorIdx] || '').trim();
 
-      // Update progress
       document.getElementById('progressCount').textContent = (i+1) + ' / ' + total;
       document.getElementById('progressFill').style.width = Math.round(((i+1)/total)*100) + '%';
       document.getElementById('progressLabel').textContent = 'Looking up: ' + title.substring(0,40) + (title.length > 40 ? '…' : '');
@@ -201,14 +227,14 @@
           const isbns = vol.industryIdentifiers || [];
           const isbn13 = (isbns.find(x => x.type==='ISBN_13') || {}).identifier || '';
           const isbn10 = (isbns.find(x => x.type==='ISBN_10') || {}).identifier || '';
-          const pubDate = vol.publishedDate || '';
-          const cover = ((vol.imageLinks || {}).thumbnail || (vol.imageLinks || {}).smallThumbnail || '').replace('http://','https://').replace('&zoom=1','&zoom=2');
+          const cover = ((vol.imageLinks || {}).thumbnail || (vol.imageLinks || {}).smallThumbnail || '')
+                          .replace('http://','https://').replace('&zoom=1','&zoom=2');
           const desc = (vol.description || '').replace(/<[^>]+>/g,'').substring(0,800);
           enriched.title = vol.title || title;
           enriched.author = (vol.authors || [author]).join(', ');
           enriched.isbn = isbn13 || isbn10;
           enriched.publisher = vol.publisher || '';
-          enriched.published_year = pubDate.substring(0,4);
+          enriched.published_year = (vol.publishedDate || '').substring(0,4);
           enriched.pages = String(vol.pageCount || '');
           enriched.genre = (vol.categories || []).join(', ');
           enriched.summary = desc;
@@ -222,7 +248,7 @@
       results.push(enriched);
     }
 
-    // Build CSV output
+    // Build CSV
     document.getElementById('progressLabel').textContent = 'Done! ' + total + ' books processed.';
     document.getElementById('progressFill').style.width = '100%';
 
