@@ -15,7 +15,7 @@ if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 def load_library():
-    if os.path.exists(LIBRARY_FILE):
+    if os.path.exists(LIBRARY_FILE): 
         with open(LIBRARY_FILE, "r") as f:
             return json.load(f)
     return []
