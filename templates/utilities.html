@@ -75,13 +75,13 @@
   <nav class="menu">
     <p class="section-label">Data</p>
     <a class="menu-btn" href="/utilities/export">
-      <span class="icon">Ã°ÂÂÂ¤</span>
+      <span class="icon">📤</span>
       Export CSV
       <span class="sub">Download your library as a spreadsheet</span>
     </a>
     <form class="import-form" action="/utilities/import" method="POST" enctype="multipart/form-data">
       <button type="button" class="menu-btn import-btn" onclick="submitEnrich()">
-        <span class="icon">Ã°ÂÂÂ¥</span>
+        <span class="icon">📥</span>
         Import CSV
         <span class="sub">Upload a CSV file to add books</span>
         <input type="file" name="file" accept=".csv" onchange="this.closest('form').submit()">
@@ -90,9 +90,9 @@
     <hr class="divider">
     <p class="section-label">Google Books Lookup</p>
     <form class="import-form" action="/utilities/enrich" method="POST" enctype="multipart/form-data" id="enrichForm">
-      <input type="text" name="api_key" class="api-key-input" placeholder="Google Books API key (optional)" autocomplete="off" style="width:100%;padding:12px 16px;margin-bottom:10px;background:#2a2a2a;border:1px solid #555;border-radius:10px;color:#f0ede8;font-size:0.85rem;outline:none;">
+      <input type="text" name="api_key" class="api-key-input" placeholder="Paste your Google Books API key first…" autocomplete="off" style="width:100%;padding:12px 16px;margin-bottom:10px;background:#2a2a2a;border:1px solid #555;border-radius:10px;color:#f0ede8;font-size:0.85rem;outline:none;">
       <button type="button" class="menu-btn import-btn" onclick="submitEnrich()">
-        <span class="icon">Ã°ÂÂÂ</span>
+        <span class="icon">🔍</span>
         Enrich from Google Books
         <span class="sub">Upload a CSV with title &amp; author — download back full book data</span>
         <input type="file" name="file" accept=".csv" id="enrichFileInput">
@@ -101,7 +101,7 @@
     <hr class="divider">
     <p class="section-label">Danger Zone</p>
     <button type="button" class="menu-btn danger" onclick="document.getElementById('wipeModal').classList.add('active')">
-      <span class="icon">Ã°ÂÂÂÃ¯Â¸Â</span>
+      <span class="icon">🗑️</span>
       Wipe Library
       <span class="sub">Permanently delete all books and start fresh</span>
     </button>
@@ -114,7 +114,7 @@
   </div>
   <div class="modal-overlay" id="wipeModal">
     <div class="modal">
-      <div class="modal-icon">Ã¢ÂÂ Ã¯Â¸Â</div>
+      <div class="modal-icon">⚠️</div>
       <h2>Wipe Entire Library?</h2>
       <p>This will <strong>permanently delete every book</strong> in your library. This cannot be undone.<br><br>Consider exporting a backup first.</p>
       <div class="modal-actions">
