@@ -14,49 +14,71 @@
       --text: #f0ede8; --muted: #8a8795; --radius: 16px;
       --shadow: 0 6px 20px rgba(0,0,0,0.6);
     }
-    body {
-      font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text);
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text);
       min-height: 100vh; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; padding: 40px 24px;
-    }
+      align-items: center; justify-content: center; padding: 40px 24px; }
     .brand { text-align: center; margin-bottom: 48px; }
-    .brand h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 8vw, 3.2rem); color: var(--accent); letter-spacing: 0.04em; margin-bottom: 8px; }
-    .brand p { color: var(--muted); font-size: 0.95rem; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; }
+    .brand h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 8vw, 3.2rem);
+      color: var(--accent); letter-spacing: 0.04em; margin-bottom: 8px; }
+    .brand p { color: var(--muted); font-size: 0.95rem; font-weight: 300;
+      letter-spacing: 0.08em; text-transform: uppercase; }
     .menu { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 360px; }
-    .menu-btn { display: block; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; text-align: center; text-decoration: none; color: var(--text); font-family: 'DM Serif Display', serif; font-size: 1.3rem; letter-spacing: 0.02em; transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, background 0.15s; cursor: pointer; width: 100%; }
-    .menu-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.7); border-color: var(--accent); background: #22222e; }
+    .menu-btn { display: block; background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px;
+      text-align: center; text-decoration: none; color: var(--text);
+      font-family: 'DM Serif Display', serif; font-size: 1.3rem;
+      letter-spacing: 0.02em; transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, background 0.15s;
+      cursor: pointer; width: 100%; }
+    .menu-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.7);
+      border-color: var(--accent); background: #22222e; }
     .menu-btn:active { transform: translateY(1px); }
     .menu-btn .icon { display: block; font-size: 2rem; margin-bottom: 8px; }
-    .menu-btn .sub { display: block; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: var(--muted); font-weight: 300; margin-top: 4px; letter-spacing: 0.04em; }
+    .menu-btn .sub { display: block; font-family: 'DM Sans', sans-serif; font-size: 0.8rem;
+      color: var(--muted); font-weight: 300; margin-top: 4px; letter-spacing: 0.04em; }
     .menu-btn.danger { border-color: #7a2a2a; background: #2e1a1a; }
     .menu-btn.danger:hover { border-color: var(--danger); background: #3a1a1a; }
     .divider { width: 100%; max-width: 360px; border: none; border-top: 1px solid #555; margin: 8px 0; }
-    .section-label { width: 100%; max-width: 360px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: -4px; }
-    .back-link { margin-top: 32px; color: var(--muted); font-size: 0.85rem; text-decoration: none; letter-spacing: 0.04em; transition: color 0.15s; }
+    .section-label { width: 100%; max-width: 360px; font-size: 0.7rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: -4px; }
+    .back-link { margin-top: 32px; color: var(--muted); font-size: 0.85rem;
+      text-decoration: none; letter-spacing: 0.04em; transition: color 0.15s; }
     .back-link:hover { color: var(--accent); }
-    .flash { width: 100%; max-width: 360px; padding: 12px 16px; border-radius: 10px; font-size: 0.9rem; margin-bottom: 20px; text-align: center; }
+    .flash { width: 100%; max-width: 360px; padding: 12px 16px; border-radius: 10px;
+      font-size: 0.9rem; margin-bottom: 20px; text-align: center; }
     .flash.success { background: #1a3a1a; border: 1px solid #3a7a3a; color: #7dcc7d; }
     .flash.error { background: #3a1a1a; border: 1px solid #7a3a3a; color: #cc7d7d; }
-    .import-form { width: 100%; }
-    .import-btn { position: relative; overflow: hidden; }
-    .import-btn input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-    .spinner-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+    .api-key-input { width: 100%; padding: 12px 16px; margin-bottom: 10px;
+      background: #2a2a2a; border: 1px solid #555; border-radius: 10px;
+      color: #f0ede8; font-size: 0.85rem; outline: none; font-family: 'DM Sans', sans-serif; }
+    .api-key-input:focus { border-color: var(--accent); }
+    .spinner-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      z-index: 200; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
     .spinner-overlay.active { display: flex; }
-    .spinner { width: 52px; height: 52px; border: 5px solid #444; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    .spinner { width: 52px; height: 52px; border: 5px solid #444; border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .spinner-overlay p { color: var(--text); font-family: 'DM Serif Display', serif; font-size: 1.1rem; letter-spacing: 0.04em; }
+    .spinner-overlay p { color: var(--text); font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem; letter-spacing: 0.04em; }
     .spinner-overlay small { color: var(--muted); font-size: 0.8rem; }
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      z-index: 100; align-items: center; justify-content: center; }
     .modal-overlay.active { display: flex; }
-    .modal { background: #2a2a2a; border: 1px solid #7a2a2a; border-radius: var(--radius); padding: 32px 28px; max-width: 340px; width: 90%; text-align: center; box-shadow: 0 16px 48px rgba(0,0,0,0.8); }
+    .modal { background: #2a2a2a; border: 1px solid #7a2a2a; border-radius: var(--radius);
+      padding: 32px 28px; max-width: 340px; width: 90%; text-align: center;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.8); }
     .modal .modal-icon { font-size: 2.5rem; margin-bottom: 12px; }
-    .modal h2 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--danger); margin-bottom: 12px; }
+    .modal h2 { font-family: 'DM Serif Display', serif; font-size: 1.4rem;
+      color: var(--danger); margin-bottom: 12px; }
     .modal p { font-size: 0.9rem; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
     .modal p strong { color: var(--text); }
     .modal-actions { display: flex; gap: 12px; }
-    .btn-cancel { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; cursor: pointer; transition: background 0.15s; }
+    .btn-cancel { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--card); color: var(--text); font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem; cursor: pointer; transition: background 0.15s; }
     .btn-cancel:hover { background: #444; }
-    .btn-wipe { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--danger); background: #5a1a1a; color: #ffaaaa; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .btn-wipe { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--danger);
+      background: #5a1a1a; color: #ffaaaa; font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
     .btn-wipe:hover { background: var(--danger-hover); color: #fff; }
   </style>
 </head>
@@ -65,6 +87,7 @@
     <h1>Utilities</h1>
     <p>Import, Export &amp; Manage your library</p>
   </div>
+
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, message in messages %}
@@ -72,70 +95,79 @@
       {% endfor %}
     {% endif %}
   {% endwith %}
+
   <nav class="menu">
     <p class="section-label">Data</p>
+
+    <!-- Export -->
     <a class="menu-btn" href="/utilities/export">
       <span class="icon">📤</span>
       Export CSV
       <span class="sub">Download your library as a spreadsheet</span>
     </a>
-    <form class="import-form" action="/utilities/import" method="POST" enctype="multipart/form-data">
-      <input type="file" name="file" accept=".csv" id="enrichFileInput" style="display:none">
-      <button type="button" class="menu-btn" onclick="submitEnrich()">
-        <span class="icon">🔍</span>
-        Enrich from Google Books
-        <span class="sub">Upload a CSV with title &amp; author — download back full book data</span>
+
+    <!-- Import -->
+    <form action="/utilities/import" method="POST" enctype="multipart/form-data">
+      <button type="button" class="menu-btn" onclick="document.getElementById('importFileInput').click()">
+        <span class="icon">📥</span>
+        Import CSV
+        <span class="sub">Add books from a spreadsheet</span>
       </button>
+      <input type="file" id="importFileInput" name="file" accept=".csv" style="display:none"
+             onchange="if(this.files.length){document.getElementById('spinnerOverlay').classList.add('active');this.closest('form').submit();}">
     </form>
+
     <hr class="divider">
     <p class="section-label">Google Books Lookup</p>
-    <form class="import-form" action="/utilities/enrich" method="POST" enctype="multipart/form-data" id="enrichForm">
-      <input type="text" name="api_key" class="api-key-input" placeholder="Paste your Google Books API key first…" autocomplete="off" style="width:100%;padding:12px 16px;margin-bottom:10px;background:#2a2a2a;border:1px solid #555;border-radius:10px;color:#f0ede8;font-size:0.85rem;outline:none;">
-      <button type="button" class="menu-btn import-btn" onclick="submitEnrich()">
+
+    <!-- Enrich — single clean form -->
+    <form action="/utilities/enrich" method="POST" enctype="multipart/form-data" id="enrichForm">
+      <input type="text" name="api_key" id="apiKeyInput" class="api-key-input"
+             placeholder="Paste your Google Books API key (optional)…" autocomplete="off">
+      <button type="button" class="menu-btn" onclick="document.getElementById('enrichFileInput').click()">
         <span class="icon">🔍</span>
         Enrich from Google Books
         <span class="sub">Upload a CSV with title &amp; author — download back full book data</span>
-        <input type="file" name="file" accept=".csv" id="enrichFileInput">
       </button>
+      <input type="file" id="enrichFileInput" name="file" accept=".csv" style="display:none"
+             onchange="if(this.files.length){document.getElementById('spinnerOverlay').classList.add('active');document.getElementById('enrichForm').submit();}">
     </form>
+
     <hr class="divider">
     <p class="section-label">Danger Zone</p>
-    <button type="button" class="menu-btn danger" onclick="document.getElementById('wipeModal').classList.add('active')">
+
+    <button type="button" class="menu-btn danger"
+            onclick="document.getElementById('wipeModal').classList.add('active')">
       <span class="icon">🗑️</span>
       Wipe Library
       <span class="sub">Permanently delete all books and start fresh</span>
     </button>
   </nav>
+
   <a class="back-link" href="/">&#8592; Back to Home</a>
+
+  <!-- Spinner -->
   <div class="spinner-overlay" id="spinnerOverlay">
     <div class="spinner"></div>
     <p>Looking up books…</p>
     <small>This may take a moment for large lists</small>
   </div>
+
+  <!-- Wipe modal -->
   <div class="modal-overlay" id="wipeModal">
     <div class="modal">
       <div class="modal-icon">⚠️</div>
       <h2>Wipe Entire Library?</h2>
-      <p>This will <strong>permanently delete every book</strong> in your library. This cannot be undone.<br><br>Consider exporting a backup first.</p>
+      <p>This will <strong>permanently delete every book</strong> in your library.
+         This cannot be undone.<br><br>Consider exporting a backup first.</p>
       <div class="modal-actions">
-        <button class="btn-cancel" onclick="document.getElementById('wipeModal').classList.remove('active')">Cancel</button>
+        <button class="btn-cancel"
+                onclick="document.getElementById('wipeModal').classList.remove('active')">Cancel</button>
         <form action="/utilities/wipe" method="POST" style="flex:1">
           <button type="submit" class="btn-wipe" style="width:100%">Yes, Wipe It</button>
         </form>
       </div>
     </div>
   </div>
-  <script>
-  var fi = document.getElementById('enrichFileInput');
-  fi.addEventListener('change', function() {
-    if (fi.files.length > 0) {
-      document.getElementById('spinnerOverlay').classList.add('active');
-      document.getElementById('enrichForm').submit();
-    }
-  });
-  function submitEnrich() {
-    fi.click();
-  }
-</script>
 </body>
 </html>
