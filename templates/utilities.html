@@ -80,11 +80,11 @@
       <span class="sub">Download your library as a spreadsheet</span>
     </a>
     <form class="import-form" action="/utilities/import" method="POST" enctype="multipart/form-data">
-      <button type="button" class="menu-btn import-btn" onclick="submitEnrich()">
-        <span class="icon">📥</span>
-        Import CSV
-        <span class="sub">Upload a CSV file to add books</span>
-        <input type="file" name="file" accept=".csv" onchange="this.closest('form').submit()">
+      <input type="file" name="file" accept=".csv" id="enrichFileInput" style="display:none">
+      <button type="button" class="menu-btn" onclick="submitEnrich()">
+        <span class="icon">🔍</span>
+        Enrich from Google Books
+        <span class="sub">Upload a CSV with title &amp; author — download back full book data</span>
       </button>
     </form>
     <hr class="divider">
