@@ -91,7 +91,7 @@
     <p class="section-label">Google Books Lookup</p>
     <form class="import-form" action="/utilities/enrich" method="POST" enctype="multipart/form-data" id="enrichForm">
       <input type="text" name="api_key" class="api-key-input" placeholder="Paste your Google Books API key first…" autocomplete="off" style="width:100%;padding:12px 16px;margin-bottom:10px;background:#2a2a2a;border:1px solid #555;border-radius:10px;color:#f0ede8;font-size:0.85rem;outline:none;">
-      <button type="button" class="menu-btn import-btn" onclick="this.querySelector('input[type=file]').click()">
+      <button type="button" class="menu-btn import-btn" onclick="submitEnrich()">
         <span class="icon">🔍</span>
         Enrich from Google Books
         <span class="sub">Upload a CSV with title &amp; author — download back full book data</span>

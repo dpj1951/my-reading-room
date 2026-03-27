@@ -315,6 +315,7 @@ def enrich_csv():
     if not file or not file.filename.endswith(".csv"):
         flash("Please upload a valid .csv file with 'title' and 'author' columns.", "error")
         return redirect(url_for("utilities"))
+            api_key = request.form.get("api_key", "").strip() or GOOGLE_BOOKS_API_KEY
     try:
         import re
         raw = file.stream.read()
@@ -342,7 +343,7 @@ def enrich_csv():
                 query = f"intitle:{title}"
                 if author:
                     query += f"+inauthor:{author}"
-                resp = requests.get("https://www.googleapis.com/books/v1/volumes", params={"q": query, "maxResults": 1, "langRestrict": "en", "key": GOOGLE_BOOKS_API_KEY}, timeout=8)
+                resp = requests.get("https://www.googleapis.com/books/v1/volumes", params={"q": query, "maxResults": 1, "langRestrict": "en", "key": api_key}, timeout=8)
                 resp.raise_for_status()
                 items = resp.json().get("items", [])
                 if items:
