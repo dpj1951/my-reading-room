@@ -315,7 +315,7 @@ def enrich_csv():
     if not file or not file.filename.endswith(".csv"):
         flash("Please upload a valid .csv file with 'title' and 'author' columns.", "error")
         return redirect(url_for("utilities"))
-            api_key = request.form.get("api_key", "").strip() or GOOGLE_BOOKS_API_KEY
+    api_key = request.form.get("api_key", "").strip() or GOOGLE_BOOKS_API_KEY
     try:
         import re
         raw = file.stream.read()
