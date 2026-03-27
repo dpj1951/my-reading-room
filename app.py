@@ -4,8 +4,7 @@ import os
 import uuid
 import requests
 import csv
-import time
-import io
+import timimport io 
 from datetime import date
 from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
@@ -360,8 +359,8 @@ def enrich_csv():
                     raw_desc = vol.get("description", "")
                     clean_desc = re.sub(r"<[^>]+>", "", raw_desc)
                     enriched.update({"title": vol.get("title", title), "author": ", ".join(vol.get("authors", [author])), "isbn": isbn13 or isbn10, "publisher": vol.get("publisher", ""), "published_year": pub_year, "pages": str(vol.get("pageCount", "")), "genre": ", ".join(vol.get("categories", [])), "summary": clean_desc[:800], "cover_url": cover, "google_books_id": item.get("id", "")})
-            except Exception:
-                pass
+            except Exception as e:
+                enriched["summary"] = f"LOOKUP_ERROR: {str(e)}"
             results.append(enriched)
             time.sleep(0.3)
         output = io.StringIO()
@@ -376,6 +375,27 @@ def enrich_csv():
 
 
 # ââ BOOK DETAIL ââ
+@app.route("/utilities/test-google-books")
+def test_google_books():
+    import requests as req
+    api_key = GOOGLE_BOOKS_API_KEY
+    try:
+        resp = req.get("https://www.googleapis.com/books/v1/volumes",
+                       params={"q": "intitle:Dune+inauthor:Herbert", "maxResults": 1, "key": api_key},
+                       timeout=8)
+        data = resp.json()
+        items = data.get("items", [])
+        if items:
+            vol = items[0].get("volumeInfo", {})
+            return jsonify({"status": "ok", "title": vol.get("title"), "author": vol.get("authors"),
+                            "api_key_used": bool(api_key), "http_status": resp.status_code})
+        else:
+            return jsonify({"status": "no_results", "raw": data,
+                            "api_key_used": bool(api_key), "http_status": resp.status_code})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e), "api_key_used": bool(api_key)})
+
+
 @app.route("/book/<book_id>")
 def book_detail(book_id):
     book = db.session.get(Book, book_id)
