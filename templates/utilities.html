@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Utilities â My Reading Alcove</title>
+  <title>Utilities Ã¢ÂÂ My Reading Alcove</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -92,27 +92,20 @@
 
     <hr class="divider">
     <p class="section-label">Google Books Lookup</p>
-
-    <!-- API key input -->
-    <input type="text" id="apiKeyInput" class="api-key-input"
-           placeholder="Paste your Google Books API key (optional)â¦" autocomplete="off">
-
-    <!-- Enrich button triggers client-side processing -->
-    <label class="menu-btn import-btn" for="enrichFile">
+    <input type="file" id="enrichFile" name="file" accept=".csv" style="display:none" onchange="startEnrich(this)">
+    <button type="button" class="menu-btn" onclick="document.getElementById('enrichFile').click()" style="border:1px solid var(--border);">
       <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
       Enrich from Google Books
-      <span class="sub">Upload a CSV â lookups run in your browser, no timeout</span>
-      <input type="file" id="enrichFile" name="file" accept=".csv"
-             onchange="startEnrich(this)">
-    </label>
+      <span class="sub">Upload a CSV with title &amp; author — lookups run in your browser</span>
+    </button>
 
-    <!-- Progress UI (hidden until enrichment starts) -->
+    <!-- Progress UI -->
     <div class="progress-box" id="progressBox">
-      <div class="progress-label" id="progressLabel">Looking up booksâ¦</div>
+      <div class="progress-label" id="progressLabel">Looking up books...</div>
       <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
       <div class="progress-count" id="progressCount">0 / 0</div>
       <a class="download-btn" id="downloadBtn" style="display:none" href="#">
-        â¬ Download enriched_books.csv
+        Download enriched_books.csv
       </a>
     </div>
 
@@ -146,125 +139,105 @@
   </div>
 
   <script>
-  function parseCSV(text) {
-    var rows = [], row = [], cell = '', inQ = false;
-    text = text.replace(/
-/g, '
-').replace(//g, '
+function parseCSV(text) {
+  var rows = [], row = [], cell = '', inQ = false;
+  text = text.replace(/
+/g,'
+').replace(//g,'
 ');
-    if (text[text.length-1] !== '
+  if (text[text.length-1] !== '
 ') text += '
 ';
-    for (var i = 0; i < text.length; i++) {
-      var c = text[i];
-      if (inQ) {
-        if (c === '"' && text[i+1] === '"') { cell += '"'; i++; }
-        else if (c === '"') { inQ = false; }
-        else { cell += c; }
-      } else {
-        if (c === '"') { inQ = true; }
-        else if (c === ',') { row.push(cell); cell = ''; }
-        else if (c === '
-') {
-          row.push(cell); cell = '';
-          if (row.join('').trim() !== '') rows.push(row);
-          row = [];
-        } else { cell += c; }
-      }
+  for (var i=0;i<text.length;i++) {
+    var c=text[i];
+    if (inQ) {
+      if (c==='"' && text[i+1]==='"'){cell+='"';i++;}
+      else if (c==='"'){inQ=false;}
+      else {cell+=c;}
+    } else {
+      if (c==='"'){inQ=true;}
+      else if (c===','){row.push(cell);cell='';}
+      else if (c==='
+'){
+        row.push(cell);cell='';
+        if(row.join('').trim()!=='')rows.push(row);
+        row=[];
+      } else {cell+=c;}
     }
-    return rows;
   }
+  return rows;
+}
 
-  async function startEnrich(input) {
-    if (!input.files.length) return;
-    var apiKey = document.getElementById('apiKeyInput').value.trim();
-    var reader = new FileReader();
-    reader.onload = async function(e) {
-      var text = e.target.result;
-      var rows = parseCSV(text);
-      if (rows.length < 2) { alert('CSV appears empty or could not be parsed.'); return; }
-
-      var headers = rows[0].map(function(h) { return h.toLowerCase().trim(); });
-      var ti = headers.indexOf('title');
-      var ai = headers.indexOf('author');
-      if (ti === -1 || ai === -1) { alert('CSV must have title and author columns.'); return; }
-
-      var data = rows.slice(1).filter(function(r) { return (r[ti]||'').trim(); });
-      var total = data.length;
-
-      document.getElementById('progressBox').classList.add('active');
-      document.getElementById('downloadBtn').style.display = 'none';
-      document.getElementById('progressFill').style.width = '0%';
-
-      var outHeaders = ['title','author','isbn','publisher','published_year','pages','genre','summary','cover_url','google_books_id'];
-      var results = [];
-
-      for (var i = 0; i < total; i++) {
-        var title = (data[i][ti]||'').trim();
-        var author = (data[i][ai]||'').trim();
-
-        document.getElementById('progressCount').textContent = (i+1) + ' / ' + total;
-        document.getElementById('progressFill').style.width = Math.round(((i+1)/total)*100) + '%';
-        document.getElementById('progressLabel').textContent = 'Looking up: ' + title.substring(0,35) + (title.length > 35 ? '...' : '');
-
-        var enriched = {title:title, author:author, isbn:'', publisher:'', published_year:'', pages:'', genre:'', summary:'', cover_url:'', google_books_id:''};
-
-        try {
-          var q = 'intitle:' + encodeURIComponent(title);
-          if (author) q += '+inauthor:' + encodeURIComponent(author);
-          var url = 'https://www.googleapis.com/books/v1/volumes?q=' + q + '&maxResults=1&langRestrict=en';
-          if (apiKey) url += '&key=' + encodeURIComponent(apiKey);
-          var resp = await fetch(url);
-          var json = await resp.json();
-          var items = json.items || [];
-          if (items.length) {
-            var vol = items[0].volumeInfo || {};
-            var isbns = vol.industryIdentifiers || [];
-            var isbn13 = ''; var isbn10 = '';
-            for (var j=0;j<isbns.length;j++) {
-              if (isbns[j].type==='ISBN_13') isbn13=isbns[j].identifier;
-              if (isbns[j].type==='ISBN_10') isbn10=isbns[j].identifier;
-            }
-            var imgLinks = vol.imageLinks || {};
-            var cover = (imgLinks.thumbnail || imgLinks.smallThumbnail || '').replace('http://','https://');
-            var desc = (vol.description||'').replace(/<[^>]+>/g,'').substring(0,800);
-            enriched.title = vol.title || title;
-            enriched.author = (vol.authors || [author]).join(', ');
-            enriched.isbn = isbn13 || isbn10;
-            enriched.publisher = vol.publisher || '';
-            enriched.published_year = (vol.publishedDate||'').substring(0,4);
-            enriched.pages = String(vol.pageCount||'');
-            enriched.genre = (vol.categories||[]).join(', ');
-            enriched.summary = desc;
-            enriched.cover_url = cover;
-            enriched.google_books_id = items[0].id || '';
-          }
-        } catch(err) {
-          enriched.summary = 'ERROR: ' + err.message;
+function startEnrich(input) {
+  if (!input.files || !input.files.length) return;
+  var apiKey = document.getElementById('apiKeyInput') ? document.getElementById('apiKeyInput').value.trim() : '';
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var rows = parseCSV(e.target.result);
+    if (rows.length < 2) { alert('CSV appears empty.'); return; }
+    var headers = rows[0].map(function(h){return h.toLowerCase().trim();});
+    var ti = headers.indexOf('title'), ai = headers.indexOf('author');
+    if (ti===-1||ai===-1){alert('CSV must have title and author columns.');return;}
+    var data = rows.slice(1).filter(function(r){return (r[ti]||'').trim();});
+    var total = data.length;
+    document.getElementById('progressBox').classList.add('active');
+    document.getElementById('downloadBtn').style.display='none';
+    document.getElementById('progressFill').style.width='0%';
+    document.getElementById('progressCount').textContent='0 / '+total;
+    var outH=['title','author','isbn','publisher','published_year','pages','genre','summary','cover_url','google_books_id'];
+    var results=[];
+    function processRow(i) {
+      if (i>=total) {
+        document.getElementById('progressLabel').textContent='Done! '+total+' books processed.';
+        document.getElementById('progressFill').style.width='100%';
+        var csvOut=[outH.join(',')];
+        for(var k=0;k<results.length;k++){
+          var r=results[k];
+          csvOut.push(outH.map(function(h){return '"'+(r[h]||'').replace(/"/g,'""')+'"';}).join(','));
         }
+        var blob=new Blob([csvOut.join('
+')],{type:'text/csv'});
+        var btn=document.getElementById('downloadBtn');
+        btn.href=URL.createObjectURL(blob);
+        btn.download='enriched_books.csv';
+        btn.style.display='block';
+        return;
+      }
+      var title=(data[i][ti]||'').trim(), author=(data[i][ai]||'').trim();
+      document.getElementById('progressCount').textContent=(i+1)+' / '+total;
+      document.getElementById('progressFill').style.width=Math.round(((i+1)/total)*100)+'%';
+      document.getElementById('progressLabel').textContent='Looking up: '+title.substring(0,35);
+      var enriched={title:title,author:author,isbn:'',publisher:'',published_year:'',pages:'',genre:'',summary:'',cover_url:'',google_books_id:''};
+      var q='intitle:'+encodeURIComponent(title)+(author?'+inauthor:'+encodeURIComponent(author):'');
+      var url='https://www.googleapis.com/books/v1/volumes?q='+q+'&maxResults=1&langRestrict=en'+(apiKey?'&key='+encodeURIComponent(apiKey):'');
+      fetch(url).then(function(r){return r.json();}).then(function(json){
+        var items=json.items||[];
+        if(items.length){
+          var vol=items[0].volumeInfo||{};
+          var isbns=vol.industryIdentifiers||[];
+          var i13='',i10='';
+          for(var j=0;j<isbns.length;j++){if(isbns[j].type==='ISBN_13')i13=isbns[j].identifier;if(isbns[j].type==='ISBN_10')i10=isbns[j].identifier;}
+          var img=vol.imageLinks||{};
+          enriched.title=vol.title||title;
+          enriched.author=(vol.authors||[author]).join(', ');
+          enriched.isbn=i13||i10;
+          enriched.publisher=vol.publisher||'';
+          enriched.published_year=(vol.publishedDate||'').substring(0,4);
+          enriched.pages=String(vol.pageCount||'');
+          enriched.genre=(vol.categories||[]).join(', ');
+          enriched.summary=(vol.description||'').replace(/<[^>]+>/g,'').substring(0,800);
+          enriched.cover_url=(img.thumbnail||img.smallThumbnail||'').replace('http://','https://');
+          enriched.google_books_id=items[0].id||'';
+        }
+      }).catch(function(err){enriched.summary='ERROR: '+err.message;}).finally(function(){
         results.push(enriched);
-      }
-
-      document.getElementById('progressLabel').textContent = 'Done! ' + total + ' books processed.';
-      document.getElementById('progressFill').style.width = '100%';
-
-      var csvOut = [outHeaders.join(',')];
-      for (var k=0; k<results.length; k++) {
-        var r = results[k];
-        csvOut.push(outHeaders.map(function(h) {
-          return '"' + (r[h]||'').replace(/"/g,'""') + '"';
-        }).join(','));
-      }
-      var blob = new Blob([csvOut.join('
-')], {type:'text/csv'});
-      var burl = URL.createObjectURL(blob);
-      var btn = document.getElementById('downloadBtn');
-      btn.href = burl;
-      btn.download = 'enriched_books.csv';
-      btn.style.display = 'block';
-    };
-    reader.readAsText(input.files[0]);
-  }
-  </script>
+        processRow(i+1);
+      });
+    }
+    processRow(0);
+  };
+  reader.readAsText(input.files[0]);
+}
+</script>
 </body>
 </html>
