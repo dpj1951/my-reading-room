@@ -3,58 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Utilities ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ My Reading Alcove</title>
+  <title>Utilities -- My Reading Alcove</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #d8d8d8; --card: #3a3a3a; --border: #4a4a4a; --accent: #3b9eff;
-      --danger: #ff4f4f; --danger-hover: #cc0000; --text: #f0ede8; --muted: #8a8795;
-      --radius: 16px; --shadow: 0 6px 20px rgba(0,0,0,0.6);
-    }
-    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
-    .brand { text-align: center; margin-bottom: 48px; }
-    .brand h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 8vw, 3.2rem); color: var(--accent); letter-spacing: 0.04em; margin-bottom: 8px; }
-    .brand p { color: var(--muted); font-size: 0.95rem; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; }
-    .menu { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 360px; }
-    .menu-btn { display: block; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; text-align: center; text-decoration: none; color: var(--text); font-family: 'DM Serif Display', serif; font-size: 1.3rem; letter-spacing: 0.02em; transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, background 0.15s; cursor: pointer; width: 100%; border: none; }
-    .menu-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.7); border-color: var(--accent); background: #22222e; }
-    .menu-btn:active { transform: translateY(1px); }
-    .menu-btn .icon { display: block; font-size: 2rem; margin-bottom: 8px; }
-    .menu-btn .sub { display: block; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: var(--muted); font-weight: 300; margin-top: 4px; letter-spacing: 0.04em; }
-    .menu-btn.danger { border: 1px solid #7a2a2a !important; background: #2e1a1a; }
-    .menu-btn.danger:hover { border-color: var(--danger) !important; background: #3a1a1a; }
-    .import-btn { position: relative; overflow: hidden; border: 1px solid var(--border) !important; border-radius: var(--radius); }
-    .import-btn input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-    .divider { width: 100%; max-width: 360px; border: none; border-top: 1px solid #555; margin: 8px 0; }
-    .section-label { width: 100%; max-width: 360px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: -4px; }
-    .back-link { margin-top: 32px; color: var(--muted); font-size: 0.85rem; text-decoration: none; letter-spacing: 0.04em; transition: color 0.15s; }
-    .back-link:hover { color: var(--accent); }
-    .flash { width: 100%; max-width: 360px; padding: 12px 16px; border-radius: 10px; font-size: 0.9rem; margin-bottom: 20px; text-align: center; }
-    .flash.success { background: #1a3a1a; border: 1px solid #3a7a3a; color: #7dcc7d; }
-    .flash.error { background: #3a1a1a; border: 1px solid #7a3a3a; color: #cc7d7d; }
-    .api-key-input { width: 100%; padding: 12px 16px; margin-bottom: 10px; background: #2a2a2a; border: 1px solid #555; border-radius: 10px; color: #f0ede8; font-size: 0.85rem; outline: none; font-family: 'DM Sans', sans-serif; }
-    .api-key-input:focus { border-color: var(--accent); }
-    .progress-box { width: 100%; max-width: 360px; background: #2a2a2a; border: 1px solid #444; border-radius: var(--radius); padding: 20px; display: none; flex-direction: column; gap: 12px; }
-    .progress-box.active { display: flex; }
-    .progress-label { font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--text); text-align: center; }
-    .progress-bar-track { width: 100%; height: 8px; background: #444; border-radius: 4px; overflow: hidden; }
-    .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.3s; width: 0%; }
-    .progress-count { font-size: 0.8rem; color: var(--muted); text-align: center; }
-    .download-btn { display: block; background: #1a3a1a; border: 1px solid #3a7a3a; border-radius: 10px; padding: 14px; text-align: center; color: #7dcc7d; font-family: 'DM Serif Display', serif; font-size: 1.1rem; cursor: pointer; text-decoration: none; margin-top: 4px; }
-    .download-btn:hover { background: #1f4a1f; }
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; }
-    .modal-overlay.active { display: flex; }
-    .modal { background: #2a2a2a; border: 1px solid #7a2a2a; border-radius: var(--radius); padding: 32px 28px; max-width: 340px; width: 90%; text-align: center; box-shadow: 0 16px 48px rgba(0,0,0,0.8); }
-    .modal .modal-icon { font-size: 2.5rem; margin-bottom: 12px; }
-    .modal h2 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--danger); margin-bottom: 12px; }
-    .modal p { font-size: 0.9rem; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
-    .modal p strong { color: var(--text); }
-    .modal-actions { display: flex; gap: 12px; }
-    .btn-cancel { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; cursor: pointer; }
-    .btn-wipe { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--danger); background: #5a1a1a; color: #ffaaaa; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
-    .btn-wipe:hover { background: var(--danger-hover); color: #fff; }
+    :root { --bg:#d8d8d8;--card:#3a3a3a;--border:#4a4a4a;--accent:#3b9eff;--danger:#ff4f4f;--danger-hover:#cc0000;--text:#f0ede8;--muted:#8a8795;--radius:16px;--shadow:0 6px 20px rgba(0,0,0,0.6); }
+    body { font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px; }
+    .brand { text-align:center;margin-bottom:48px; }
+    .brand h1 { font-family:'DM Serif Display',serif;font-size:clamp(2rem,8vw,3.2rem);color:var(--accent);letter-spacing:0.04em;margin-bottom:8px; }
+    .brand p { color:var(--muted);font-size:0.95rem;font-weight:300;letter-spacing:0.08em;text-transform:uppercase; }
+    .menu { display:flex;flex-direction:column;gap:16px;width:100%;max-width:360px; }
+    .menu-btn { display:block;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;text-align:center;text-decoration:none;color:var(--text);font-family:'DM Serif Display',serif;font-size:1.3rem;letter-spacing:0.02em;transition:transform 0.15s,box-shadow 0.15s,border-color 0.15s,background 0.15s;cursor:pointer;width:100%; }
+    .menu-btn:hover { transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.7);border-color:var(--accent);background:#22222e; }
+    .menu-btn .icon { display:block;font-size:2rem;margin-bottom:8px; }
+    .menu-btn .sub { display:block;font-family:'DM Sans',sans-serif;font-size:0.8rem;color:var(--muted);font-weight:300;margin-top:4px;letter-spacing:0.04em; }
+    .menu-btn.danger { border-color:#7a2a2a;background:#2e1a1a; }
+    .menu-btn.danger:hover { border-color:var(--danger);background:#3a1a1a; }
+    .divider { width:100%;max-width:360px;border:none;border-top:1px solid #555;margin:8px 0; }
+    .section-label { width:100%;max-width:360px;font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:-4px; }
+    .back-link { margin-top:32px;color:var(--muted);font-size:0.85rem;text-decoration:none;letter-spacing:0.04em;transition:color 0.15s; }
+    .back-link:hover { color:var(--accent); }
+    .flash { width:100%;max-width:360px;padding:12px 16px;border-radius:10px;font-size:0.9rem;margin-bottom:20px;text-align:center; }
+    .flash.success { background:#1a3a1a;border:1px solid #3a7a3a;color:#7dcc7d; }
+    .flash.error { background:#3a1a1a;border:1px solid #7a3a3a;color:#cc7d7d; }
+    .import-form { width:100%; }
+    .import-btn { position:relative;overflow:hidden; }
+    .import-btn input[type="file"] { position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%; }
+    .api-key-input { width:100%;padding:12px 16px;margin-bottom:10px;background:#2a2a2a;border:1px solid #555;border-radius:10px;color:#f0ede8;font-size:0.85rem;outline:none;font-family:'DM Sans',sans-serif; }
+    .api-key-input:focus { border-color:var(--accent); }
+    .progress-box { width:100%;max-width:360px;background:#2a2a2a;border:1px solid #444;border-radius:var(--radius);padding:20px;display:none;flex-direction:column;gap:12px; }
+    .progress-box.active { display:flex; }
+    .progress-label { font-family:'DM Serif Display',serif;font-size:1rem;color:var(--text);text-align:center; }
+    .progress-bar-track { width:100%;height:8px;background:#444;border-radius:4px;overflow:hidden; }
+    .progress-bar-fill { height:100%;background:var(--accent);border-radius:4px;transition:width 0.2s;width:0%; }
+    .progress-count { font-size:0.8rem;color:var(--muted);text-align:center; }
+    .download-btn { display:block;background:#1a3a1a;border:1px solid #3a7a3a;border-radius:10px;padding:14px;text-align:center;color:#7dcc7d;font-family:'DM Serif Display',serif;font-size:1.1rem;cursor:pointer;text-decoration:none;margin-top:4px; }
+    .modal-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;align-items:center;justify-content:center; }
+    .modal-overlay.active { display:flex; }
+    .modal { background:#2a2a2a;border:1px solid #7a2a2a;border-radius:var(--radius);padding:32px 28px;max-width:340px;width:90%;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,0.8); }
+    .modal h2 { font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--danger);margin-bottom:12px; }
+    .modal p { font-size:0.9rem;color:var(--muted);line-height:1.6;margin-bottom:24px; }
+    .modal p strong { color:var(--text); }
+    .modal-actions { display:flex;gap:12px; }
+    .btn-cancel { flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.95rem;cursor:pointer; }
+    .btn-wipe { flex:1;padding:12px;border-radius:10px;border:1px solid var(--danger);background:#5a1a1a;color:#ffaaaa;font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer; }
+    .btn-wipe:hover { background:var(--danger-hover);color:#fff; }
   </style>
 </head>
 <body>
@@ -64,57 +58,52 @@
   </div>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <div class="flash {{ category }}">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
+    {% if messages %}{% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}{% endif %}
   {% endwith %}
 
   <nav class="menu">
     <p class="section-label">Data</p>
 
-    <a class="menu-btn" href="/utilities/export" style="border:1px solid var(--border);">
-      <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+    <a class="menu-btn" href="/utilities/export">
+      <span class="icon">&#x1F4E4;</span>
       Export CSV
       <span class="sub">Download your library as a spreadsheet</span>
     </a>
 
-    <form action="/utilities/import" method="POST" enctype="multipart/form-data" style="width:100%">
+    <form class="import-form" action="/utilities/import" method="POST" enctype="multipart/form-data">
       <label class="menu-btn import-btn" for="importFile">
-        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+        <span class="icon">&#x1F4E5;</span>
         Import CSV
         <span class="sub">Upload a CSV file to add books</span>
-        <input type="file" id="importFile" name="file" accept=".csv"
-               onchange="this.closest('form').submit()">
+        <input type="file" id="importFile" name="file" accept=".csv" onchange="this.closest('form').submit()">
       </label>
     </form>
 
     <hr class="divider">
     <p class="section-label">Google Books Lookup</p>
-    <input type="file" id="enrichFile" name="file" accept=".csv" style="display:none" onchange="startEnrich(this)">
-    <button type="button" class="menu-btn" onclick="document.getElementById('enrichFile').click()" style="border:1px solid var(--border);">
-      <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+
+    <input type="text" id="apiKeyInput" class="api-key-input" placeholder="Paste your Google Books API key (optional)" autocomplete="off">
+
+    <input type="file" id="enrichFile" accept=".csv" style="display:none" onchange="startEnrich(this)">
+    <button type="button" class="menu-btn" onclick="document.getElementById('enrichFile').click()">
+      <span class="icon">&#x1F50D;</span>
       Enrich from Google Books
-      <span class="sub">Upload a CSV with title &amp; author ÃÂ¢ÃÂÃÂ lookups run in your browser</span>
+      <span class="sub">Upload a CSV with title &amp; author -- lookups run in your browser</span>
     </button>
 
-    <!-- Progress UI -->
     <div class="progress-box" id="progressBox">
       <div class="progress-label" id="progressLabel">Looking up books...</div>
       <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
       <div class="progress-count" id="progressCount">0 / 0</div>
-      <a class="download-btn" id="downloadBtn" style="display:none" href="#">
-        Download enriched_books.csv
-      </a>
+      <a class="download-btn" id="downloadBtn" style="display:none" href="#">Download enriched_books.csv</a>
     </div>
 
     <hr class="divider">
     <p class="section-label" style="color:#ff4f4f;font-weight:700;">Danger Zone</p>
-
-    <button type="button" class="menu-btn danger"
-            onclick="document.getElementById('wipeModal').classList.add('active')">
-      <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
+    <button type="button" class="menu-btn danger" onclick="document.getElementById('wipeModal').classList.add('active')">
+      <span class="icon">&#x1F5D1;</span>
       Wipe Library
       <span class="sub">Permanently delete all books and start fresh</span>
     </button>
@@ -124,13 +113,10 @@
 
   <div class="modal-overlay" id="wipeModal">
     <div class="modal">
-      <div class="modal-icon">&#9888;&#65039;</div>
       <h2>Wipe Entire Library?</h2>
-      <p>This will <strong>permanently delete every book</strong> in your library.
-         This cannot be undone.<br><br>Consider exporting a backup first.</p>
+      <p>This will <strong>permanently delete every book</strong> in your library. This cannot be undone. Consider exporting a backup first.</p>
       <div class="modal-actions">
-        <button class="btn-cancel"
-                onclick="document.getElementById('wipeModal').classList.remove('active')">Cancel</button>
+        <button class="btn-cancel" onclick="document.getElementById('wipeModal').classList.remove('active')">Cancel</button>
         <form action="/utilities/wipe" method="POST" style="flex:1">
           <button type="submit" class="btn-wipe" style="width:100%">Yes, Wipe It</button>
         </form>
@@ -138,113 +124,6 @@
     </div>
   </div>
 
-  {% raw %}
-<script>
-function parseCSV(text) {
-  var rows=[], row=[], cell='', inQ=false;
-  var CR=13,LF=10,COMMA=44,QUOTE=34;
-  for(var i=0;i<=text.length;i++){
-    var c=i<text.length?text.charCodeAt(i):LF;
-    if(inQ){
-      if(c===QUOTE&&i+1<text.length&&text.charCodeAt(i+1)===QUOTE){cell+='"';i++;}
-      else if(c===QUOTE){inQ=false;}
-      else{cell+=text[i];}
-    }else{
-      if(c===QUOTE){inQ=true;}
-      else if(c===COMMA){row.push(cell);cell='';}
-      else if(c===LF||c===CR){
-        if(c===CR&&i+1<text.length&&text.charCodeAt(i+1)===LF)i++;
-        row.push(cell);cell='';
-        if(row.join('').trim()!=='')rows.push(row);
-        row=[];
-      }else{cell+=text[i];}
-    }
-  }
-  return rows;
-}
-function startEnrich(input){
-  if(!input.files||!input.files.length){alert('No file selected');return;}
-  var apiKey='';
-  var kEl=document.getElementById('apiKeyInput');
-  if(kEl)apiKey=kEl.value.trim();
-  var reader=new FileReader();
-  reader.onerror=function(){alert('Could not read file');};
-  reader.onload=function(e){
-    var rows=parseCSV(e.target.result);
-    if(rows.length<2){alert('CSV empty. Rows: '+rows.length);return;}
-    var headers=rows[0].map(function(h){return h.toLowerCase().trim();});
-    var ti=headers.indexOf('title'),ai=headers.indexOf('author');
-    if(ti===-1||ai===-1){alert('Need title+author columns. Got: '+headers.join(','));return;}
-    var data=[];
-    for(var d=1;d<rows.length;d++){if((rows[d][ti]||'').trim())data.push(rows[d]);}
-    var total=data.length;
-    if(total===0){alert('No data rows');return;}
-    document.getElementById('progressBox').classList.add('active');
-    document.getElementById('downloadBtn').style.display='none';
-    document.getElementById('progressFill').style.width='0%';
-    document.getElementById('progressCount').textContent='0 / '+total;
-    var outH=['title','author','isbn','publisher','published_year','pages','genre','summary','cover_url','google_books_id'];
-    var results=[];
-    function next(i){
-      if(i>=total){
-        document.getElementById('progressLabel').textContent='Done! '+total+' books processed.';
-        document.getElementById('progressFill').style.width='100%';
-        var lines=[outH.join(',')];
-        for(var k=0;k<results.length;k++){
-          var r=results[k];
-          lines.push(outH.map(function(h){return '"'+(r[h]||'').split('"').join('""')+'"';}).join(','));
-        }
-        var blob=new Blob([lines.join('
-')],{type:'text/csv'});
-        var btn=document.getElementById('downloadBtn');
-        btn.href=URL.createObjectURL(blob);
-        btn.download='enriched_books.csv';
-        btn.style.display='block';
-        return;
-      }
-      var title=(data[i][ti]||'').trim(),author=(data[i][ai]||'').trim();
-      document.getElementById('progressCount').textContent=(i+1)+' / '+total;
-      document.getElementById('progressFill').style.width=Math.round(((i+1)/total)*100)+'%';
-      document.getElementById('progressLabel').textContent='Looking up: '+title.substring(0,35);
-      var enc=encodeURIComponent;
-      var q='intitle:'+enc(title)+(author?'+inauthor:'+enc(author):'');
-      var url='https://www.googleapis.com/books/v1/volumes?q='+q+'&maxResults=1&langRestrict=en'+(apiKey?'&key='+enc(apiKey):'');
-      var enriched={title:title,author:author,isbn:'',publisher:'',published_year:'',pages:'',genre:'',summary:'',cover_url:'',google_books_id:''};
-      fetch(url).then(function(r){return r.json();}).then(function(json){
-        var items=json.items||[];
-        if(items.length){
-          var vol=items[0].volumeInfo||{};
-          var isbns=vol.industryIdentifiers||[];
-          var i13='',i10='';
-          for(var j=0;j<isbns.length;j++){
-            if(isbns[j].type==='ISBN_13')i13=isbns[j].identifier;
-            else if(isbns[j].type==='ISBN_10')i10=isbns[j].identifier;
-          }
-          var img=vol.imageLinks||{};
-          enriched.title=vol.title||title;
-          enriched.author=(vol.authors||[author]).join(', ');
-          enriched.isbn=i13||i10;
-          enriched.publisher=vol.publisher||'';
-          enriched.published_year=(vol.publishedDate||'').substring(0,4);
-          enriched.pages=String(vol.pageCount||'');
-          enriched.genre=(vol.categories||[]).join(', ');
-          enriched.summary=(vol.description||'').substring(0,800);
-          enriched.cover_url=(img.thumbnail||img.smallThumbnail||'').split('http://').join('https://');
-          enriched.google_books_id=items[0].id||'';
-        }
-        results.push(enriched);
-        next(i+1);
-      }).catch(function(err){
-        enriched.summary='ERROR:'+err.message;
-        results.push(enriched);
-        next(i+1);
-      });
-    }
-    next(0);
-  };
-  reader.readAsText(input.files[0]);
-}
-</script>
-{% endraw %}
+  <script src="/static/enrich.js"></script>
 </body>
 </html>
