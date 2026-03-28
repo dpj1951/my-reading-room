@@ -1,21 +1,21 @@
 function parseCSV(text) {
-  var rows = [], row = [], cell = '', inQ = false;
-  var CR = 13, LF = 10, COMMA = 44, QUOTE = 34;
-  for (var i = 0; i <= text.length; i++) {
-    var code = i < text.length ? text.charCodeAt(i) : LF;
+  var rows=[], row=[], cell='', inQ=false;
+  var CR=13, LF=10, COMMA=44, QUOTE=34;
+  for (var i=0; i<=text.length; i++) {
+    var c = i<text.length ? text.charCodeAt(i) : LF;
     if (inQ) {
-      if (code === QUOTE && i+1 < text.length && text.charCodeAt(i+1) === QUOTE) { cell += '"'; i++; }
-      else if (code === QUOTE) { inQ = false; }
-      else { cell += text[i]; }
+      if (c===QUOTE && i+1<text.length && text.charCodeAt(i+1)===QUOTE) { cell+='"'; i++; }
+      else if (c===QUOTE) { inQ=false; }
+      else { cell+=text[i]; }
     } else {
-      if (code === QUOTE) { inQ = true; }
-      else if (code === COMMA) { row.push(cell); cell = ''; }
-      else if (code === LF || code === CR) {
-        if (code === CR && i+1 < text.length && text.charCodeAt(i+1) === LF) i++;
-        row.push(cell); cell = '';
-        if (row.join('').trim() !== '') rows.push(row);
-        row = [];
-      } else { cell += text[i]; }
+      if (c===QUOTE) { inQ=true; }
+      else if (c===COMMA) { row.push(cell); cell=''; }
+      else if (c===LF || c===CR) {
+        if (c===CR && i+1<text.length && text.charCodeAt(i+1)===LF) i++;
+        row.push(cell); cell='';
+        if (row.join('').trim()!=='') rows.push(row);
+        row=[];
+      } else { cell+=text[i]; }
     }
   }
   return rows;
@@ -24,29 +24,26 @@ function parseCSV(text) {
 function startEnrich(input) {
   if (!input.files || !input.files.length) { alert('No file selected'); return; }
   var apiKey = '';
-  var keyEl = document.getElementById('apiKeyInput');
-  if (keyEl) apiKey = keyEl.value.trim();
+  var kEl = document.getElementById('apiKeyInput');
+  if (kEl) apiKey = kEl.value.trim();
 
   var reader = new FileReader();
   reader.onerror = function() { alert('Could not read file'); };
   reader.onload = function(e) {
     var rows = parseCSV(e.target.result);
-    if (rows.length < 2) { alert('CSV empty or unreadable. Rows found: ' + rows.length); return; }
+    if (rows.length < 2) { alert('CSV empty. Rows found: ' + rows.length); return; }
 
     var headers = rows[0].map(function(h) { return h.toLowerCase().trim(); });
     var ti = headers.indexOf('title');
     var ai = headers.indexOf('author');
-    if (ti === -1 || ai === -1) {
-      alert('Need title and author columns. Found: ' + headers.join(', '));
-      return;
-    }
+    if (ti===-1 || ai===-1) { alert('Need title and author columns. Found: ' + headers.join(', ')); return; }
 
     var data = [];
-    for (var d = 1; d < rows.length; d++) {
-      if ((rows[d][ti] || '').trim()) data.push(rows[d]);
+    for (var d=1; d<rows.length; d++) {
+      if ((rows[d][ti]||'').trim()) data.push(rows[d]);
     }
     var total = data.length;
-    if (total === 0) { alert('No data rows found'); return; }
+    if (total===0) { alert('No data rows found'); return; }
 
     document.getElementById('progressBox').classList.add('active');
     document.getElementById('downloadBtn').style.display = 'none';
@@ -62,10 +59,10 @@ function startEnrich(input) {
         document.getElementById('progressLabel').textContent = 'Done! ' + total + ' books processed.';
         document.getElementById('progressFill').style.width = '100%';
         var lines = [outH.join(',')];
-        for (var k = 0; k < results.length; k++) {
+        for (var k=0; k<results.length; k++) {
           var r = results[k];
           lines.push(outH.map(function(h) {
-            return '"' + (r[h] || '').split('"').join('""') + '"';
+            return '"' + (r[h]||'').split('"').join('""') + '"';
           }).join(','));
         }
         var blob = new Blob([lines.join('\n')], { type: 'text/csv' });
@@ -76,16 +73,15 @@ function startEnrich(input) {
         return;
       }
 
-      var title = (data[i][ti] || '').trim();
-      var author = (data[i][ai] || '').trim();
-      document.getElementById('progressCount').textContent = (i + 1) + ' / ' + total;
+      var title = (data[i][ti]||'').trim();
+      var author = (data[i][ai]||'').trim();
+      document.getElementById('progressCount').textContent = (i+1) + ' / ' + total;
       document.getElementById('progressFill').style.width = Math.round(((i+1)/total)*100) + '%';
-      document.getElementById('progressLabel').textContent = 'Looking up: ' + title.substring(0, 35);
+      document.getElementById('progressLabel').textContent = 'Looking up: ' + title.substring(0,35);
 
       var enc = encodeURIComponent;
       var q = 'intitle:' + enc(title) + (author ? '+inauthor:' + enc(author) : '');
       var url = 'https://www.googleapis.com/books/v1/volumes?q=' + q + '&maxResults=1&langRestrict=en' + (apiKey ? '&key=' + enc(apiKey) : '');
-
       var enriched = { title:title, author:author, isbn:'', publisher:'', published_year:'', pages:'', genre:'', summary:'', cover_url:'', google_books_id:'' };
 
       fetch(url)
@@ -95,26 +91,31 @@ function startEnrich(input) {
           if (items.length) {
             var vol = items[0].volumeInfo || {};
             var isbns = vol.industryIdentifiers || [];
-            var i13 = '', i10 = '';
-            for (var j = 0; j < isbns.length; j++) {
-              if (isbns[j].type === 'ISBN_13') i13 = isbns[j].identifier;
-              else if (isbns[j].type === 'ISBN_10') i10 = isbns[j].identifier;
+            var i13='', i10='';
+            for (var j=0; j<isbns.length; j++) {
+              if (isbns[j].type==='ISBN_13') i13=isbns[j].identifier;
+              else if (isbns[j].type==='ISBN_10') i10=isbns[j].identifier;
             }
             var img = vol.imageLinks || {};
             enriched.title = vol.title || title;
             enriched.author = (vol.authors || [author]).join(', ');
             enriched.isbn = i13 || i10;
             enriched.publisher = vol.publisher || '';
-            enriched.published_year = (vol.publishedDate || '').substring(0, 4);
-            enriched.pages = String(vol.pageCount || '');
-            enriched.genre = (vol.categories || []).join(', ');
-            enriched.summary = (vol.description || '').substring(0, 800);
-            enriched.cover_url = (img.thumbnail || img.smallThumbnail || '').split('http://').join('https://');
+            enriched.published_year = (vol.publishedDate||'').substring(0,4);
+            enriched.pages = String(vol.pageCount||'');
+            enriched.genre = (vol.categories||[]).join(', ');
+            enriched.summary = (vol.description||'').substring(0,800);
+            enriched.cover_url = (img.thumbnail||img.smallThumbnail||'').split('http://').join('https://');
             enriched.google_books_id = items[0].id || '';
           }
+          results.push(enriched);
+          next(i+1);
         })
-        .catch(function(err) { enriched.summary = 'ERROR: ' + err.message; })
-        .finally(function() { results.push(enriched); next(i + 1); });
+        .catch(function(err) {
+          enriched.summary = 'ERROR: ' + err.message;
+          results.push(enriched);
+          next(i+1);
+        });
     }
 
     next(0);
