@@ -34,11 +34,11 @@
 <div class="cover-grid">
   {% if books %}
     {% for book in books %}
-      <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
+      <a href="/book/{{ book.id }}" title="{{ book.title }} Ã¢ÂÂ {{ book.author }}">
         {% if book.cover_url %}
           <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
         {% else %}
-          <div class="no-cover">ð</div>
+          <div class="no-cover">Ã°ÂÂÂ</div>
         {% endif %}
       </a>
     {% endfor %}
@@ -47,7 +47,7 @@
   {% endif %}
 </div>
   <div id="offline-banner" style="display:none;background:#2a1a00;color:#ffb347;text-align:center;padding:8px 16px;font-size:0.85rem;border-bottom:1px solid #553300;">
-    You're offline â showing your cached library
+    You're offline Ã¢ÂÂ showing your cached library
   </div>
   <script>
     function updateOnlineStatus() {
@@ -60,6 +60,12 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
+        // Unregister any old service workers with wrong scope
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          regs.forEach(reg => {
+            if (reg.scope.endsWith('/static/')) reg.unregister();
+          });
+        });
         navigator.serviceWorker.register('/sw.js', { scope: '/' })
           .then(reg => console.log('SW registered:', reg.scope))
           .catch(err => console.log('SW registration failed:', err));
@@ -79,7 +85,7 @@
     body { font-family: 'Lato', sans-serif; background: #e8e8e8; min-height: 100vh; padding-bottom: 40px; }
     .navbar { background: #2a2a2a; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
     .nav-back { color: #4a9eff; font-size: 1rem; font-weight: 400; text-decoration: none; display: flex; align-items: center; gap: 4px; min-width: 70px; }
-    .nav-back::before { content: 'â¹'; font-size: 1.5rem; line-height: 1; margin-top: -2px; }
+    .nav-back::before { content: 'Ã¢ÂÂ¹'; font-size: 1.5rem; line-height: 1; margin-top: -2px; }
     .nav-title { font-family: 'Lato', sans-serif; font-weight: 700; font-size: 1.1rem; color: #fff; letter-spacing: 0.02em; }
     .nav-add { color: #4a9eff; font-size: 1.6rem; font-weight: 300; text-decoration: none; min-width: 70px; text-align: right; line-height: 1; }
     .filter-bar { background: #c8c8c8; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }
@@ -142,7 +148,7 @@
           {% if book.cover_url %}
             <img class="book-cover-img" src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
           {% else %}
-            <div class="book-cover-placeholder">ð</div>
+            <div class="book-cover-placeholder">Ã°ÂÂÂ</div>
           {% endif %}
           <div class="book-details">
             <span class="book-title-link">{{ book.title }}</span>
