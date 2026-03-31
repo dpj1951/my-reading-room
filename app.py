@@ -91,12 +91,12 @@ def ensure_db():
         init_db()
         app._db_initialized = True
  
-# Ã¢ÂÂÃ¢ÂÂ HOME Ã¢ÂÂÃ¢ÂÂ
+# ── HOME ──
 @app.route("/")
 def index():
     return render_template("home.html")
  
-# Ã¢ÂÂÃ¢ÂÂ BOOKS Ã¢ÂÂÃ¢ÂÂ
+# ── BOOKS ──
 @app.route("/books")
 def books():
     from datetime import datetime
@@ -114,22 +114,22 @@ def books():
     library = sorted(library, key=parse_date, reverse=True)
     return render_template("books.html", books=library)
  
-# Ã¢ÂÂÃ¢ÂÂ ADD BOOK (page) Ã¢ÂÂÃ¢ÂÂ
+# ── ADD BOOK (page) ──
 @app.route("/add")
 def add_choice():
     return render_template("add_choice.html")
  
-# Ã¢ÂÂÃ¢ÂÂ ADD: SCANNER Ã¢ÂÂÃ¢ÂÂ
+# ── ADD: SCANNER ──
 @app.route("/add/scan")
 def add_scan():
     return render_template("scan.html")
  
-# Ã¢ÂÂÃ¢ÂÂ ADD: MANUAL FORM Ã¢ÂÂÃ¢ÂÂ
+# ── ADD: MANUAL FORM ──
 @app.route("/add/manual")
 def add_manual():
     return render_template("add.html", isbn_prefill=request.args.get("isbn", ""))
  
-# Ã¢ÂÂÃ¢ÂÂ ADD: SAVE Ã¢ÂÂÃ¢ÂÂ
+# ── ADD: SAVE ──
 @app.route("/add/manual/save", methods=["POST"])
 def add_manual_save():
     title = request.form.get("title", "").strip()
@@ -153,7 +153,7 @@ def add_manual_save():
     db.session.commit()
     return redirect(url_for("books"))
  
-# Ã¢ÂÂÃ¢ÂÂ AUTHORS Ã¢ÂÂÃ¢ÂÂ
+# ── AUTHORS ──
 @app.route("/authors")
 def authors():
     library = [b.to_dict() for b in Book.query.order_by(Book.author).all()]
@@ -164,7 +164,7 @@ def authors():
     authors_sorted = sorted(author_map.items(), key=lambda x: x[0].lower())
     return render_template("authors.html", authors=authors_sorted)
  
-# Ã¢ÂÂÃ¢ÂÂ UTILITIES Ã¢ÂÂÃ¢ÂÂ
+# ── UTILITIES ──
 @app.route("/utilities")
 def utilities():
     return render_template("utilities.html")
@@ -373,7 +373,7 @@ def enrich_csv():
         return redirect(url_for("utilities"))
  
  
-# Ã¢ÂÂÃ¢ÂÂ BOOK DETAIL Ã¢ÂÂÃ¢ÂÂ
+# ── BOOK DETAIL ──
 @app.route("/utilities/test-google-books")
 def test_google_books():
     import requests as req
@@ -401,7 +401,7 @@ def book_detail(book_id):
     if not book: abort(404)
     return render_template("detail.html", book=book.to_dict())
  
-# Ã¢ÂÂÃ¢ÂÂ BOOK EDIT Ã¢ÂÂÃ¢ÂÂ
+# ── BOOK EDIT ──
 @app.route("/book/<book_id>/edit", methods=["GET", "POST"])
 def book_edit(book_id):
     book = db.session.get(Book, book_id)
@@ -423,7 +423,7 @@ def book_edit(book_id):
     from datetime import date
     return render_template("edit.html", book=book.to_dict(), today=str(date.today()))
  
-# Ã¢ÂÂÃ¢ÂÂ BOOK DELETE Ã¢ÂÂÃ¢ÂÂ
+# ── BOOK DELETE ──
 @app.route("/book/<book_id>/delete", methods=["POST"])
 def book_delete(book_id):
     book = db.session.get(Book, book_id)
@@ -432,7 +432,7 @@ def book_delete(book_id):
     db.session.commit()
     return redirect(url_for("books"))
  
-# Ã¢ÂÂÃ¢ÂÂ API SEARCH (Open Library) Ã¢ÂÂÃ¢ÂÂ
+# ── API SEARCH (Open Library) ──
 @app.route("/api/search")
 def api_search():
     import requests as req_lib
@@ -452,7 +452,7 @@ def api_search():
     except Exception:
         return jsonify([])
  
-# Ã¢ÂÂÃ¢ÂÂ API SUMMARY Ã¢ÂÂÃ¢ÂÂ
+# ── API SUMMARY ──
 @app.route("/api/summary")
 def api_summary():
     import requests as req_lib
