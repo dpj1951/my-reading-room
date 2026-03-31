@@ -41,6 +41,11 @@
     .menu-btn:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
     .shelf { margin-top: 56px; font-size: 3rem; letter-spacing: -4px; }
   </style>
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#0e0e12">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Reading Alcove">
 </head>
 <body>
   <div class="brand">
@@ -55,5 +60,25 @@
     <a class="menu-btn" href="/help">Help</a>
   </nav>
   <div class="shelf">📚📖🔖</div>
+  <div id="offline-banner" style="display:none;background:#2a1a00;color:#ffb347;text-align:center;padding:8px 16px;font-size:0.85rem;border-bottom:1px solid #553300;">
+    You're offline — showing your cached library
+  </div>
+  <script>
+    function updateOnlineStatus() {
+      document.getElementById('offline-banner').style.display = navigator.onLine ? 'none' : 'block';
+    }
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/static/sw.js')
+          .then(reg => console.log('SW registered:', reg.scope))
+          .catch(err => console.log('SW registration failed:', err));
+      });
+    }
+  </script>
 </body>
 </html>
