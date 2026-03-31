@@ -14,20 +14,20 @@ LIBRARY_FILE = "library.json"
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///library.db")
 if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-
+ 
 def load_library():
     if os.path.exists(LIBRARY_FILE):
         with open(LIBRARY_FILE, "r") as f:
             return json.load(f)
     return []
-
+ 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 GOOGLE_BOOKS_API_KEY = os.environ.get("GOOGLE_BOOKS_API_KEY", "")
-
+ 
 db = SQLAlchemy(app)
-
+ 
 class Book(db.Model):
     __tablename__ = "books"
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -42,13 +42,13 @@ class Book(db.Model):
     cover_url = db.Column(db.String(500), default="")
     summary = db.Column(db.Text, default="")
     read_time_hrs = db.Column(db.String(10), default="")
-
+ 
     def to_dict(self):
         return {"id": self.id, "title": self.title, "author": self.author, "isbn": self.isbn,
                 "format": self.format, "pages": self.pages, "copyright_year": self.copyright_year,
                 "read_date": self.read_date, "rating": self.rating, "cover_url": self.cover_url,
                 "summary": self.summary, "read_time_hrs": self.read_time_hrs}
-
+ 
 def migrate_from_json():
     import json
     json_path = os.path.join(os.path.dirname(__file__), "library.json")
@@ -57,7 +57,7 @@ def migrate_from_json():
     wiped_flag = os.path.join(os.path.dirname(__file__), ".library_wiped")
     if os.path.exists(wiped_flag):
         return
-        if Book.query.count() > 0:
+    if Book.query.count() > 0:
         return
     try:
         with open(json_path) as f:
@@ -76,26 +76,26 @@ def migrate_from_json():
     except Exception as e:
         db.session.rollback()
         print(f"Migration error: {e}")
-
+ 
 def init_db():
     try:
         db.create_all()
         migrate_from_json()
     except Exception as e:
         print(f"DB init error: {e}")
-
+ 
 @app.before_request
 def ensure_db():
     if not getattr(app, '_db_initialized', False):
         init_db()
         app._db_initialized = True
-
-# Ã¢ÂÂÃ¢ÂÂ HOME Ã¢ÂÂÃ¢ÂÂ
+ 
+# ── HOME ──
 @app.route("/")
 def index():
     return render_template("home.html")
-
-# Ã¢ÂÂÃ¢ÂÂ BOOKS Ã¢ÂÂÃ¢ÂÂ
+ 
+# ── BOOKS ──
 @app.route("/books")
 def books():
     from datetime import datetime
@@ -112,23 +112,23 @@ def books():
         return datetime.min
     library = sorted(library, key=parse_date, reverse=True)
     return render_template("books.html", books=library)
-
-# Ã¢ÂÂÃ¢ÂÂ ADD BOOK (page) Ã¢ÂÂÃ¢ÂÂ
+ 
+# ── ADD BOOK (page) ──
 @app.route("/add")
 def add_choice():
     return render_template("add_choice.html")
-
-# Ã¢ÂÂÃ¢ÂÂ ADD: SCANNER Ã¢ÂÂÃ¢ÂÂ
+ 
+# ── ADD: SCANNER ──
 @app.route("/add/scan")
 def add_scan():
     return render_template("scan.html")
-
-# Ã¢ÂÂÃ¢ÂÂ ADD: MANUAL FORM Ã¢ÂÂÃ¢ÂÂ
+ 
+# ── ADD: MANUAL FORM ──
 @app.route("/add/manual")
 def add_manual():
     return render_template("add.html", isbn_prefill=request.args.get("isbn", ""))
-
-# Ã¢ÂÂÃ¢ÂÂ ADD: SAVE Ã¢ÂÂÃ¢ÂÂ
+ 
+# ── ADD: SAVE ──
 @app.route("/add/manual/save", methods=["POST"])
 def add_manual_save():
     db.session.add(Book(
@@ -146,24 +146,24 @@ def add_manual_save():
     ))
     db.session.commit()
     return redirect(url_for("books"))
-
-# Ã¢ÂÂÃ¢ÂÂ REMOVE Ã¢ÂÂÃ¢ÂÂ
+ 
+# ── REMOVE ──
 @app.route("/remove/<int:index>")
 def remove(index):
     library = load_library()
     library.pop(index)
     save_library(library)
     return redirect(url_for("books"))
-
-# Ã¢ÂÂÃ¢ÂÂ UPDATE STATUS Ã¢ÂÂÃ¢ÂÂ
+ 
+# ── UPDATE STATUS ──
 @app.route("/status/<int:index>/<status>")
 def update_status(index, status):
     library = load_library()
     library[index]["status"] = status
     save_library(library)
     return redirect(url_for("books"))
-
-# Ã¢ÂÂÃ¢ÂÂ AUTHORS Ã¢ÂÂÃ¢ÂÂ
+ 
+# ── AUTHORS ──
 @app.route("/authors")
 def authors():
     library = [b.to_dict() for b in Book.query.order_by(Book.author).all()]
@@ -173,12 +173,12 @@ def authors():
         author_map.setdefault(a, []).append(book)
     authors_sorted = sorted(author_map.items(), key=lambda x: x[0].lower())
     return render_template("authors.html", authors=authors_sorted)
-
-# Ã¢ÂÂÃ¢ÂÂ UTILITIES Ã¢ÂÂÃ¢ÂÂ
+ 
+# ── UTILITIES ──
 @app.route("/utilities")
 def utilities():
     return render_template("utilities.html")
-
+ 
 @app.route("/utilities/export")
 def export_csv():
     books = Book.query.all()
@@ -191,7 +191,7 @@ def export_csv():
     output.seek(0)
     return send_file(io.BytesIO(output.getvalue().encode("utf-8")), mimetype="text/csv",
                      as_attachment=True, download_name="my_reading_alcove.csv")
-
+ 
 @app.route("/utilities/import", methods=["POST"])
 def import_csv():
     file = request.files.get("file")
@@ -232,7 +232,7 @@ def import_csv():
         db.session.rollback()
         flash(f"Import failed: {str(e)}", "error")
     return redirect(url_for("utilities"))
-
+ 
 @app.route("/utilities/wipe", methods=["POST"])
 def wipe_library():
     try:
@@ -244,16 +244,16 @@ def wipe_library():
         if os.path.exists(json_path):
             with open(json_path, "w") as f:
                 json.dump([], f)
-            flash(f"Library wiped. {num_deleted} book(s) deleted. You're starting fresh!", "success")
+        flash(f"Library wiped. {num_deleted} book(s) deleted. You're starting fresh!", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"Wipe failed: {str(e)}", "error")
     return redirect(url_for("utilities"))
-
+ 
 @app.route("/settings")
 def settings():
     return render_template("settings.html")
-
+ 
 @app.route("/settings/backup")
 def settings_backup():
     from datetime import date
@@ -265,7 +265,7 @@ def settings_backup():
         as_attachment=True,
         download_name=f"reading-alcove-backup-{date.today()}.json"
     )
-
+ 
 @app.route("/settings/restore", methods=["POST"])
 def settings_restore():
     from flask import flash
@@ -316,8 +316,8 @@ def settings_restore():
         db.session.rollback()
         flash(f"Restore failed: {str(e)}", "error")
     return redirect(url_for("settings"))
-
-
+ 
+ 
 @app.route("/utilities/enrich", methods=["POST"])
 def enrich_csv():
     file = request.files.get("file")
@@ -381,9 +381,9 @@ def enrich_csv():
     except Exception as e:
         flash(f"Enrichment failed: {str(e)}", "error")
         return redirect(url_for("utilities"))
-
-
-# Ã¢ÂÂÃ¢ÂÂ BOOK DETAIL Ã¢ÂÂÃ¢ÂÂ
+ 
+ 
+# ── BOOK DETAIL ──
 @app.route("/utilities/test-google-books")
 def test_google_books():
     import requests as req
@@ -403,15 +403,15 @@ def test_google_books():
                             "api_key_used": bool(api_key), "http_status": resp.status_code})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e), "api_key_used": bool(api_key)})
-
-
+ 
+ 
 @app.route("/book/<book_id>")
 def book_detail(book_id):
     book = db.session.get(Book, book_id)
     if not book: abort(404)
     return render_template("detail.html", book=book.to_dict())
-
-# Ã¢ÂÂÃ¢ÂÂ BOOK EDIT Ã¢ÂÂÃ¢ÂÂ
+ 
+# ── BOOK EDIT ──
 @app.route("/book/<book_id>/edit", methods=["GET", "POST"])
 def book_edit(book_id):
     book = db.session.get(Book, book_id)
@@ -432,8 +432,8 @@ def book_edit(book_id):
         return redirect(url_for("book_detail", book_id=book_id))
     from datetime import date
     return render_template("edit.html", book=book.to_dict(), today=str(date.today()))
-
-# Ã¢ÂÂÃ¢ÂÂ BOOK DELETE Ã¢ÂÂÃ¢ÂÂ
+ 
+# ── BOOK DELETE ──
 @app.route("/book/<book_id>/delete", methods=["POST"])
 def book_delete(book_id):
     book = db.session.get(Book, book_id)
@@ -441,8 +441,8 @@ def book_delete(book_id):
     db.session.delete(book)
     db.session.commit()
     return redirect(url_for("books"))
-
-# Ã¢ÂÂÃ¢ÂÂ API SEARCH (Open Library) Ã¢ÂÂÃ¢ÂÂ
+ 
+# ── API SEARCH (Open Library) ──
 @app.route("/api/search")
 def api_search():
     import requests as req_lib
@@ -461,8 +461,8 @@ def api_search():
         return jsonify(results)
     except:
         return jsonify([])
-
-# Ã¢ÂÂÃ¢ÂÂ API SUMMARY Ã¢ÂÂÃ¢ÂÂ
+ 
+# ── API SUMMARY ──
 @app.route("/api/summary")
 def api_summary():
     import requests as req_lib
@@ -474,6 +474,7 @@ def api_summary():
         return jsonify({"summary": desc[:800]})
     except:
         return jsonify({"summary": ""})
-
+ 
 if __name__ == "__main__":
     app.run(debug=True)
+ 
