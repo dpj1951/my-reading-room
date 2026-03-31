@@ -54,7 +54,10 @@ def migrate_from_json():
     json_path = os.path.join(os.path.dirname(__file__), "library.json")
     if not os.path.exists(json_path):
         return
-    if Book.query.count() > 0:
+    wiped_flag = os.path.join(os.path.dirname(__file__), ".library_wiped")
+    if os.path.exists(wiped_flag):
+        return
+        if Book.query.count() > 0:
         return
     try:
         with open(json_path) as f:
@@ -235,7 +238,13 @@ def wipe_library():
     try:
         num_deleted = Book.query.delete()
         db.session.commit()
-        flash(f"Library wiped. {num_deleted} book(s) deleted. You're starting fresh!", "success")
+        wiped_flag = os.path.join(os.path.dirname(__file__), ".library_wiped")
+        open(wiped_flag, "w").close()
+        json_path = os.path.join(os.path.dirname(__file__), "library.json")
+        if os.path.exists(json_path):
+            with open(json_path, "w") as f:
+                json.dump([], f)
+            flash(f"Library wiped. {num_deleted} book(s) deleted. You're starting fresh!", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"Wipe failed: {str(e)}", "error")
