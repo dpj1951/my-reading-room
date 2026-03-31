@@ -1,5 +1,4 @@
 
-Copy
 
 from flask import Flask, render_template, request, redirect, url_for, abort, jsonify, send_file, flash
 import json
