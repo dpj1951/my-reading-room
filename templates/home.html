@@ -59,9 +59,9 @@
     <a class="menu-btn" href="/settings">Settings</a>
     <a class="menu-btn" href="/help">Help</a>
   </nav>
-  <div class="shelf">📚📖🔖</div>
+  <div class="shelf">ððð</div>
   <div id="offline-banner" style="display:none;background:#2a1a00;color:#ffb347;text-align:center;padding:8px 16px;font-size:0.85rem;border-bottom:1px solid #553300;">
-    You're offline — showing your cached library
+    You're offline â showing your cached library
   </div>
   <script>
     function updateOnlineStatus() {
@@ -74,7 +74,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/static/sw.js')
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
           .then(reg => console.log('SW registered:', reg.scope))
           .catch(err => console.log('SW registration failed:', err));
       });
