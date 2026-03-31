@@ -6,7 +6,6 @@ import os
 import uuid
 import requests
 import csv
-import time
 import io
 from datetime import date
 from flask_sqlalchemy import SQLAlchemy
@@ -92,12 +91,12 @@ def ensure_db():
         init_db()
         app._db_initialized = True
  
-# ── HOME ──
+# ââ HOME ââ
 @app.route("/")
 def index():
     return render_template("home.html")
  
-# ── BOOKS ──
+# ââ BOOKS ââ
 @app.route("/books")
 def books():
     from datetime import datetime
@@ -115,27 +114,32 @@ def books():
     library = sorted(library, key=parse_date, reverse=True)
     return render_template("books.html", books=library)
  
-# ── ADD BOOK (page) ──
+# ââ ADD BOOK (page) ââ
 @app.route("/add")
 def add_choice():
     return render_template("add_choice.html")
  
-# ── ADD: SCANNER ──
+# ââ ADD: SCANNER ââ
 @app.route("/add/scan")
 def add_scan():
     return render_template("scan.html")
  
-# ── ADD: MANUAL FORM ──
+# ââ ADD: MANUAL FORM ââ
 @app.route("/add/manual")
 def add_manual():
     return render_template("add.html", isbn_prefill=request.args.get("isbn", ""))
  
-# ── ADD: SAVE ──
+# ââ ADD: SAVE ââ
 @app.route("/add/manual/save", methods=["POST"])
 def add_manual_save():
+    title = request.form.get("title", "").strip()
+    author = request.form.get("author", "").strip()
+    if not title or not author:
+        flash("Title and author are required.", "error")
+        return redirect(url_for("add_manual"))
     db.session.add(Book(
-        title          = request.form.get("title", "").strip(),
-        author         = request.form.get("author", "").strip(),
+        title          = title,
+        author         = author,
         isbn           = request.form.get("isbn", "").strip(),
         copyright_year = request.form.get("copyright_year", "").strip(),
         pages          = request.form.get("pages", "").strip() or None,
@@ -149,23 +153,7 @@ def add_manual_save():
     db.session.commit()
     return redirect(url_for("books"))
  
-# ── REMOVE ──
-@app.route("/remove/<int:index>")
-def remove(index):
-    library = load_library()
-    library.pop(index)
-    save_library(library)
-    return redirect(url_for("books"))
- 
-# ── UPDATE STATUS ──
-@app.route("/status/<int:index>/<status>")
-def update_status(index, status):
-    library = load_library()
-    library[index]["status"] = status
-    save_library(library)
-    return redirect(url_for("books"))
- 
-# ── AUTHORS ──
+# ââ AUTHORS ââ
 @app.route("/authors")
 def authors():
     library = [b.to_dict() for b in Book.query.order_by(Book.author).all()]
@@ -176,7 +164,7 @@ def authors():
     authors_sorted = sorted(author_map.items(), key=lambda x: x[0].lower())
     return render_template("authors.html", authors=authors_sorted)
  
-# ── UTILITIES ──
+# ââ UTILITIES ââ
 @app.route("/utilities")
 def utilities():
     return render_template("utilities.html")
@@ -385,7 +373,7 @@ def enrich_csv():
         return redirect(url_for("utilities"))
  
  
-# ── BOOK DETAIL ──
+# ââ BOOK DETAIL ââ
 @app.route("/utilities/test-google-books")
 def test_google_books():
     import requests as req
@@ -413,7 +401,7 @@ def book_detail(book_id):
     if not book: abort(404)
     return render_template("detail.html", book=book.to_dict())
  
-# ── BOOK EDIT ──
+# ââ BOOK EDIT ââ
 @app.route("/book/<book_id>/edit", methods=["GET", "POST"])
 def book_edit(book_id):
     book = db.session.get(Book, book_id)
@@ -435,7 +423,7 @@ def book_edit(book_id):
     from datetime import date
     return render_template("edit.html", book=book.to_dict(), today=str(date.today()))
  
-# ── BOOK DELETE ──
+# ââ BOOK DELETE ââ
 @app.route("/book/<book_id>/delete", methods=["POST"])
 def book_delete(book_id):
     book = db.session.get(Book, book_id)
@@ -444,7 +432,7 @@ def book_delete(book_id):
     db.session.commit()
     return redirect(url_for("books"))
  
-# ── API SEARCH (Open Library) ──
+# ââ API SEARCH (Open Library) ââ
 @app.route("/api/search")
 def api_search():
     import requests as req_lib
@@ -461,10 +449,10 @@ def api_search():
                 "isbn": ((d.get("isbn") or [""])[0]), "pages": str(d.get("number_of_pages_median","") or ""),
                 "copyright_year": str(d.get("first_publish_year","") or ""), "cover_url": cover, "work_key": d.get("key","")})
         return jsonify(results)
-    except:
+    except Exception:
         return jsonify([])
  
-# ── API SUMMARY ──
+# ââ API SUMMARY ââ
 @app.route("/api/summary")
 def api_summary():
     import requests as req_lib
@@ -474,7 +462,7 @@ def api_summary():
         desc = r.json().get("description", "")
         if isinstance(desc, dict): desc = desc.get("value", "")
         return jsonify({"summary": desc[:800]})
-    except:
+    except Exception:
         return jsonify({"summary": ""})
  
 if __name__ == "__main__":
