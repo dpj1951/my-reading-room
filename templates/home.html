@@ -48,6 +48,14 @@
   <meta name="apple-mobile-web-app-title" content="Reading Alcove">
 </head>
 <body>
+  <div id="offline-banner" style="display:none;background:#2a1a00;color:#ffb347;text-align:center;padding:8px 16px;font-size:0.85rem;border-bottom:1px solid #553300;">You're offline &mdash; showing your cached library</div>
+  <script>
+    function updateOnlineStatus(){document.getElementById('offline-banner').style.display=navigator.onLine?'none':'block';}
+    window.addEventListener('online',updateOnlineStatus);
+    window.addEventListener('offline',updateOnlineStatus);
+    updateOnlineStatus();
+  </script>
+
   <div class="brand">
     <h1>My Reading Alcove</h1>
     <p>Know what you read</p>
@@ -59,30 +67,16 @@
     <a class="menu-btn" href="/settings">Settings</a>
     <a class="menu-btn" href="/help">Help</a>
   </nav>
-  <div class="shelf">Ã°ÂÂÂÃ°ÂÂÂÃ°ÂÂÂ</div>
-  <div id="offline-banner" style="display:none;background:#2a1a00;color:#ffb347;text-align:center;padding:8px 16px;font-size:0.85rem;border-bottom:1px solid #553300;">
-    You're offline Ã¢ÂÂ showing your cached library
-  </div>
+  <div class="shelf">📚📖🔖</div>
   <script>
-    function updateOnlineStatus() {
-      document.getElementById('offline-banner').style.display = navigator.onLine ? 'none' : 'block';
-    }
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
-    updateOnlineStatus();
-  </script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        // Unregister any old service workers with wrong scope
-        navigator.serviceWorker.getRegistrations().then(regs => {
-          regs.forEach(reg => {
-            if (reg.scope.endsWith('/static/')) reg.unregister();
-          });
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',function(){
+        navigator.serviceWorker.getRegistrations().then(function(regs){
+          regs.forEach(function(reg){ if(reg.scope.endsWith('/static/')) reg.unregister(); });
         });
-        navigator.serviceWorker.register('/sw.js', { scope: '/' })
-          .then(reg => console.log('SW registered:', reg.scope))
-          .catch(err => console.log('SW registration failed:', err));
+        navigator.serviceWorker.register('/sw.js',{scope:'/'})
+          .then(function(reg){console.log('SW registered:',reg.scope);})
+          .catch(function(err){console.log('SW failed:',err);});
       });
     }
   </script>
