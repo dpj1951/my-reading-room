@@ -248,11 +248,27 @@
       btn.disabled = true; btn.textContent = 'Searching…';
       resDiv.innerHTML = ''; noRes.style.display = 'none'; searching.style.display = 'block';
       try {
-        const r = await fetch('/api/search?q=' + encodeURIComponent(q) + '&field=' + field);
-        const data = await r.json();
+        // Call Open Library directly from the browser (bypasses server timeout issues)
+        const params = new URLSearchParams({
+          [field]: q, limit: 8,
+          fields: 'key,title,author_name,isbn,first_publish_year,number_of_pages_median,cover_i'
+        });
+        const r = await fetch('https://openlibrary.org/search.json?' + params);
+        const json = await r.json();
+        const docs = (json.docs || []).slice(0, 6);
         searching.style.display = 'none';
-        if (!data.length) { noRes.style.display = 'block'; return; }
-        data.forEach(book => {
+        if (!docs.length) { noRes.style.display = 'block'; return; }
+        docs.forEach(d => {
+          const cover = d.cover_i ? 'https://covers.openlibrary.org/b/id/' + d.cover_i + '-M.jpg' : '';
+          const book = {
+            title: d.title || '',
+            author: (d.author_name || [''])[0],
+            isbn: ((d.isbn || [''])[0]),
+            pages: String(d.number_of_pages_median || ''),
+            copyright_year: String(d.first_publish_year || ''),
+            cover_url: cover,
+            work_key: d.key || ''
+          };
           const div = document.createElement('div');
           div.className = 'result-item';
           div.innerHTML =
@@ -294,12 +310,15 @@
       document.getElementById('ol-query').value = book.title;
       if (book.work_key) {
         try {
-          const r = await fetch('/api/summary?key=' + encodeURIComponent(book.work_key));
+          // Also call summary directly from the browser
+          const r = await fetch('https://openlibrary.org' + book.work_key + '.json');
           const d = await r.json();
-          if (d.summary) {
-            document.getElementById('f-summary').value = d.summary;
+          let desc = d.description || '';
+          if (typeof desc === 'object') desc = desc.value || '';
+          if (desc) {
+            document.getElementById('f-summary').value = desc.slice(0, 800);
             const ps = document.getElementById('preview-summary');
-            ps.textContent = d.summary;
+            ps.textContent = desc.slice(0, 800);
             ps.style.display = 'block';
           }
         } catch(e) {}
