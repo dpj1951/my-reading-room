@@ -449,8 +449,8 @@ def api_search():
                 "isbn": ((d.get("isbn") or [""])[0]), "pages": str(d.get("number_of_pages_median","") or ""),
                 "copyright_year": str(d.get("first_publish_year","") or ""), "cover_url": cover, "work_key": d.get("key","")})
         return jsonify(results)
-    except Exception:
-        return jsonify([])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
  
 # ── API SUMMARY ──
 @app.route("/api/summary")
