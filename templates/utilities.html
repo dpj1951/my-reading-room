@@ -81,7 +81,7 @@
       </label>
     </form>
 
-    <hr class="divider">
+    <button type="button" class="menu-btn" id="backfillBtn" onclick="startBackfill()"> <span class="icon">&#x1F522;</span> Backfill ISBN-13 <span class="sub">Update missing ISBNs from Open Library</span> </button> <div class="progress-box" id="backfillBox"> <div class="progress-label" id="backfillLabel">Looking up ISBNs…</div> <div class="progress-bar-track"><div class="progress-bar-fill" id="backfillFill"></div></div> <div class="progress-count" id="backfillCount">0 / 0</div> </div> <hr class="divider">
     <p class="section-label">Google Books Lookup</p>
 
     
@@ -90,7 +90,7 @@
     <button type="button" class="menu-btn" onclick="document.getElementById('enrichFile').click()">
       <span class="icon">&#x1F50D;</span>
       Enrich from Google Books
-      <span class="sub">Upload a CSV with title &amp; author — no API key needed</span>
+      <span class="sub">Upload a CSV with title &amp; author â no API key needed</span>
     </button>
 
     <div class="progress-box" id="progressBox">
@@ -124,6 +124,77 @@
     </div>
   </div>
 
-  <script src="/static/enrich.js"></script>
+  <script>
+async function startBackfill() {
+  const btn = document.getElementById('backfillBtn');
+  const box = document.getElementById('backfillBox');
+  const label = document.getElementById('backfillLabel');
+  const fill = document.getElementById('backfillFill');
+  const count = document.getElementById('backfillCount');
+  btn.disabled = true;
+  box.classList.add('active');
+  label.textContent = 'Fetching books needing ISBNs…';
+  fill.style.width = '0%';
+  let books;
+  try {
+    const r = await fetch('/utilities/backfill-isbn-data');
+    books = await r.json();
+  } catch(e) {
+    label.textContent = 'Error: ' + e.message;
+    btn.disabled = false;
+    return;
+  }
+  if (!books.length) {
+    label.textContent = '✓ All books already have ISBN-13!';
+    fill.style.width = '100%';
+    count.textContent = '0 books needed updating';
+    btn.disabled = false;
+    return;
+  }
+  const total = books.length;
+  count.textContent = '0 / ' + total;
+  label.textContent = 'Searching Open Library…';
+  const updates = [];
+  for (let i = 0; i < books.length; i++) {
+    const book = books[i];
+    count.textContent = (i + 1) + ' / ' + total;
+    fill.style.width = ((i + 1) / total * 100) + '%';
+    label.textContent = book.title;
+    try {
+      const params = new URLSearchParams({ title: book.title, author: book.author, limit: 3, fields: 'isbn' });
+      const r = await fetch('https://openlibrary.org/search.json?' + params);
+      const json = await r.json();
+      let isbn13 = '';
+      for (const doc of (json.docs || [])) {
+        isbn13 = (doc.isbn || []).find(i => i.length === 13 && /^\d+$/.test(i)) || '';
+        if (isbn13) break;
+      }
+      if (isbn13) updates.push({ id: book.id, isbn: isbn13 });
+    } catch(e) { /* skip */ }
+    await new Promise(r => setTimeout(r, 350));
+  }
+  if (!updates.length) {
+    label.textContent = 'No ISBN-13s found in Open Library.';
+    count.textContent = '0 / ' + total + ' updated';
+    btn.disabled = false;
+    return;
+  }
+  label.textContent = 'Saving ' + updates.length + ' ISBN-13s…';
+  try {
+    const saveR = await fetch('/utilities/backfill-isbn-save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    const result = await saveR.json();
+    label.textContent = '✓ Done! ' + result.updated + ' book(s) updated.';
+    count.textContent = (total - updates.length) + ' not found in Open Library';
+    fill.style.width = '100%';
+  } catch(e) {
+    label.textContent = 'Save failed: ' + e.message;
+  }
+  btn.disabled = false;
+}
+</script><script src="/static/enrich.js"></script>
 </body>
 </html>
