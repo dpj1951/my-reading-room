@@ -91,12 +91,12 @@ def ensure_db():
         init_db()
         app._db_initialized = True
  
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ HOME ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ HOME ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 @app.route("/")
 def index():
     return render_template("home.html")
  
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ BOOKS ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ BOOKS ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 @app.route("/books")
 def books():
     from datetime import datetime
@@ -114,22 +114,22 @@ def books():
     library = sorted(library, key=parse_date, reverse=True)
     return render_template("books.html", books=library)
  
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ ADD BOOK (page) ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ ADD BOOK (page) ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 @app.route("/add")
 def add_choice():
     return render_template("add_choice.html")
  
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ ADD: SCANNER ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ ADD: SCANNER ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 @app.route("/add/scan")
 def add_scan():
     return render_template("scan.html")
  
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ ADD: MANUAL FORM ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ ADD: MANUAL FORM ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 @app.route("/add/manual")
 def add_manual():
     return render_template("add.html", isbn_prefill=request.args.get("isbn", ""))
  
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ ADD: SAVE ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ ADD: SAVE ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 @app.route("/add/manual/save", methods=["POST"])
 def add_manual_save():
     title = request.form.get("title", "").strip()
@@ -153,7 +153,7 @@ def add_manual_save():
     db.session.commit()
     return redirect(url_for("books"))
  
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ AUTHORS ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ AUTHORS ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 @app.route("/authors")
 def authors():
     library = [b.to_dict() for b in Book.query.order_by(Book.author).all()]
@@ -164,7 +164,7 @@ def authors():
     authors_sorted = sorted(author_map.items(), key=lambda x: x[0].lower())
     return render_template("authors.html", authors=authors_sorted)
  
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ UTILITIES ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ UTILITIES ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 @app.route("/utilities")
 def utilities():
     return render_template("utilities.html")
@@ -373,7 +373,7 @@ def enrich_csv():
         return redirect(url_for("utilities"))
  
  
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ BOOK DETAIL ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ BOOK DETAIL ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 @app.route("/utilities/test-google-books")
 def test_google_books():
     import requests as req
@@ -401,7 +401,7 @@ def book_detail(book_id):
     if not book: abort(404)
     return render_template("detail.html", book=book.to_dict())
  
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ BOOK EDIT ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ BOOK EDIT ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 @app.route("/book/<book_id>/edit", methods=["GET", "POST"])
 def book_edit(book_id):
     book = db.session.get(Book, book_id)
@@ -423,7 +423,7 @@ def book_edit(book_id):
     from datetime import date
     return render_template("edit.html", book=book.to_dict(), today=str(date.today()))
  
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ BOOK DELETE ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ BOOK DELETE ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 @app.route("/book/<book_id>/delete", methods=["POST"])
 def book_delete(book_id):
     book = db.session.get(Book, book_id)
@@ -432,7 +432,7 @@ def book_delete(book_id):
     db.session.commit()
     return redirect(url_for("books"))
  
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ API SEARCH (Open Library) ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ API SEARCH (Open Library) ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 @app.route("/api/search")
 def api_search():
     import requests as req_lib
@@ -452,7 +452,7 @@ def api_search():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
  
-# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ API SUMMARY ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+# ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ API SUMMARY ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 @app.route("/api/summary")
 def api_summary():
     import requests as req_lib
@@ -530,6 +530,63 @@ def isbn_lookup():
         return jsonify({"isbn13": ""})
     except Exception as e:
         return jsonify({"isbn13": "", "error": str(e)})
+
+
+@app.route("/utilities/backfill-covers-data")
+def backfill_covers_data():
+    """Return books missing a cover URL."""
+    books = Book.query.all()
+    needs_cover = []
+    for b in books:
+        if not (b.cover_url or "").strip():
+            needs_cover.append({"id": b.id, "title": b.title, "author": b.author, "isbn": b.isbn or ""})
+    return jsonify(needs_cover)
+
+@app.route("/utilities/backfill-covers-save", methods=["POST"])
+def backfill_covers_save():
+    """Accept a list of {id, cover_url} pairs and update the database."""
+    data = request.get_json()
+    if not data or not isinstance(data, list):
+        return jsonify({"error": "Invalid data"}), 400
+    updated = 0
+    for item in data:
+        book_id = item.get("id", "").strip()
+        cover_url = item.get("cover_url", "").strip()
+        if not book_id or not cover_url:
+            continue
+        book = db.session.get(Book, book_id)
+        if book:
+            book.cover_url = cover_url
+            updated += 1
+    db.session.commit()
+    return jsonify({"updated": updated})
+
+@app.route("/utilities/cover-lookup")
+def cover_lookup():
+    """Server-side Google Books cover lookup using the stored API key."""
+    title = request.args.get("title", "").strip()
+    author = request.args.get("author", "").strip()
+    isbn = request.args.get("isbn", "").strip()
+    if not title and not isbn:
+        return jsonify({"cover_url": ""})
+    api_key = GOOGLE_BOOKS_API_KEY
+    try:
+        query = f"isbn:{isbn}" if isbn else f"intitle:{title}" + (f"+inauthor:{author}" if author else "")
+        resp = requests.get(
+            "https://www.googleapis.com/books/v1/volumes",
+            params={"q": query, "maxResults": 3, "langRestrict": "en", "key": api_key},
+            timeout=8
+        )
+        resp.raise_for_status()
+        for item in resp.json().get("items", []):
+            links = item.get("volumeInfo", {}).get("imageLinks", {})
+            cover = links.get("thumbnail", "") or links.get("smallThumbnail", "")
+            if cover:
+                cover = cover.replace("http://", "https://").replace("&zoom=1", "&zoom=2")
+                return jsonify({"cover_url": cover})
+        return jsonify({"cover_url": ""})
+    except Exception as e:
+        return jsonify({"cover_url": "", "error": str(e)})
 
 if __name__ == "__main__":
     app.run(debug=True)
