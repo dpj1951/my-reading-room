@@ -81,7 +81,7 @@
       </label>
     </form>
 
-    <button type="button" class="menu-btn" id="backfillBtn" onclick="startBackfill()"> <span class="icon">&#x1F522;</span> Backfill ISBN-13 <span class="sub">Update missing ISBNs from Open Library</span> </button> <div class="progress-box" id="backfillBox"> <div class="progress-label" id="backfillLabel">Looking up ISBNs…</div> <div class="progress-bar-track"><div class="progress-bar-fill" id="backfillFill"></div></div> <div class="progress-count" id="backfillCount">0 / 0</div> </div> <hr class="divider">
+    <button type="button" class="menu-btn" id="backfillBtn" onclick="startBackfill()"> <span class="icon">&#x1F522;</span> Backfill ISBN-13 <span class="sub">Update missing ISBNs from Open Library</span> </button> <div class="progress-box" id="backfillBox"> <div class="progress-label" id="backfillLabel">Looking up ISBNsâ¦</div> <div class="progress-bar-track"><div class="progress-bar-fill" id="backfillFill"></div></div> <div class="progress-count" id="backfillCount">0 / 0</div> </div> <hr class="divider">
     <p class="section-label">Google Books Lookup</p>
 
     
@@ -90,7 +90,7 @@
     <button type="button" class="menu-btn" onclick="document.getElementById('enrichFile').click()">
       <span class="icon">&#x1F50D;</span>
       Enrich from Google Books
-      <span class="sub">Upload a CSV with title &amp; author â no API key needed</span>
+      <span class="sub">Upload a CSV with title &amp; author Ã¢ÂÂ no API key needed</span>
     </button>
 
     <div class="progress-box" id="progressBox">
@@ -133,7 +133,7 @@ async function startBackfill() {
   const count = document.getElementById('backfillCount');
   btn.disabled = true;
   box.classList.add('active');
-  label.textContent = 'Fetching books needing ISBNs…';
+  label.textContent = 'Fetching books needing ISBNsâ¦';
   fill.style.width = '0%';
   let books;
   try {
@@ -145,7 +145,7 @@ async function startBackfill() {
     return;
   }
   if (!books.length) {
-    label.textContent = '✓ All books already have ISBN-13!';
+    label.textContent = 'â All books already have ISBN-13!';
     fill.style.width = '100%';
     count.textContent = '0 books needed updating';
     btn.disabled = false;
@@ -153,7 +153,7 @@ async function startBackfill() {
   }
   const total = books.length;
   count.textContent = '0 / ' + total;
-  label.textContent = 'Searching Open Library…';
+  label.textContent = 'Searching Open Libraryâ¦';
   const updates = [];
   for (let i = 0; i < books.length; i++) {
     const book = books[i];
@@ -169,6 +169,20 @@ async function startBackfill() {
         isbn13 = (doc.isbn || []).find(i => i.length === 13 && /^\d+$/.test(i)) || '';
         if (isbn13) break;
       }
+      // Fallback: Google Books if Open Library didn't have ISBN-13
+      if (!isbn13) {
+        label.textContent = '📖 ' + book.title + ' → Google Books…';
+        try {
+          const gbQ = 'intitle:' + book.title.replace(/ /g, '+') + (book.author ? '+inauthor:' + book.author.replace(/ /g, '+') : '');
+          const gbR = await fetch('https://www.googleapis.com/books/v1/volumes?q=' + gbQ + '&maxResults=3&langRestrict=en');
+          const gbJson = await gbR.json();
+          for (const item of (gbJson.items || [])) {
+            const idents = item.volumeInfo?.industryIdentifiers || [];
+            isbn13 = idents.find(x => x.type === 'ISBN_13')?.identifier || '';
+            if (isbn13) break;
+          }
+        } catch(e2) { /* skip */ }
+      }
       if (isbn13) updates.push({ id: book.id, isbn: isbn13 });
     } catch(e) { /* skip */ }
     await new Promise(r => setTimeout(r, 350));
@@ -179,7 +193,7 @@ async function startBackfill() {
     btn.disabled = false;
     return;
   }
-  label.textContent = 'Saving ' + updates.length + ' ISBN-13s…';
+  label.textContent = 'Saving ' + updates.length + ' ISBN-13sâ¦';
   try {
     const saveR = await fetch('/utilities/backfill-isbn-save', {
       method: 'POST',
@@ -187,7 +201,7 @@ async function startBackfill() {
       body: JSON.stringify(updates)
     });
     const result = await saveR.json();
-    label.textContent = '✓ Done! ' + result.updated + ' book(s) updated.';
+    label.textContent = 'â Done! ' + result.updated + ' book(s) updated.';
     count.textContent = (total - updates.length) + ' not found in Open Library';
     fill.style.width = '100%';
   } catch(e) {
