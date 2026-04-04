@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add Book — My Reading Alcove</title>
+  <title>Add Book â My Reading Alcove</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -108,7 +108,7 @@
     <div class="search-section">
       <h2>Search Open Library</h2>
       <div class="search-row">
-        <input type="text" id="ol-query" placeholder="Title, author, or ISBN…">
+        <input type="text" id="ol-query" placeholder="Title, author, or ISBNâ¦">
         <select id="ol-field">
           <option value="q">All</option>
           <option value="title">Title</option>
@@ -117,7 +117,7 @@
         </select>
         <button class="btn-search" id="btn-search" onclick="doSearch()">Search</button>
       </div>
-      <div id="searching">Searching…</div>
+      <div id="searching">Searchingâ¦</div>
       <div id="no-results">No results found.</div>
       <div id="results"></div>
     </div>
@@ -129,12 +129,12 @@
           <h3 id="preview-title"></h3>
           <p id="preview-author"></p>
           <div class="preview-meta">
-            <span class="pmeta">Pages: <strong id="preview-pages">—</strong></span>
-            <span class="pmeta">Year: <strong id="preview-year">—</strong></span>
-            <span class="pmeta">ISBN: <strong id="preview-isbn">—</strong></span>
+            <span class="pmeta">Pages: <strong id="preview-pages">â</strong></span>
+            <span class="pmeta">Year: <strong id="preview-year">â</strong></span>
+            <span class="pmeta">ISBN: <strong id="preview-isbn">â</strong></span>
           </div>
         </div>
-        <button class="btn-clear" onclick="clearSelection()">✕ Clear</button>
+        <button class="btn-clear" onclick="clearSelection()">â Clear</button>
       </div>
       <div class="preview-summary" id="preview-summary" style="display:none"></div>
     </div>
@@ -169,9 +169,9 @@
         <div class="field full">
           <label>Format</label>
           <div class="format-group">
-            <button type="button" class="format-btn active-paper" id="btn-paper" onclick="setFormat('Paper')">📖 Paper</button>
-            <button type="button" class="format-btn" id="btn-ebook" onclick="setFormat('Ebook')">📱 Ebook</button>
-            <button type="button" class="format-btn" id="btn-audio" onclick="setFormat('Audiobook')">🎧 Audiobook</button>
+            <button type="button" class="format-btn active-paper" id="btn-paper" onclick="setFormat('Paper')">ð Paper</button>
+            <button type="button" class="format-btn" id="btn-ebook" onclick="setFormat('Ebook')">ð± Ebook</button>
+            <button type="button" class="format-btn" id="btn-audio" onclick="setFormat('Audiobook')">ð§ Audiobook</button>
           </div>
           <input type="hidden" name="format" id="f-format" value="Paper">
         </div>
@@ -181,16 +181,16 @@
         </div>
         <div class="field full">
           <label>Plot Summary</label>
-          <textarea name="plot_summary" id="f-summary" placeholder="Brief description…"></textarea>
+          <textarea name="plot_summary" id="f-summary" placeholder="Brief descriptionâ¦"></textarea>
         </div>
         <div class="field full">
           <label>My Rating</label>
           <div class="star-group">
-            <span class="star" data-val="1" onclick="setRating(1)" title="1 star">★</span>
-            <span class="star" data-val="2" onclick="setRating(2)" title="2 stars">★</span>
-            <span class="star" data-val="3" onclick="setRating(3)" title="3 stars">★</span>
-            <span class="star" data-val="4" onclick="setRating(4)" title="4 stars">★</span>
-            <span class="star" data-val="5" onclick="setRating(5)" title="5 stars">★</span>
+            <span class="star" data-val="1" onclick="setRating(1)" title="1 star">â</span>
+            <span class="star" data-val="2" onclick="setRating(2)" title="2 stars">â</span>
+            <span class="star" data-val="3" onclick="setRating(3)" title="3 stars">â</span>
+            <span class="star" data-val="4" onclick="setRating(4)" title="4 stars">â</span>
+            <span class="star" data-val="5" onclick="setRating(5)" title="5 stars">â</span>
             <span class="star-label" id="rating-label">No rating</span>
           </div>
           <input type="hidden" name="rating" id="f-rating" value="">
@@ -217,7 +217,7 @@
     const ratingLabels = ['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'];
     function setRating(val) {
       document.getElementById('f-rating').value = val;
-      document.getElementById('rating-label').textContent = val + ' / 5 — ' + ratingLabels[val];
+      document.getElementById('rating-label').textContent = val + ' / 5 â ' + ratingLabels[val];
       document.querySelectorAll('.star').forEach(s => {
         s.classList.toggle('active', parseInt(s.dataset.val) <= val);
       });
@@ -245,7 +245,7 @@
       const resDiv = document.getElementById('results');
       const noRes = document.getElementById('no-results');
       const searching = document.getElementById('searching');
-      btn.disabled = true; btn.textContent = 'Searching…';
+      btn.disabled = true; btn.textContent = 'Searchingâ¦';
       resDiv.innerHTML = ''; noRes.style.display = 'none'; searching.style.display = 'block';
       try {
         // Call Open Library directly from the browser (bypasses server timeout issues)
@@ -263,7 +263,7 @@
           const book = {
             title: d.title || '',
             author: (d.author_name || [''])[0],
-            isbn: ((d.isbn || [''])[0]),
+            isbn: (d.isbn || []).find(i => i.length === 13 && /^\d+$/.test(i)) || ((d.isbn || [])[0] || ''),
             pages: String(d.number_of_pages_median || ''),
             copyright_year: String(d.first_publish_year || ''),
             cover_url: cover,
@@ -276,9 +276,9 @@
             '<div class="result-text">' +
               '<div class="result-title">' + book.title + '</div>' +
               '<div class="result-author">' + book.author + '</div>' +
-              '<div class="result-meta">' + (book.pages ? book.pages + ' pages · ' : '') + (book.copyright_year || '') + '</div>' +
+              '<div class="result-meta">' + (book.pages ? book.pages + ' pages Â· ' : '') + (book.copyright_year || '') + '</div>' +
             '</div>' +
-            '<span class="result-select">Select →</span>';
+            '<span class="result-select">Select â</span>';
           div.onclick = () => selectBook(book);
           resDiv.appendChild(div);
         });
@@ -302,9 +302,9 @@
       document.getElementById('preview-cover').src = book.cover_url || '';
       document.getElementById('preview-title').textContent = book.title;
       document.getElementById('preview-author').textContent = book.author;
-      document.getElementById('preview-pages').textContent = book.pages || '—';
-      document.getElementById('preview-year').textContent = book.copyright_year || '—';
-      document.getElementById('preview-isbn').textContent = book.isbn || '—';
+      document.getElementById('preview-pages').textContent = book.pages || 'â';
+      document.getElementById('preview-year').textContent = book.copyright_year || 'â';
+      document.getElementById('preview-isbn').textContent = book.isbn || 'â';
       preview.classList.add('show');
       document.getElementById('results').innerHTML = '';
       document.getElementById('ol-query').value = book.title;
