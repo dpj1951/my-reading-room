@@ -24,6 +24,10 @@ def load_library():
  
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+}
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 GOOGLE_BOOKS_API_KEY = os.environ.get("GOOGLE_BOOKS_API_KEY", "")
  
@@ -407,19 +411,24 @@ def book_edit(book_id):
     book = db.session.get(Book, book_id)
     if not book: abort(404)
     if request.method == "POST":
-        book.title = request.form.get("title", "").strip()
-        book.author = request.form.get("author", "").strip()
-        book.isbn = request.form.get("isbn", "").strip()
-        book.format = request.form.get("format", "Paper")
-        book.pages = request.form.get("pages", "").strip() or None
-        book.copyright_year = request.form.get("copyright_year", "").strip()
-        book.read_date = request.form.get("read_date") or None
-        book.rating = request.form.get("rating") or None
-        book.cover_url = request.form.get("cover_url", "").strip()
-        book.summary = request.form.get("summary", "").strip()
-        book.read_time_hrs = request.form.get("read_time_hrs") or None
-        db.session.commit()
-        return redirect(url_for("book_detail", book_id=book_id))
+        try:
+            book.title = request.form.get("title", "").strip()
+            book.author = request.form.get("author", "").strip()
+            book.isbn = request.form.get("isbn", "").strip()
+            book.format = request.form.get("format", "Paper")
+            book.pages = request.form.get("pages", "").strip() or None
+            book.copyright_year = request.form.get("copyright_year", "").strip()
+            book.read_date = request.form.get("read_date") or None
+            book.rating = request.form.get("rating") or None
+            book.cover_url = request.form.get("cover_url", "").strip()
+            book.summary = request.form.get("summary", "").strip()
+            book.read_time_hrs = request.form.get("read_time_hrs") or None
+            db.session.commit()
+            return redirect(url_for("book_detail", book_id=book_id))
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"book_edit save error: {type(e).__name__}: {e}")
+            flash(f"Save failed — {type(e).__name__}: {e}", "error")
     from datetime import date
     return render_template("edit.html", book=book.to_dict(), today=str(date.today()))
  
