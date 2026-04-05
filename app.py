@@ -44,7 +44,7 @@ class Book(db.Model):
     copyright_year = db.Column(db.String(10), default="")
     read_date = db.Column(db.String(10), default="")
     rating = db.Column(db.String(5), default="")
-    cover_url = db.Column(db.String(500), default="")
+    cover_url = db.Column(db.Text, default="")
     summary = db.Column(db.Text, default="")
     read_time_hrs = db.Column(db.String(10), default="")
  
@@ -85,6 +85,12 @@ def migrate_from_json():
 def init_db():
     try:
         db.create_all()
+        # Widen cover_url from VARCHAR(500) to TEXT for data: URI support
+        try:
+            db.session.execute(db.text("ALTER TABLE books ALTER COLUMN cover_url TYPE TEXT"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
         migrate_from_json()
     except Exception as e:
         print(f"DB init error: {e}")
