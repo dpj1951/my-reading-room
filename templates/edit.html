@@ -75,7 +75,12 @@
 
     <form class="form-section" action="/book/{{ book.id }}/edit" method="POST">
       <h2>Book details</h2>
-      <div class="fields">
+      {% if save_error %}
+<div style="background:#2a1010;border:1px solid #e07070;border-radius:8px;padding:14px 18px;margin-bottom:20px;color:#e07070;font-size:0.875rem;line-height:1.5;">
+  <strong>Save failed.</strong> {{ save_error }}
+</div>
+{% endif %}
+<div class="fields">
 
         <div class="field full">
           <label>Title *</label>
