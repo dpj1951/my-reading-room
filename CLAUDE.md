@@ -1,128 +1,100 @@
-# CLAUDE.md — My Reading Alcove
+# CLAUDE.md – My Reading Alcove
 
 This file gives Claude full context on this project so sessions can resume without re-explaining.
 
 ## Project Overview
-
-My Reading Alcove is a personal book tracking web app. Users can log books they've read, store cover art, ratings, summaries, read dates, and format (paper/ebook/audiobook). It has a barcode scanner for ISBN lookup, Google Books and Open Library API integration, CSV import/export, cover/ISBN backfill tools, and backup/restore. It is a PWA (installable on mobile). It is being evolved into a **multi-user subscription product**.
+My Reading Alcove is a personal book tracking web app. Users can log books they've read, store cover art, ratings, summaries, read dates, and format (paper/ebook/audiobook). It has a barcode scanner for ISBN lookup, Google Books and Open Library API integration, CSV import/export, cover/ISBN backfill tools, and backup/restore. It is a PWA (installable on mobile). It is being evolved into a multi-user subscription product.
 
 ## Repository & Deployment
-
 - Repo: https://github.com/dpj1951/my-reading-room
-- **Stable branch:** `reading-alcove` → https://my-reading-room2.onrender.com (single-user, no auth — DO NOT touch)
-- **Dev branch:** `phase-1-auth` → second Render service (to be set up) with Supabase auth
-- Platform: Render (free tier, Flask web service + PostgreSQL)
-- Push method: GitHub Contents API via browser JS from the Render app page
+- Stable branch: `reading-alcove` → https://my-reading-room2.onrender.com (single-user, no auth — DO NOT touch)
+- Auth branch: `phase-1-auth` → https://reading-alcove-auth.onrender.com (multi-user with Supabase auth — ACTIVE DEV)
+- Platform: Render (free tier, Flask web service)
+- Push method: GitHub web editor UI (REST API returns 401 from browser — no PAT stored)
 
-## Tech Stack
+## Infrastructure Details
 
-- Backend: Python / Flask (single file: app.py)
-- Database: SQLAlchemy + PostgreSQL (Render managed DB for stable; Supabase PostgreSQL for phase-1-auth)
-- Templates: Jinja2 (all in templates/)
-- Frontend: Vanilla JS + CSS (dark theme, DM Serif Display + DM Sans fonts)
-- Static: static/enrich.js, service worker (sw.js), PWA manifest + icons
-- Auth: Supabase Auth (phase-1-auth branch)
-- Dependencies: flask, flask-sqlalchemy, psycopg2-binary, requests, gunicorn, supabase
+### Render
+- Service: reading-alcove-auth
+- Service ID: srv-d7a20q5m5p6s73b4u5v0
+- Dashboard: https://dashboard.render.com/web/srv-d7a20q5m5p6s73b4u5v0
+- Free tier — uses IPv4 only, cannot use Supabase direct connection (IPv6)
 
-## Database Model (Book)
+### Supabase
+- Project ref: ijrepkmhqdiezvbxxzke
+- Region: us-west-2 (AWS)
+- Dashboard: https://supabase.com/dashboard/project/ijrepkmhqdiezvbxxzke
+- Auth: Supabase Auth (supabase-py) — handles signup/login/logout
+- Email confirmation: DISABLED (mailer_autoconfirm: true) — users sign up without email verify
+- Database connection: Transaction pooler (IPv4-compatible)
+  - Host: aws-1-us-west-2.pooler.supabase.com
+  - Port: 6543
+  - DATABASE_URL on Render uses this pooler URL (NOT the direct IPv6 connection)
 
-```
-id               String(36)   # UUID primary key
-title            String(500)
-author           String(500)
-isbn             String(20)
-format           String(20)   # 'Paper', 'Ebook', 'Audiobook'
-pages            String(10)
-copyright_year   String(10)
-read_date        String(10)   # stored as YYYY-MM-DD
-rating           String(5)
-cover_url        Text
-summary          Text
-read_time_hrs    String(10)
-user_id          String(36)   # Added in Phase 1 — Supabase auth user UUID
-```
+### Database Schema
+- books table — all existing columns plus user_id (text, FK to Supabase auth.users.id)
+- All book queries filtered by user_id for per-user data isolation
+- Supabase manages users (auth.users) — no separate users table in app DB
 
-## How to Push Changes
+## Phase 1 — Completed
 
-The shell sandbox has no external network access. The browser (Claude in Chrome) CAN reach api.github.com when the active tab is on my-reading-room2.onrender.com.
+Goal: Add multi-user authentication to the existing single-user app.
 
-```js
-const TOKEN = 'ghp_...'; // get fresh token from user if expired
-// 1. Fetch file meta (gets SHA + base64 content)
-const meta = await (await fetch('https://api.github.com/repos/dpj1951/my-reading-room/contents/FILENAME?ref=BRANCH', {
-  headers: { 'Authorization': 'token ' + TOKEN }
-})).json();
-// 2. Decode, patch, re-encode
-const bytes = Uint8Array.from(atob(meta.content.replace(/\n/g,'')), c => c.charCodeAt(0));
-let code = new TextDecoder().decode(bytes);
-// ... make string replacements ...
-const outBytes = new TextEncoder().encode(code);
-let bin = ''; outBytes.forEach(b => bin += String.fromCharCode(b));
-// 3. PUT
-const put = await (await fetch('https://api.github.com/repos/dpj1951/my-reading-room/contents/FILENAME', {
-  method: 'PUT',
-  headers: { 'Authorization': 'token ' + TOKEN, 'Content-Type': 'application/json' },
-  body: JSON.stringify({ message: 'commit message', content: btoa(bin), sha: meta.sha, branch: 'BRANCH' })
-})).json();
-```
+What was built:
+- Supabase Auth integration (signup, login, logout) via supabase-py
+- @login_required decorator using Flask session to store user_id
+- Per-user data isolation — all book queries filtered by user_id
+- books table migrated to include user_id column
+- Render deployment configured with Transaction pooler DATABASE_URL
+- Email confirmation disabled (mailer_autoconfirm: true) for frictionless signup
+- Full auth flow tested: signup → auto-login → add book → logout → redirect to /login
 
-## Environment Variables
+Key files changed:
+- app.py — added session import, login_required decorator, user_id filtering, Supabase auth routes
+- requirements.txt — added supabase
+- templates/login.html, templates/signup.html — new auth pages
 
-### Current (reading-alcove / Render managed DB)
-- `DATABASE_URL` — PostgreSQL connection string (Render managed)
-- `SECRET_KEY` — Flask session secret
-- `GOOGLE_BOOKS_API_KEY` — for book lookup and cover/ISBN backfill
+Last commit on phase-1-auth: fc77375
 
-### To add for phase-1-auth Render service
-- `DATABASE_URL` — Supabase PostgreSQL connection string
-- `SECRET_KEY` — Flask session secret
-- `SUPABASE_URL` — https://ijrepkmhqdiezvbxxzke.supabase.co
-- `SUPABASE_KEY` — Supabase service role key (sb_secret_...)
-- `GOOGLE_BOOKS_API_KEY`
+## Phase 2 — Planned (Next)
 
-## Phase Progress
+Goal: Turn the app into a paid subscription product.
 
-### ✅ Completed bugs (Apr 5 2026)
-1. 500 error on edit save (stale DB connection) — fixed with pool_pre_ping
-2. Edit save silently failing — fixed with error banner in edit.html
-3. StringDataRightTruncation on cover_url — fixed by widening to db.Text
+Planned work:
+1. Subscription tiers — Free (limited books, e.g. 20) vs Pro (unlimited)
+2. Stripe billing — checkout, webhooks, subscription management, customer portal
+3. Admin panel — view all users, subscription status, manually adjust tiers
+4. Subscription enforcement — gate features/book-count by tier in app.py
+5. User profile page — show current plan, upgrade/downgrade button
+6. Transactional email — welcome email, payment receipt (via Resend or SendGrid)
+7. Stripe env vars on Render: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_ID_PRO
 
-### ✅ Phase 1 — Auth & Per-User Data (Apr 6 2026, branch: phase-1-auth)
-- Created `phase-1-auth` branch from `reading-alcove`
-- Added Supabase auth client (supabase-py)
-- Added `user_id` column to Book model + migration in init_db
-- Added `login_required` decorator + `get_user_id()` helper
-- Added auth routes: /login, /signup, /logout, /forgot-password
-- All routes protected with @login_required
-- All Book queries filtered by user_id
-- Added auth templates: login.html, signup.html, forgot_password.html
-- **TODO:** Set up second Render service pointing at phase-1-auth branch
-- **TODO:** Get Supabase DB connection string and set DATABASE_URL on new Render service
-- **TODO:** Test signup → login → add book → logout flow end-to-end
+Notes for Phase 2 start:
+- Admin login is NOT a separate auth system — use Supabase Auth + is_admin flag in a profiles table (or hard-coded admin email check for now)
+- Stripe test mode first, live keys only when ready to charge real users
+- Keep reading-alcove (stable) branch untouched throughout
 
-### 🔜 Phase 2 — Stripe Billing
-- Flat monthly subscription fee model
-- Stripe customer created on signup
-- Subscription checkout flow
-- Webhook endpoint (activate/deactivate on payment success/failure)
-- Gate entire app behind active subscription check
+## Development Notes
 
-### 🔜 Phase 3 — Account Page & Email
-- Account page: view plan, cancel subscription
-- Stripe customer portal for billing management
-- Welcome email on signup
-- Failed payment handling
+### Updating env vars on Render (UI masks values — use API instead)
+1. Go to Render Dashboard → Account Settings → API Keys → Create temporary key
+2. Use it:
+   GET https://api.render.com/v1/services/srv-d7a20q5m5p6s73b4u5v0/envVars
+   Authorization: Bearer YOUR_KEY
+3. Build new value, then PUT back
+4. Revoke the key immediately after
 
-### 🔜 Phase 4 — Production Readiness
-- New environment variables on Render
-- End-to-end testing with Stripe test cards
-- Privacy policy page
-- Deployment config review
+### Disabling email confirmation on Supabase
+From a logged-in supabase.com tab:
+  const r = await fetch('/api/platform/token');
+  const { token } = await r.json();
+  fetch('https://api.supabase.com/v1/projects/ijrepkmhqdiezvbxxzke/config/auth', {
+    method: 'PATCH',
+    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mailer_autoconfirm: true })
+  });
 
-## Product & Distribution Decisions
-
-- **Distribution:** Web-first. PWA installs on home screen. No App Store planned initially.
-- **Auth:** Supabase Auth (free up to 50k MAU)
-- **Billing:** Stripe flat monthly fee. Customer portal for cancellation.
-- **Hosting:** Render for Flask backend. Supabase for database.
-- **Email:** Postmark or Resend for transactional email.
+### GitHub REST API note
+The API returns 401 from a logged-in GitHub browser tab (session cookies not passed to REST API).
+Use the GitHub web editor (https://github.com/dpj1951/my-reading-room/edit/phase-1-auth/FILENAME)
+or generate a PAT (Settings → Developer settings → Personal access tokens) with repo scope.
