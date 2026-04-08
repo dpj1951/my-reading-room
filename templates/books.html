@@ -26,6 +26,10 @@
   <meta name="apple-mobile-web-app-title" content="Reading Alcove">
 </head>
 <body>
+  <div class="user-bar" style="background:#16213e;border-bottom:1px solid #2a2a4a;padding:0.4rem 1rem;display:flex;align-items:center;justify-content:flex-end;font-size:0.8rem;color:#888;gap:0.75rem;">
+    {% if current_user %}<span>{{ current_user['email'] }}</span><a href="/logout" style="color:#c9a96e;text-decoration:none;padding:0.2rem 0.6rem;border:1px solid #c9a96e;border-radius:4px;">Log out</a>{% endif %}
+  </div>
+
   <div id="offline-banner" style="display:none;background:#2a1a00;color:#ffb347;text-align:center;padding:8px 16px;font-size:0.85rem;border-bottom:1px solid #553300;">You're offline &mdash; showing your cached library</div>
   <script>
     function updateOnlineStatus(){document.getElementById('offline-banner').style.display=navigator.onLine?'none':'block';}
