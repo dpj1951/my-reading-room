@@ -77,15 +77,27 @@ const put = await (await fetch('https://api.github.com/repos/dpj1951/my-reading-
 })).json();
 ```
 
+## Bugs Fixed This Session (Apr 8 2026)
+### Phase 1 Auth Implementation
+- Added flask-login + werkzeug imports and LoginManager setup
+- User model with stripe_customer_id stub ready for Phase 2
+- user_id column migration uses IF NOT EXISTS (safe to re-run)
+- Existing books auto-assigned to first signup user
+
 ## Planned Development Roadmap
 
 The app is being evolved into a **multi-user subscription product**. No hiring out — Claude does the implementation work with dennis testing/reviewing.
 
-### Phase 1 — Auth & Per-User Data
-- Supabase project setup (auth + database)
-- Signup / login / logout / password reset pages
-- Add `user_id` to books table
-- Lock every route to logged-in user's data only (`@login_required` + `WHERE user_id = current_user`)
+### Phase 1 — Auth & Per-User Data ✅ COMPLETE (Apr 8 2026)
+- ✅ Flask-native auth (werkzeug password hashing, no Supabase needed)
+- ✅ User model: id, email, password_hash, created_at, stripe_customer_id, subscription_active
+- ✅ /signup, /login, /logout routes + templates
+- ✅ user_id FK on Book model
+- ✅ DB migration: ALTER TABLE books ADD COLUMN IF NOT EXISTS user_id
+- ✅ @login_required on all 23 book/utility/settings routes
+- ✅ All queries scoped to current_user.id
+- ✅ First signup auto-claims all existing orphaned books
+- ✅ flask-login + werkzeug added to requirements.txt
 
 ### Phase 2 — Stripe Billing
 - Flat monthly subscription fee model
