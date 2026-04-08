@@ -1,6 +1,4 @@
-
-
-from flask import Flask, render_template, request, redirect, url_for, abort, jsonify, send_file, flash
+from flask import Flask, render_template, request, redirect, url_for, abort, jsonify, send_file, flash, session, g
 import json
 import os
 import uuid
@@ -9,112 +7,131 @@ import csv
 import io
 from datetime import date
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
+import jwt as pyjwt
+
 app = Flask(__name__)
 app.jinja_env.filters['enumerate'] = enumerate
 LIBRARY_FILE = "library.json"
+
+# ── Supabase config ───────────────────────────────────────────────────────────
+SUPABASE_URL        = os.environ.get("SUPABASE_URL", "https://ijrepkmhqdiezvbxxzke.supabase.co")
+SUPABASE_ANON_KEY   = os.environ.get("SUPABASE_ANON_KEY", "")
+SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET", "")
+
+# ── Database ──────────────────────────────────────────────────────────────────
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///library.db")
 if DATABASE_URL.startswith("postgres://"):
-        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
- 
-def load_library():
-    if os.path.exists(LIBRARY_FILE):
-        with open(LIBRARY_FILE, "r") as f:
-            return json.load(f)
-    return []
- 
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_pre_ping": True,
-    "pool_recycle": 300,
-}
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True, "pool_recycle": 300}
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
-login_manager = LoginManager(app)
-login_manager.login_view = "login"
-login_manager.login_message = "Please log in to access your library."
 GOOGLE_BOOKS_API_KEY = os.environ.get("GOOGLE_BOOKS_API_KEY", "")
- 
+
 db = SQLAlchemy(app)
- 
-class User(UserMixin, db.Model):
-    __tablename__ = "users"
-    id                  = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    email               = db.Column(db.String(254), unique=True, nullable=False)
-    password_hash       = db.Column(db.String(256), nullable=False)
-    created_at          = db.Column(db.String(30), default=lambda: date.today().isoformat())
-    stripe_customer_id  = db.Column(db.String(64), default="")
-    subscription_active = db.Column(db.Boolean, default=False)
-    books = db.relationship("Book", backref="owner", lazy=True)
 
-    def set_password(self, pw):
-        self.password_hash = generate_password_hash(pw)
-
-    def check_password(self, pw):
-        return check_password_hash(self.password_hash, pw)
-
+# ── Book model ────────────────────────────────────────────────────────────────
 class Book(db.Model):
     __tablename__ = "books"
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    title = db.Column(db.String(500), nullable=False)
-    author = db.Column(db.String(500), nullable=False)
-    isbn = db.Column(db.String(20), default="")
-    format = db.Column(db.String(20), default="Paper")
-    pages = db.Column(db.String(10), default="")
+    id             = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    title          = db.Column(db.String(500), nullable=False)
+    author         = db.Column(db.String(500), nullable=False)
+    isbn           = db.Column(db.String(20), default="")
+    format         = db.Column(db.String(20), default="Paper")
+    pages          = db.Column(db.String(10), default="")
     copyright_year = db.Column(db.String(10), default="")
-    read_date = db.Column(db.String(10), default="")
-    rating = db.Column(db.String(5), default="")
-    cover_url = db.Column(db.Text, default="")
-    summary = db.Column(db.Text, default="")
-    read_time_hrs = db.Column(db.String(10), default="")
- 
-    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=True)
+    read_date      = db.Column(db.String(10), default="")
+    rating         = db.Column(db.String(5), default="")
+    cover_url      = db.Column(db.Text, default="")
+    summary        = db.Column(db.Text, default="")
+    read_time_hrs  = db.Column(db.String(10), default="")
+    user_id        = db.Column(db.String(36), nullable=True)
 
     def to_dict(self):
         return {"id": self.id, "title": self.title, "author": self.author, "isbn": self.isbn,
                 "format": self.format, "pages": self.pages, "copyright_year": self.copyright_year,
                 "read_date": self.read_date, "rating": self.rating, "cover_url": self.cover_url,
-                "summary": self.summary, "read_time_hrs": self.read_time_hrs}
- 
-def migrate_from_json():
-    import json
-    json_path = os.path.join(os.path.dirname(__file__), "library.json")
-    if not os.path.exists(json_path):
-        return
-    wiped_flag = os.path.join(os.path.dirname(__file__), ".library_wiped")
-    if os.path.exists(wiped_flag):
-        return
-    if Book.query.count() > 0:
-        return
+                "summary": self.summary, "read_time_hrs": self.read_time_hrs, "user_id": self.user_id}
+
+# ── Auth helpers ──────────────────────────────────────────────────────────────
+def get_current_user():
+    token = session.get("access_token")
+    if not token:
+        return None
     try:
-        with open(json_path) as f:
-            books = json.load(f)
-        for b in books:
-            book = Book(id=b.get("id", str(uuid.uuid4())), title=b.get("title", ""),
-                        author=b.get("author", ""), isbn=b.get("isbn", ""),
-                        format=b.get("format", "Paper"), pages=b.get("pages", ""),
-                        copyright_year=b.get("copyright_year", ""), read_date=b.get("read_date", ""),
-                        rating=b.get("rating", ""), cover_url=b.get("cover_url", ""),
-                        summary=b.get("summary", b.get("plot_summary", "")),
-                        read_time_hrs=b.get("read_time_hrs", ""))
-            db.session.add(book)
+        secret = SUPABASE_JWT_SECRET
+        if secret:
+            payload = pyjwt.decode(token, secret, algorithms=["HS256"],
+                                   options={"verify_aud": False})
+        else:
+            payload = pyjwt.decode(token, options={"verify_signature": False})
+        return {"id": payload.get("sub"), "email": payload.get("email", "")}
+    except Exception:
+        session.pop("access_token", None)
+        return None
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = get_current_user()
+        if not user:
+            flash("Please log in to access your library.", "info")
+            return redirect(url_for("login", next=request.path))
+        g.user = user
+        return f(*args, **kwargs)
+    return decorated
+
+def supabase_sign_in(email, password):
+    r = requests.post(
+        SUPABASE_URL + "/auth/v1/token?grant_type=password",
+        headers={"apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json"},
+        json={"email": email, "password": password}, timeout=10)
+    return r.json()
+
+def supabase_sign_up(email, password):
+    r = requests.post(
+        SUPABASE_URL + "/auth/v1/signup",
+        headers={"apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json"},
+        json={"email": email, "password": password}, timeout=10)
+    return r.json()
+
+def supabase_reset_password(email):
+    requests.post(
+        SUPABASE_URL + "/auth/v1/recover",
+        headers={"apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json"},
+        json={"email": email}, timeout=10)
+
+# ── DB init ───────────────────────────────────────────────────────────────────
+def load_library():
+    if os.path.exists(LIBRARY_FILE):
+        with open(LIBRARY_FILE, "r") as f:
+            return json.load(f)
+    return []
+
+def migrate_from_json():
+    if Book.query.count() == 0:
+        for b in load_library():
+            db.session.add(Book(
+                id=b.get("id", str(uuid.uuid4())),
+                title=b.get("title",""), author=b.get("author",""),
+                isbn=b.get("isbn",""), format=b.get("format","Paper"),
+                pages=b.get("pages",""), copyright_year=b.get("copyright_year",""),
+                read_date=b.get("read_date",""), rating=b.get("rating",""),
+                cover_url=b.get("cover_url",""), summary=b.get("summary",""),
+                read_time_hrs=b.get("read_time_hrs",""),
+            ))
         db.session.commit()
-        print(f"Migrated {len(books)} books from library.json")
-    except Exception as e:
-        db.session.rollback()
-        print(f"Migration error: {e}")
- 
+
 def init_db():
     try:
         db.create_all()
-        # Widen cover_url from VARCHAR(500) to TEXT for data: URI support
         try:
             db.session.execute(db.text("ALTER TABLE books ALTER COLUMN cover_url TYPE TEXT"))
             db.session.commit()
         except Exception:
             db.session.rollback()
-        # Phase 1 migration: add user_id column if absent
         try:
             db.session.execute(db.text("ALTER TABLE books ADD COLUMN IF NOT EXISTS user_id VARCHAR(36)"))
             db.session.commit()
@@ -123,22 +140,34 @@ def init_db():
         migrate_from_json()
     except Exception as e:
         print(f"DB init error: {e}")
- 
+
 @app.before_request
 def ensure_db():
-    if not getattr(app, '_db_initialized', False):
+    if not getattr(app, "_db_initialized", False):
         init_db()
         app._db_initialized = True
- 
-# ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ HOME ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
 
-@login_manager.user_loader
-def load_user(uid):
-    return User.query.get(uid)
+# ── Auth routes ───────────────────────────────────────────────────────────────
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if get_current_user():
+        return redirect(url_for("books"))
+    error = None
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        pw    = request.form.get("password", "")
+        data  = supabase_sign_in(email, pw)
+        if "access_token" in data:
+            session["access_token"]  = data["access_token"]
+            session["refresh_token"] = data.get("refresh_token", "")
+            next_page = request.args.get("next")
+            return redirect(next_page or url_for("books"))
+        error = data.get("error_description") or data.get("msg") or "Invalid email or password."
+    return render_template("login.html", error=error)
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
-    if current_user.is_authenticated:
+    if get_current_user():
         return redirect(url_for("books"))
     error = None
     if request.method == "POST":
@@ -151,53 +180,43 @@ def signup():
             error = "Passwords do not match."
         elif len(pw) < 8:
             error = "Password must be at least 8 characters."
-        elif User.query.filter_by(email=email).first():
-            error = "An account with that email already exists."
         else:
-            user = User(email=email)
-            user.set_password(pw)
-            db.session.add(user)
-            db.session.flush()
-            Book.query.filter_by(user_id=None).update({"user_id": user.id})
-            db.session.commit()
-            login_user(user)
-            flash("Welcome to My Reading Alcove!", "success")
-            return redirect(url_for("books"))
+            data = supabase_sign_up(email, pw)
+            if "access_token" in data:
+                session["access_token"]  = data["access_token"]
+                session["refresh_token"] = data.get("refresh_token", "")
+                flash("Welcome to My Reading Alcove!", "success")
+                return redirect(url_for("books"))
+            elif data.get("id"):
+                flash("Account created! Check your email to confirm before logging in.", "info")
+                return redirect(url_for("login"))
+            error = data.get("error_description") or data.get("msg") or data.get("message") or "Signup failed."
     return render_template("signup.html", error=error)
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if current_user.is_authenticated:
-        return redirect(url_for("books"))
-    error = None
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    sent = False
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
-        pw    = request.form.get("password", "")
-        user  = User.query.filter_by(email=email).first()
-        if user and user.check_password(pw):
-            login_user(user, remember=True)
-            next_page = request.args.get("next")
-            return redirect(next_page or url_for("books"))
-        error = "Invalid email or password."
-    return render_template("login.html", error=error)
+        supabase_reset_password(email)
+        sent = True
+    return render_template("forgot_password.html", sent=sent)
 
 @app.route("/logout")
-@login_required
 def logout():
-    logout_user()
+    session.clear()
     flash("You have been logged out.", "info")
     return redirect(url_for("login"))
 
 @app.route("/")
 def index():
-    return render_template("home.html")
- 
-# ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ BOOKS ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
+    return render_template("home.html", current_user=get_current_user())
+
 @app.route("/books")
 @login_required
 def books():
     from datetime import datetime
-    library = [b.to_dict() for b in Book.query.filter_by(user_id=current_user.id).all()]
+    library = [b.to_dict() for b in Book.query.filter_by(user_id=g.user["id"]).all()]
     def parse_date(b):
         d = b.get("read_date") or ""
         if not d:
@@ -241,7 +260,7 @@ def add_manual_save():
     db.session.add(Book(
         title          = title,
         author         = author,
-        user_id        = current_user.id,
+        user_id        = g.user["id"],
         isbn           = request.form.get("isbn", "").strip(),
         copyright_year = request.form.get("copyright_year", "").strip(),
         pages          = request.form.get("pages", "").strip() or None,
@@ -259,7 +278,7 @@ def add_manual_save():
 @app.route("/authors")
 @login_required
 def authors():
-    library = [b.to_dict() for b in Book.query.filter_by(user_id=current_user.id).order_by(Book.author).all()]
+    library = [b.to_dict() for b in Book.query.filter_by(user_id=g.user["id"]).order_by(Book.author).all()]
     author_map = {}
     for book in library:
         a = book["author"]
@@ -276,7 +295,7 @@ def utilities():
 @app.route("/utilities/export")
 @login_required
 def export_csv():
-    books = Book.query.filter_by(user_id=current_user.id).all()
+    books = Book.query.filter_by(user_id=g.user["id"]).all()
     fields = ["id","title","author","isbn","format","pages","copyright_year","read_date","rating","cover_url","summary","read_time_hrs"]
     output = io.StringIO()
     writer = csv.DictWriter(output, fieldnames=fields)
@@ -314,7 +333,7 @@ def import_csv():
             if existing:
                 skipped += 1
                 continue
-            book = Book(id=book_id or str(uuid.uuid4()), user_id=current_user.id, title=row.get("title","").strip(),
+            book = Book(id=book_id or str(uuid.uuid4()), user_id=g.user["id"], title=row.get("title","").strip(),
                         author=row.get("author","").strip(), isbn=row.get("isbn","").strip(),
                         format=row.get("format","Paper").strip(), pages=row.get("pages","").strip(),
                         copyright_year=row.get("copyright_year","").strip(), read_date=row.get("read_date","").strip(),
@@ -333,7 +352,7 @@ def import_csv():
 @login_required
 def wipe_library():
     try:
-        num_deleted = Book.query.filter_by(user_id=current_user.id).delete()
+        num_deleted = Book.query.filter_by(user_id=g.user["id"]).delete()
         db.session.commit()
         wiped_flag = os.path.join(os.path.dirname(__file__), ".library_wiped")
         open(wiped_flag, "w").close()
@@ -395,7 +414,7 @@ def settings_restore():
                     continue
             book = Book(
                 id=book_id or str(uuid.uuid4()),
-                user_id=current_user.id,
+                user_id=g.user["id"],
                 title=b.get("title", "").strip(),
                 author=b.get("author", "").strip(),
                 isbn=b.get("isbn", "").strip(),
