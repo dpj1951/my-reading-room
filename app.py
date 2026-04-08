@@ -148,6 +148,11 @@ def ensure_db():
         app._db_initialized = True
 
 # ── Auth routes ───────────────────────────────────────────────────────────────
+
+@app.context_processor
+def inject_user():
+    return dict()
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if get_current_user():
