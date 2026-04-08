@@ -66,7 +66,22 @@
     <a class="menu-btn" href="/utilities">Utilities</a>
     <a class="menu-btn" href="/settings">Settings</a>
     <a class="menu-btn" href="/help">Help</a>
+  {% if current_user.is_authenticated %}
+    <a href="/logout" style="margin-left:auto;font-size:0.8rem;color:#888;text-decoration:none;padding:0.3rem 0.7rem;border:1px solid #2a2a4a;border-radius:6px;">
+      {{ current_user.email }} &nbsp;·&nbsp; Log out
+    </a>
+  {% else %}
+    <a href="/login" style="margin-left:auto;font-size:0.8rem;color:#c9a96e;text-decoration:none;">Log in</a>
+  {% endif %}
   </nav>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% for cat, msg in messages %}
+  <div style="background:{% if cat=='success' %}#1a3d1a{% elif cat=='error' %}#3d1a1a{% else %}#1a2a3d{% endif %};
+              border:1px solid {% if cat=='success' %}#3a8b3a{% elif cat=='error' %}#8b3a3a{% else %}#2a5a8b{% endif %};
+              color:{% if cat=='success' %}#4f8{% elif cat=='error' %}#f48{% else %}#48f{% endif %};
+              border-radius:8px;padding:0.65rem 1rem;margin:0.5rem 1rem;font-size:0.9rem;">{{ msg }}</div>
+  {% endfor %}
+  {% endwith %}
   <div class="shelf">📚📖🔖</div>
   <script>
     if('serviceWorker' in navigator){
