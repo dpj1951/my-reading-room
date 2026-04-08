@@ -11,25 +11,24 @@
            min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; }
     h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; color: #c9a96e; margin-bottom: 0.25rem; }
     .subtitle { color: #888; font-size: 0.9rem; margin-bottom: 2rem; }
-    .card { background: #16213e; border: 1px solid #2a2a4a; border-radius: 12px;
-            padding: 2rem; width: 100%; max-width: 400px; }
+    .card { background: #16213e; border: 1px solid #2a2a4a; border-radius: 12px; padding: 2rem; width: 100%; max-width: 400px; }
     .field { margin-bottom: 1.25rem; }
     label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 0.4rem; }
     input { width: 100%; padding: 0.65rem 0.9rem; background: #0f1429; border: 1px solid #2a2a4a;
             border-radius: 8px; color: #e0d7c6; font-size: 1rem; outline: none; }
     input:focus { border-color: #c9a96e; }
     .btn { width: 100%; padding: 0.75rem; background: #c9a96e; color: #1a1a2e;
-           border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
-           cursor: pointer; margin-top: 0.5rem; }
+           border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
     .btn:hover { background: #dbbe8a; }
-    .error { background: #3d1a1a; border: 1px solid #8b3a3a; color: #f48; border-radius: 8px;
-             padding: 0.65rem 0.9rem; margin-bottom: 1rem; font-size: 0.9rem; }
+    .error { background: #3d1a1a; border: 1px solid #8b3a3a; color: #f48; border-radius: 8px; padding: 0.65rem 0.9rem; margin-bottom: 1rem; font-size: 0.9rem; }
+    .flash-info { background: #1a2a3d; border: 1px solid #2a5a8b; color: #48f; border-radius: 8px; padding: 0.65rem 0.9rem; margin-bottom: 1rem; font-size: 0.9rem; }
+    .flash-success { background: #1a3d1a; border: 1px solid #3a8b3a; color: #4f8; border-radius: 8px; padding: 0.65rem 0.9rem; margin-bottom: 1rem; font-size: 0.9rem; }
     .footer-link { text-align: center; margin-top: 1.25rem; font-size: 0.9rem; color: #888; }
     .footer-link a { color: #c9a96e; text-decoration: none; }
-    .flash-success { background: #1a3d1a; border: 1px solid #3a8b3a; color: #4f8; border-radius: 8px;
-                     padding: 0.65rem 0.9rem; margin-bottom: 1rem; font-size: 0.9rem; }
+    .forgot { text-align: right; font-size: 0.8rem; margin-top: 0.3rem; }
+    .forgot a { color: #888; text-decoration: none; }
+    .forgot a:hover { color: #c9a96e; }
   </style>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -51,6 +50,7 @@
       <div class="field">
         <label for="password">Password</label>
         <input type="password" id="password" name="password" required autocomplete="current-password">
+        <div class="forgot"><a href="/forgot-password">Forgot password?</a></div>
       </div>
       <button class="btn" type="submit">Log In</button>
     </form>
