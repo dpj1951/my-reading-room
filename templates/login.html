@@ -49,12 +49,29 @@
       </div>
       <div class="field">
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" required autocomplete="current-password">
+        <div style="position: relative;">
+          <input type="password" id="password" name="password" required autocomplete="current-password">
+          <button type="button" id="toggle-password" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #888; cursor: pointer; font-size: 18px;">👁️</button>
+        </div>
         <div class="forgot"><a href="/forgot-password">Forgot password?</a></div>
       </div>
       <button class="btn" type="submit">Log In</button>
     </form>
     <div class="footer-link">No account? <a href="/signup">Sign up free</a></div>
   </div>
+  <script>
+    document.getElementById('toggle-password').addEventListener('click', function() {
+      const passwordField = document.getElementById('password');
+      const toggleBtn = document.getElementById('toggle-password');
+      
+      if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        toggleBtn.textContent = '🙈';
+      } else {
+        passwordField.type = 'password';
+        toggleBtn.textContent = '👁️';
+      }
+    });
+  </script>
 </body>
 </html>
