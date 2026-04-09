@@ -283,7 +283,7 @@ def add_manual_save():
 @app.route("/authors")
 @login_required
 def authors():
-    library = [b.to_dict() for b in Book.query.filter_by(user_id=g.user["id"]).order_by(Book.author).all()]
+    library = [b.to_dict() for b in Book.query.filter_by(user_id=g.user["id"]).all()]
     author_map = {}
     for book in library:
         a = book["author"]
