@@ -58,21 +58,30 @@ other slow DB operations return a 500 Internal Server Error.
 - Email confirmation disabled (mailer_autoconfirm: true) for frictionless signup
 - Full auth flow tested: signup → auto-login → add book → logout → redirect to /login
 
-**Bugs fixed post-launch:**
+**Bugs fixed:**
 - Authors page was showing ALL users' books — missing `filter_by(user_id=get_user_id())` on the authors route query. Fixed.
 - Backup restore was deleting ALL users' books — `Book.query.delete()` was not scoped to current user. Fixed to `Book.query.filter_by(user_id=get_user_id()).delete()`.
 - CSV import returning 500 — gunicorn worker killed after 30s during slow Supabase query on cold start. Fixed by adding `gunicorn.conf.py` with `timeout = 120`.
+- ✅ Authors sorting by first name instead of last name — removed `.order_by(Book.author)` from database query to let Python `last_name_key()` function work properly. Fixed Apr 9, 2026.
+- ✅ Password visibility toggle missing on login/signup forms — added eye icon (👁️/🙈) with JavaScript toggle functionality. Fixed Apr 9, 2026.
+- ✅ Unwanted 📚 emoji in login/signup headers — removed from all auth page templates for cleaner appearance. Fixed Apr 9, 2026.
 
 **Key files changed:**
 - `app.py` — added session import, login_required decorator, user_id filtering on ALL Book queries, Supabase auth routes
 - `requirements.txt` — added supabase
-- `templates/login.html`, `templates/signup.html` — new auth pages
+- `templates/login.html`, `templates/signup.html` — new auth pages with password toggle and clean headers
 - `gunicorn.conf.py` — new file, sets timeout=120 workers=1
 
-**Last commits on phase-1-auth:**
+**Recent commits on phase-1-auth:**
+- `5b9cae3` — Fix authors sorting: remove DB order_by to enable proper last name sorting (Apr 9, 2026)
 - `65bc3ad` — Create gunicorn.conf.py (fix CSV import timeout)
 - `12a086c` — Fix authors data isolation + backup restore scope
 - `8b8d809` — docs: update CLAUDE.md with Phase 1 completion and Phase 2 plans
+
+## Known Issues / Current TODO
+- **Service worker cache problem:** The PWA service worker may cache old pages and serve them offline even after deploys. If experiencing stale content, visit /logout then log in fresh.
+- **Barcode scanner not yet implemented** — major feature for Phase 2 roadmap
+- Production readiness items for Phase 2 launch
 
 ## Phase 2 — Planned (Next)
 **Goal:** Turn the app into a paid subscription product.
