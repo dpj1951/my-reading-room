@@ -56,7 +56,7 @@ user_id String(36) # FK to Supabase auth.users.id
 - `SUPABASE_URL` — https://ijrepkmhqdiezvbxxzke.supabase.co
 - `SUPABASE_ANON_KEY` — sb_publishable_25JxbKV5-pocxq9xrEE6bQ_ORKEBSvL
 - `SECRET_KEY` — Flask session secret
-- `SUPABASE_JWT_SECRET` — for JWT token verification (not yet set, using fallback decode)
+- `SUPABASE_JWT_SECRET` — for JWT token verification (✅ set Apr 9 2026, full signature verification active)
 
 ## Auth Implementation (Phase 1 — Complete Apr 8 2026)
 - Supabase Auth via REST API (`/auth/v1/token` for sign-in, `/auth/v1/signup`)
@@ -70,7 +70,6 @@ user_id String(36) # FK to Supabase auth.users.id
 
 ## Known Issues / Next Session TODO
 - **Service worker cache problem:** The PWA service worker on my-reading-room2 caches old pages and serves them offline even after deploys. sw.js was updated to v2 (clears cache on activate, no offline caching) but Chrome tab may still need a hard reload. Fix: visit /logout first to get fresh session, then log in.
-- **SUPABASE_JWT_SECRET** not yet set on Render — JWT decoded without signature verification (safe for now, add proper secret next session)
 - **reading-alcove-auth.onrender.com** — old separate Render service, books show there because it has no login protection on the old code. Can be deleted or ignored.
 
 ## Bugs Fixed (Apr 8 2026)
@@ -131,7 +130,7 @@ Standard push pattern:
 - Failed payment handling
 
 ### Phase 4 — Production Readiness
-- Add SUPABASE_JWT_SECRET to Render env vars
+- ✅ Add SUPABASE_JWT_SECRET to Render env vars (Apr 9 2026)
 - End-to-end testing with Stripe test cards
 - Privacy policy page
 - Upgrade Render to paid tier (no sleep)
