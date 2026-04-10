@@ -163,7 +163,7 @@ def login():
         pw    = request.form.get("password", "")
         data  = supabase_sign_in(email, pw)
         import sys
-        print(f"LOGIN DEBUG: email={email} keys={list(data.keys())} error={data.get('error')} desc={data.get('error_description')}", file=sys.stderr, flush=True)
+        print(f"LOGIN DEBUG: email={email} keys={list(data.keys())} msg={data.get('message')} hint={data.get('hint')} error={data.get('error')} desc={data.get('error_description')}", file=sys.stderr, flush=True)
         if "access_token" in data:
             session["access_token"]  = data["access_token"]
             session["refresh_token"] = data.get("refresh_token", "")
