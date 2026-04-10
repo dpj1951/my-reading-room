@@ -237,6 +237,29 @@ def reset_password():
     # GET: show the form — JS will read the token from the URL fragment
     return render_template("reset_password.html", done=False, error=None)
 
+
+@app.route("/tmp-reset-dpj")
+def tmp_reset_dpj():
+    """Temporary route to reset owner password - DELETE AFTER USE"""
+    import os
+    service_key = os.environ.get("SUPABASE_SERVICE_KEY", "")
+    if not service_key:
+        # Try using admin API with anon key via password update
+        # Sign in as admin and update password
+        r = requests.post(
+            SUPABASE_URL + "/auth/v1/token?grant_type=password",
+            headers={"apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json"},
+            json={"email": "dpjohnson1951@gmail.com", "password": "OLDPW"}, timeout=10)
+        return jsonify({"error": "No service key", "hint": "Add SUPABASE_SERVICE_KEY to Render env vars"})
+    # Use service role key to update password
+    user_id = "13a4418d-7a34-4c6c-bbfd-6bda8cfedd45"
+    r = requests.put(
+        SUPABASE_URL + "/auth/v1/admin/users/" + user_id,
+        headers={"apikey": service_key, "Authorization": "Bearer " + service_key, "Content-Type": "application/json"},
+        json={"password": "Digbe101671!"},
+        timeout=10)
+    return jsonify({"status": r.status_code, "result": r.json()})
+
 @app.route("/logout")
 def logout():
     session.clear()
