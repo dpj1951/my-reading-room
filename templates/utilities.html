@@ -85,8 +85,8 @@
       </label>
     </form>
 
-    <button type="button" class="menu-btn" id="backfillBtn" onclick="startBackfill()"> <span class="icon">&#x1F522;</span> Backfill ISBN-13 <span class="sub">Update missing ISBNs from Open Library</span> </button> <div class="progress-box" id="backfillBox"> <div class="progress-label" id="backfillLabel">Looking up ISBNsÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¦</div> <div class="progress-bar-track"><div class="progress-bar-fill" id="backfillFill"></div></div> <div class="progress-count" id="backfillCount">0 / 0</div> </div> <hr class="divider">
-    <button type="button" class="menu-btn" id="coverBtn" onclick="startCoverBackfill()"> <span class="icon">&#x1F5BC;&#xFE0F;</span> Backfill Book Covers <span class="sub">Find missing covers from Open Library &amp; Google Books</span> </button> <div class="progress-box" id="coverBox"> <div class="progress-label" id="coverLabel">Looking up coversÃÂ¢ÃÂÃÂ¦</div> <div class="progress-bar-track"><div class="progress-bar-fill" id="coverFill"></div></div> <div class="progress-count" id="coverCount">0 / 0</div> </div> <hr class="divider"> <p class="section-label">Google Books Lookup</p>
+    <button type="button" class="menu-btn" id="backfillBtn" onclick="startBackfill()"> <span class="icon">&#x1F522;</span> Backfill ISBN-13 <span class="sub">Update missing ISBNs from Open Library</span> </button> <div class="progress-box" id="backfillBox"> <div class="progress-label" id="backfillLabel">Looking up ISBNs.........</div> <div class="progress-bar-track"><div class="progress-bar-fill" id="backfillFill"></div></div> <div class="progress-count" id="backfillCount">0 / 0</div> </div> <hr class="divider">
+    <button type="button" class="menu-btn" id="coverBtn" onclick="startCoverBackfill()"> <span class="icon">&#x1F5BC;&#xFE0F;</span> Backfill Book Covers <span class="sub">Find missing covers from Open Library &amp; Google Books</span> </button> <div class="progress-box" id="coverBox"> <div class="progress-label" id="coverLabel">Looking up covers.........</div> <div class="progress-bar-track"><div class="progress-bar-fill" id="coverFill"></div></div> <div class="progress-count" id="coverCount">0 / 0</div> </div> <hr class="divider"> <p class="section-label">Google Books Lookup</p>
 
     
 
@@ -94,7 +94,7 @@
     <button type="button" class="menu-btn" onclick="document.getElementById('enrichFile').click()">
       <span class="icon">&#x1F50D;</span>
       Enrich from Google Books
-      <span class="sub">Upload a CSV with title &amp; author ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ no API key needed</span>
+      <span class="sub">Upload a CSV with title &amp; author -- lookups run in your browser</span>
     </button>
 
     <div class="progress-box" id="progressBox">
@@ -160,7 +160,7 @@ async function startCoverBackfill() {
   fill.style.width = '0%';
 
   // Phase 1: fetch all books and test their cover URLs
-  label.textContent = 'Loading libraryâ¦';
+  label.textContent = 'Loading library...';
   let allBooks;
   try {
     const r = await fetch('/utilities/all-books-covers');
@@ -171,7 +171,7 @@ async function startCoverBackfill() {
     return;
   }
 
-  label.textContent = 'Testing existing cover imagesâ¦';
+  label.textContent = 'Testing existing cover images...';
   const needsUpdate = [];
   for (let i = 0; i < allBooks.length; i++) {
     const book = allBooks[i];
@@ -182,7 +182,7 @@ async function startCoverBackfill() {
   }
 
   if (!needsUpdate.length) {
-    label.textContent = 'â All books already have valid covers!';
+    label.textContent = '... All books already have valid covers!';
     fill.style.width = '100%';
     count.textContent = '0 books needed covers';
     btn.disabled = false;
@@ -191,7 +191,7 @@ async function startCoverBackfill() {
 
   // Phase 2: search for replacement covers
   const total = needsUpdate.length;
-  label.textContent = 'Found ' + total + ' book(s) needing covers â searchingâ¦';
+  label.textContent = 'Found ' + total + ' book(s) needing covers ... searching...';
   count.textContent = '0 / ' + total;
   const updates = [];
 
@@ -226,7 +226,7 @@ async function startCoverBackfill() {
 
     // Strategy 3: OL direct cover by ISBN
     if (!coverUrl && book.isbn) {
-      label.textContent = book.title + ' â OL directâ¦';
+      label.textContent = book.title + ' ... OL direct...';
       try {
         const directUrl = 'https://covers.openlibrary.org/b/isbn/' + encodeURIComponent(book.isbn) + '-M.jpg';
         const confirmed = await testImageUrl(directUrl);
@@ -236,7 +236,7 @@ async function startCoverBackfill() {
 
     // Strategy 4: Google Books via server (ISBN first, then title+author)
     if (!coverUrl) {
-      label.textContent = 'ð¼ï¸ ' + book.title + ' â Google Booksâ¦';
+      label.textContent = ' ' + book.title + ' ... Google Books...';
       try {
         const p = new URLSearchParams({ title: book.title, author: book.author || '', isbn: book.isbn || '' });
         const r = await fetch('/utilities/cover-lookup?' + p);
@@ -257,7 +257,7 @@ async function startCoverBackfill() {
     return;
   }
 
-  label.textContent = 'Saving ' + updates.length + ' cover(s)â¦';
+  label.textContent = 'Saving ' + updates.length + ' cover(s)...';
   try {
     const r = await fetch('/utilities/backfill-covers-save', {
       method: 'POST',
@@ -265,7 +265,7 @@ async function startCoverBackfill() {
       body: JSON.stringify(updates)
     });
     const result = await r.json();
-    label.textContent = 'â Done! ' + result.updated + ' cover(s) updated.';
+    label.textContent = '... Done! ' + result.updated + ' cover(s) updated.';
     count.textContent = (total - updates.length) + ' still not found';
     fill.style.width = '100%';
   } catch(e) {
@@ -283,7 +283,7 @@ async function startBackfill() {
   const count = document.getElementById('backfillCount');
   btn.disabled = true;
   box.classList.add('active');
-  label.textContent = 'Fetching books needing ISBNsÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¦';
+  label.textContent = 'Fetching books needing ISBNs...';
   fill.style.width = '0%';
   let books;
   try {
@@ -295,7 +295,7 @@ async function startBackfill() {
     return;
   }
   if (!books.length) {
-    label.textContent = 'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ All books already have ISBN-13!';
+    label.textContent = '...... All books already have ISBN-13!';
     fill.style.width = '100%';
     count.textContent = '0 books needed updating';
     btn.disabled = false;
@@ -303,7 +303,7 @@ async function startBackfill() {
   }
   const total = books.length;
   count.textContent = '0 / ' + total;
-  label.textContent = 'Searching Open LibraryÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¦';
+  label.textContent = 'Searching Open Library...';
   const updates = [];
   for (let i = 0; i < books.length; i++) {
     const book = books[i];
@@ -321,7 +321,7 @@ async function startBackfill() {
       }
       // Fallback: Google Books via server endpoint (uses API key, avoids quota limits)
       if (!isbn13) {
-        label.textContent = 'ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ ' + book.title + ' ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Google BooksÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦';
+        label.textContent = ' ' + book.title + ' ...... Google Books.........';
         try {
           const gbParams = new URLSearchParams({ title: book.title, author: book.author || '' });
           const gbR = await fetch('/utilities/isbn-lookup?' + gbParams);
@@ -339,7 +339,7 @@ async function startBackfill() {
     btn.disabled = false;
     return;
   }
-  label.textContent = 'Saving ' + updates.length + ' ISBN-13sÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¦';
+  label.textContent = 'Saving ' + updates.length + ' ISBN-13s.........';
   try {
     const saveR = await fetch('/utilities/backfill-isbn-save', {
       method: 'POST',
@@ -347,7 +347,7 @@ async function startBackfill() {
       body: JSON.stringify(updates)
     });
     const result = await saveR.json();
-    label.textContent = 'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Done! ' + result.updated + ' book(s) updated.';
+    label.textContent = '...... Done! ' + result.updated + ' book(s) updated.';
     count.textContent = (total - updates.length) + ' not found in Open Library';
     fill.style.width = '100%';
   } catch(e) {
