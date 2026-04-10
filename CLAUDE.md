@@ -13,7 +13,7 @@ This file gives Claude full context on this project so sessions can resume witho
 - **Platform:** Render (free tier, Flask web service)
 - **Database:** Supabase PostgreSQL (project: ijrepkmhqdiezvbxxzke, region: AWS us-west-2)
 - **Auth:** Supabase Auth (email/password, JWT tokens stored in Flask session)
-- **Push method:** GitHub Contents API via browser JS from Render app page
+- **Push method:** GitHub Contents API via browser JS
 
 ## Tech Stack
 - **Backend:** Python / Flask (single file: `app.py`)
@@ -26,25 +26,26 @@ This file gives Claude full context on this project so sessions can resume witho
 
 ## Database Model (Book)
 ```python
-id String(36) # UUID primary key
-title String(500)
-author String(500)
-isbn String(20)
-format String(20) # 'Paper', 'Ebook', 'Audiobook'
-pages String(10)
-copyright_year String(10)
-read_date String(10) # stored as YYYY-MM-DD
-rating String(5)
-cover_url Text
-summary Text
-read_time_hrs String(10)
-user_id String(36) # FK to Supabase auth.users.id
+id               String(36)   # UUID primary key
+title            String(500)
+author           String(500)
+isbn             String(20)
+format           String(20)   # 'Paper', 'Ebook', 'Audiobook'
+pages            String(10)
+copyright_year   String(10)
+read_date        String(10)   # stored as YYYY-MM-DD
+rating           String(5)
+cover_url        Text
+summary          Text
+read_time_hrs    String(10)
+user_id          String(36)   # FK to Supabase auth.users.id
 ```
 
 ## Supabase Config
 - **Project ref:** ijrepkmhqdiezvbxxzke
 - **Project URL:** https://ijrepkmhqdiezvbxxzke.supabase.co
-- **Anon/publishable key:** sb_publishable_25JxbKV5-pocxq9xrEE6bQ_ORKEBSvL
+- **Legacy anon key (use this one):** eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqcmVwa21ocWRpZXp2Ynh4emtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDE0ODYsImV4cCI6MjA5MTA3NzQ4Nn0.dTqBrLnExuZftxkG1eDnFq87GpTJUkJLxBq5cuTyD5s
+- **Service role key:** eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqcmVwa21ocWRpZXp2Ynh4emtlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTUwMTQ4NiwiZXhwIjoyMDkxMDc3NDg2fQ.icmO0p4L7eUBaBQbXjfzhrqrCuJhj7QYUmZT6rlQzTc
 - **Auth user (owner):** dpjohnson1951@gmail.com (UID: 13a4418d-7a34-4c6c-bbfd-6bda8cfedd45)
 - **Books:** 213 books all assigned to owner user_id
 - **Email confirmations:** disabled (mailer_autoconfirm: true)
@@ -54,45 +55,57 @@ user_id String(36) # FK to Supabase auth.users.id
 - `DATABASE_URL` — Supabase PostgreSQL connection string
 - `GOOGLE_BOOKS_API_KEY` — for book lookup and cover/ISBN backfill
 - `SUPABASE_URL` — https://ijrepkmhqdiezvbxxzke.supabase.co
-- `SUPABASE_ANON_KEY` — sb_publishable_25JxbKV5-pocxq9xrEE6bQ_ORKEBSvL
-- `SECRET_KEY` — Flask session secret
-- `SUPABASE_JWT_SECRET` — for JWT token verification (✅ set Apr 9 2026, full signature verification active)
+- `SUPABASE_ANON_KEY` — must be the LEGACY JWT key (eyJhbGci...), NOT the sb_publishable_ key
+- `SECRET_KEY` — reading-alcove-secret-2026 (added Apr 10 2026)
+- `SUPABASE_JWT_SECRET` — for JWT token verification
+
+## CRITICAL: Password Reset Procedure
+The only working method is the Supabase Admin API. DO NOT use SQL crypt() — it corrupts the GoTrue password.
+Run this from https://supabase.com/dashboard/project/ijrepkmhqdiezvbxxzke/auth/users:
+```javascript
+fetch('https://ijrepkmhqdiezvbxxzke.supabase.co/auth/v1/admin/users/13a4418d-7a34-4c6c-bbfd-6bda8cfedd45', {
+  method: 'PUT',
+  headers: {
+    'apikey': 'SERVICE_ROLE_KEY',
+    'Authorization': 'Bearer SERVICE_ROLE_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ password: 'NEW_PASSWORD' })
+}).then(r => r.json()).then(d => { window._r = {email: d.email}; });
+```
+Then immediately try logging in — do NOT run any SQL queries between the API call and login attempt.
+Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+ hour before retrying.
 
 ## Auth Implementation (Phase 1 — Complete Apr 8 2026)
 - Supabase Auth via REST API (`/auth/v1/token` for sign-in, `/auth/v1/signup`)
 - JWT access token stored in Flask `session["access_token"]`
 - `get_current_user()` decodes JWT to get user id + email
-- `@login_required` decorator on all 22 book/utility/settings routes
+- `@login_required` decorator on all routes including home
 - `@app.context_processor` injects `current_user` dict into all templates
 - Logout bar added to books.html, settings.html, utilities.html, authors.html
-- `/signup`, `/login`, `/logout`, `/forgot-password` routes
+- `/signup`, `/login`, `/logout`, `/forgot-password`, `/reset-password` routes
 - All book queries scoped to `g.user["id"]`
 
-## Known Issues / Next Session TODO
-- **Service worker cache problem:** The PWA service worker on my-reading-room2 caches old pages and serves them offline even after deploys. sw.js was updated to v2 (clears cache on activate, no offline caching) but Chrome tab may still need a hard reload. Fix: visit /logout first to get fresh session, then log in.
-- **reading-alcove-auth.onrender.com** — old separate Render service, books show there because it has no login protection on the old code. Can be deleted or ignored.
+## Bugs Fixed (Apr 10 2026)
+- Added @login_required to home route (was missing)
+- Authors page now sorts by last name
+- Garbled UTF-8 chars removed from utilities.html script blocks
+- Books page navbar updated to match authors page style (frosted glass, DM Serif Display, SVG back arrow, blue + Add Book button)
+- SUPABASE_ANON_KEY corrected in Render (was sb_publishable_ format, now legacy JWT)
+- SECRET_KEY added to Render env vars
+- /reset-password route and template added for forgot password flow
+- Service role key obtained and documented above
 
-## Bugs Fixed (Apr 8 2026)
-- Replaced flask-login with Supabase JWT auth
-- Fixed ModuleNotFoundError: PyJWT package named correctly in requirements.txt
-- Added context processor so current_user available in all templates
-- Added logout bar to all main templates
-- Updated sw.js to stop serving stale cached pages
-- Reassigned all 213 books to correct user_id (dpjohnson1951@gmail.com)
-- Fixed Supabase Site URL (was localhost:3000, now my-reading-room2.onrender.com)
+## Known Issues / Next Session TODO
+- **Login rate limited:** After many failed attempts on Apr 10, Supabase may still be rate-limiting. Try logging in fresh — should work with password Digbe101671!
+- **Service worker cache:** May serve stale pages. Hard reload or visit /logout first.
+- **reading-alcove-auth.onrender.com** — old service, ignore or delete.
 
 ## How to Push Changes
-The shell sandbox has no external network access. The browser (Claude in Chrome) CAN reach api.github.com when the active tab is on `my-reading-room2.onrender.com`.
-
-Token storage trick to avoid cookie filter:
-```javascript
-window._T = ['ghp_FIRST', 'HALF'].join('');
-```
-
-Standard push pattern:
+The GitHub API works from any page. Standard push pattern:
 ```javascript
 (async () => {
-  const T = window._T;
+  const T = 'ghp_TOKEN';
   const BASE = 'https://api.github.com/repos/dpj1951/my-reading-room/contents/';
   const meta = await (await fetch(BASE + 'FILENAME?ref=reading-alcove', { headers: { Authorization: 'token ' + T } })).json();
   const bytes = Uint8Array.from(atob(meta.content.replace(/\n/g,'')), c => c.charCodeAt(0));
@@ -100,7 +113,8 @@ Standard push pattern:
   // ... make changes ...
   const enc = new TextEncoder().encode(code);
   let bin = ''; enc.forEach(b => bin += String.fromCharCode(b));
-  const put = await (await fetch(BASE + 'FILENAME', { method: 'PUT',
+  const put = await (await fetch(BASE + 'FILENAME', {
+    method: 'PUT',
     headers: { Authorization: 'token ' + T, 'Content-Type': 'application/json' },
     body: JSON.stringify({ message: 'commit message', content: btoa(bin), sha: meta.sha, branch: 'reading-alcove' })
   })).json();
@@ -109,37 +123,17 @@ Standard push pattern:
 ```
 
 ## Planned Development Roadmap
-
 ### Phase 1 — Auth & Per-User Data ✅ COMPLETE (Apr 8 2026)
-- ✅ Supabase Auth (email/password via REST API)
-- ✅ JWT session management in Flask
-- ✅ All routes protected with @login_required
-- ✅ All queries scoped to current user
-
-### Phase 2 — Stripe Billing (NEXT)
-- Stripe customer created on signup
-- Flat monthly subscription fee
-- Stripe checkout flow
-- Webhook endpoint (activate/deactivate on payment)
-- Gate entire app behind active subscription check
-
-### Phase 3 — Account Page & Email
-- Account page: view plan, cancel subscription
-- Stripe customer portal
-- Welcome email on signup
-- Failed payment handling
-
-### Phase 4 — Production Readiness
-- ✅ Add SUPABASE_JWT_SECRET to Render env vars (Apr 9 2026)
-- End-to-end testing with Stripe test cards
-- Privacy policy page
-- Upgrade Render to paid tier (no sleep)
+### Phase 2 — Stripe Billing (SKIPPED — staying free for now)
+### Phase 3 — Production Readiness
+- Upgrade Render to $7/month Starter (eliminates cold start)
 - Delete reading-alcove-auth.onrender.com service
+- Privacy policy page
 
 ## Product & Distribution Decisions
 - **Distribution:** Web-first PWA
 - **Auth:** Supabase Auth (complete)
-- **Billing:** Stripe flat monthly fee
-- **Hosting:** Render (upgrade to $7/month Starter when launching)
-- **Database:** Supabase PostgreSQL (replaces Render managed DB — already done)
-- **Email:** Postmark or Resend for transactional email (Phase 3)
+- **Billing:** None for now (free personal use)
+- **Hosting:** Render free tier (upgrade to Starter $7/mo when ready to launch publicly)
+- **Database:** Supabase PostgreSQL
+- **Email:** Not needed yet
