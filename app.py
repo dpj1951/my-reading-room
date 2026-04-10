@@ -214,8 +214,9 @@ def logout():
     return redirect(url_for("login"))
 
 @app.route("/")
+@login_required
 def index():
-    return render_template("home.html", current_user=get_current_user())
+    return render_template("home.html")
 
 @app.route("/books")
 @login_required
