@@ -207,6 +207,36 @@ def forgot_password():
         sent = True
     return render_template("forgot_password.html", sent=sent)
 
+
+@app.route("/reset-password", methods=["GET", "POST"])
+def reset_password():
+    # Supabase sends access_token + refresh_token as URL fragments (#)
+    # The browser can't send fragments to the server, so we use a JS page
+    # that reads the fragment and posts it here
+    if request.method == "POST":
+        access_token = request.form.get("access_token", "").strip()
+        new_password = request.form.get("password", "").strip()
+        if not access_token or not new_password:
+            return render_template("reset_password.html", error="Missing token or password.", done=False)
+        # Call Supabase to update the password using the access token
+        r = requests.put(
+            SUPABASE_URL + "/auth/v1/user",
+            headers={
+                "apikey": SUPABASE_ANON_KEY,
+                "Authorization": "Bearer " + access_token,
+                "Content-Type": "application/json"
+            },
+            json={"password": new_password},
+            timeout=10
+        )
+        if r.status_code == 200:
+            return render_template("reset_password.html", done=True, error=None)
+        else:
+            err = r.json().get("error_description") or r.json().get("message") or "Reset failed."
+            return render_template("reset_password.html", error=err, done=False)
+    # GET: show the form — JS will read the token from the URL fragment
+    return render_template("reset_password.html", done=False, error=None)
+
 @app.route("/logout")
 def logout():
     session.clear()
