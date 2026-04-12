@@ -44,7 +44,8 @@ user_id          String(36)   # FK to Supabase auth.users.id
 ## Supabase Config
 - **Project ref:** ijrepkmhqdiezvbxxzke
 - **Project URL:** https://ijrepkmhqdiezvbxxzke.supabase.co
-- **Legacy anon key (use this one):** eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqcmVwa21ocWRpZXp2Ynh4emtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDE0ODYsImV4cCI6MjA5MTA3NzQ4Nn0.dTqBrLnExuZftxkG1eDnFq87GpTJUkJLxBq5cuTyD5s
+- **Publishable key (use this one):** sb_publishable_25JxbKV5-pocxq9xrEE6bQ_ORKEBSvL
+- **Secret key:** sb_secret_bE_NO... (see Supabase dashboard)
 - **Service role key:** eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqcmVwa21ocWRpZXp2Ynh4emtlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTUwMTQ4NiwiZXhwIjoyMDkxMDc3NDg2fQ.icmO0p4L7eUBaBQbXjfzhrqrCuJhj7QYUmZT6rlQzTc
 - **Auth user (owner):** dpjohnson1951@gmail.com (UID: 13a4418d-7a34-4c6c-bbfd-6bda8cfedd45)
 - **Books:** 213 books all assigned to owner user_id
@@ -86,6 +87,11 @@ Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+
 - `/signup`, `/login`, `/logout`, `/forgot-password`, `/reset-password` routes
 - All book queries scoped to `g.user["id"]`
 
+## Bugs Fixed (Apr 12 2026)
+- Supabase migrated to new API key format — SUPABASE_ANON_KEY updated to sb_publishable_25JxbKV5-pocxq9xrEE6bQ_ORKEBSvL
+- SUPABASE_JWT_SECRET deleted from Render env vars (Supabase rotated JWT signing from HS256 to ECC P-256; app uses unverified decode fallback which works fine)
+- Password reset to Reading2026!
+
 ## Bugs Fixed (Apr 10 2026)
 - Added @login_required to home route (was missing)
 - Authors page now sorts by last name
@@ -97,7 +103,7 @@ Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+
 - Service role key obtained and documented above
 
 ## Known Issues / Next Session TODO
-- **Login rate limited:** After many failed attempts on Apr 10, Supabase may still be rate-limiting. Try logging in fresh — should work with password Digbe101671!
+- **Login rate limited:** After many failed attempts on Apr 10, Supabase may still be rate-limiting. Try logging in fresh — should work with password Reading2026!
 - **Service worker cache:** May serve stale pages. Hard reload or visit /logout first.
 - **reading-alcove-auth.onrender.com** — old service, ignore or delete.
 
