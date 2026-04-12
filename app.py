@@ -363,14 +363,11 @@ def import_csv():
         added = 0
         skipped = 0
         for row in reader:
-            book_id = row.get("id", "").strip()
-            if book_id and Book.query.filter_by(id=book_id, user_id=g.user["id"]).first():
-                skipped += 1
-                continue
             existing = Book.query.filter_by(title=row.get("title","").strip(), author=row.get("author","").strip(), user_id=g.user["id"]).first()
             if existing:
                 skipped += 1
                 continue
+            book_id = str(uuid.uuid4())
             book = Book(id=book_id or str(uuid.uuid4()), user_id=g.user["id"], title=row.get("title","").strip(),
                         author=row.get("author","").strip(), isbn=row.get("isbn","").strip(),
                         format=row.get("format","Paper").strip(), pages=row.get("pages","").strip(),
