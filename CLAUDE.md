@@ -91,6 +91,9 @@ Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+
 - Supabase migrated to new API key format — SUPABASE_ANON_KEY updated to sb_publishable_25JxbKV5-pocxq9xrEE6bQ_ORKEBSvL
 - SUPABASE_JWT_SECRET deleted from Render env vars (Supabase rotated JWT signing from HS256 to ECC P-256; app uses unverified decode fallback which works fine)
 - Password reset to Reading2026!
+- Import CSV was failing with duplicate key error: import now generates fresh UUIDs instead of reusing CSV ids (avoids conflicts with stale local SQLite on Render disk)
+- Import duplicate check scoped to user_id so books from other users don't cause false skips
+- Wipe button still broken (deletes 0 books) — workaround: delete directly via Supabase REST API with service key filtering by user_id
 
 ## Bugs Fixed (Apr 10 2026)
 - Added @login_required to home route (was missing)
