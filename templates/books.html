@@ -21,7 +21,13 @@
     .cover-grid a:hover img { transform: scale(1.06); box-shadow: 0 4px 14px rgba(0,0,0,0.6); }
     .no-cover { width: 100%; aspect-ratio: 2/3; background: linear-gradient(135deg, #7a4030, #4a2018); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border-radius: 3px; }
     .empty-state { text-align: center; padding: 80px 20px; color: #888; font-style: italic; }
-  </style>
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(14,14,18,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; gap: 16px; height: 64px; }
+  .nav-back { display: flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: 0.875rem; }
+  .nav-back:hover { color: var(--text); }
+  .nav-title { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--accent); }
+  .nav-add { margin-left: auto; display: flex; align-items: center; gap: 8px; background: var(--accent); color: #0e0e12; font-weight: 600; font-size: 0.875rem; padding: 8px 18px; border-radius: 8px; text-decoration: none; }
+    
+</style>
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#0e0e12">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -41,7 +47,7 @@
     updateOnlineStatus();
   </script>
 
-<nav class="topnav">
+<nav>
   <a class="nav-back" href="/">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="m15 18-6-6 6-6"/></svg>
     Home
