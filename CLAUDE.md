@@ -106,7 +106,6 @@ Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+
 - Service role key obtained and documented above
 
 ## Known Issues / Next Session TODO
-- **Authors page: sort by last name broken** (regression Apr 12). TODO: investigate.
 - **Login rate limited:** After many failed attempts on Apr 10, Supabase may still be rate-limiting. Try logging in fresh — should work with password Reading2026!
 - **Service worker cache:** May serve stale pages. Hard reload or visit /logout first.
 - **reading-alcove-auth.onrender.com** — old service, ignore or delete.
