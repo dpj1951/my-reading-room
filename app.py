@@ -364,10 +364,10 @@ def import_csv():
         skipped = 0
         for row in reader:
             book_id = row.get("id", "").strip()
-            if book_id and db.session.get(Book, book_id):
+            if book_id and Book.query.filter_by(id=book_id, user_id=g.user["id"]).first():
                 skipped += 1
                 continue
-            existing = Book.query.filter_by(title=row.get("title","").strip(), author=row.get("author","").strip()).first()
+            existing = Book.query.filter_by(title=row.get("title","").strip(), author=row.get("author","").strip(), user_id=g.user["id"]).first()
             if existing:
                 skipped += 1
                 continue
@@ -390,7 +390,8 @@ def import_csv():
 @login_required
 def wipe_library():
     try:
-        num_deleted = Book.query.filter_by(user_id=g.user["id"]).delete()
+        uid = str(g.user["id"]).strip()
+        num_deleted = Book.query.filter(Book.user_id == uid).delete(synchronize_session=False)
         db.session.commit()
         wiped_flag = os.path.join(os.path.dirname(__file__), ".library_wiped")
         open(wiped_flag, "w").close()
