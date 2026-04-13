@@ -125,53 +125,6 @@
   <span class="nav-title">My Reading Alcove</span>
   <a class="nav-add" href="/add">+ Add Book</a>
 </nav>
-<div class="filter-bar">
-  <div class="filter-left">
-    <div class="filter-arrow"></div>
-    <span>Filter/Sort</span>
-  </div>
-  
-</div>
 
-  <div class="book-list">
-    {% if books %}
-      {% set ns = namespace(current_author=None, author_count=0) %}
-      {% for i, book in books|enumerate %}
-        {% set last_name = book.author.split(' ')[-1] + ', ' + book.author.split(' ')[0] if ' ' in book.author else book.author %}
-        {% if book.author != ns.current_author %}
-          {% if ns.current_author is not none %}
-            <div class="group-total">Total: {{ ns.author_count }}</div>
-          {% endif %}
-          {% set ns.current_author = book.author %}
-          {% set ns.author_count = 0 %}
-          <div class="author-group-header" id="letter-{{ book.author[0]|upper }}">{{ last_name }}</div>
-        {% endif %}
-        {% set ns.author_count = ns.author_count + 1 %}
-        <a href="/book/{{ book.id }}" class="book-row" style="text-decoration:none;color:inherit;">
-          {% if book.cover_url %}
-            <img class="book-cover-img" src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
-          {% else %}
-            <div class="book-cover-placeholder">📖</div>
-          {% endif %}
-          <div class="book-details">
-            <span class="book-title-link">{{ book.title }}</span>
-            <div class="book-author-name">{{ book.author }}</div>
-            {% if book.isbn %}<div class="book-isbn">ISBN: {{ book.isbn }}</div>{% endif %}
-            <div class="book-meta">{{ book.copyright_year or '' }}{% if book.pages %} &nbsp;{{ book.pages }} pages{% endif %}</div>
-          </div>
-        </a>
-        {% if loop.last %}
-          <div class="group-total">Total: {{ ns.author_count }}</div>
-        {% endif %}
-      {% endfor %}
-    {% else %}
-      <div class="empty-state">No books yet.<br>Tap <strong>+</strong> to add your first book.</div>
-    {% endif %}
-  </div>
-  <nav class="alpha-index">
-    {% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#' %}
-      <a href="#letter-{{ letter }}">{{ letter }}</a>
-    {% endfor %}
-  </nav>
 </body>
 </html>
