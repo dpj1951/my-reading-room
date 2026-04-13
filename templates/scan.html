@@ -106,22 +106,21 @@
           ZXing.BarcodeFormat.UPC_A
         ]);
         const reader = new ZXing.BrowserMultiFormatReader(hints);
-        const devices = await ZXing.BrowserCodeReader.listVideoInputDevices();
-        if (!devices.length) {
-          statusEl.textContent = 'No camera found. Use manual entry below.';
-          statusEl.className = 'error';
-          return;
-        }
-        // Prefer rear camera on mobile
-        const device = devices.find(d => /back|rear|environment/i.test(d.label)) || devices[devices.length - 1];
+        // Use rear camera on mobile via facingMode constraint
+        const constraints = {
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+        };
+        statusEl.textContent = 'Starting camera…';
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        preview.srcObject = stream;
+        await preview.play();
         statusEl.textContent = 'Camera ready — aim at barcode';
-        await reader.decodeFromVideoDevice(device.deviceId, preview, (result, err) => {
+        reader.decodeContinuously(preview, (result, err) => {
           if (result && !scanned) {
-            const text = result.getText();
-            // Filter for ISBN-like codes (10 or 13 digits, may start with 978/979)
-            const clean = text.replace(/[^0-9X]/gi, '');
+            const clean = result.getText().replace(/[^0-9X]/gi, '');
             if (clean.length === 13 || clean.length === 10) {
               scanned = true;
+              stream.getTracks().forEach(t => t.stop());
               reader.reset();
               statusEl.textContent = '✓ ISBN found: ' + clean;
               statusEl.className = 'found';
