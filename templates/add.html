@@ -340,19 +340,19 @@
   </script>
   <script>
     // Auto-trigger search if ISBN was passed from barcode scanner
-    const prefill = "{{ isbn_prefill }}";
-    if (prefill) {
-      document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.querySelector('input[name="query"], #search-input, input[placeholder*="ISBN"], input[placeholder*="title"]');
-        if (searchInput) {
-          searchInput.value = prefill;
-          // Trigger the search automatically
-          const searchBtn = document.querySelector('button[type="submit"], .search-btn, button:contains("Search")');
-          if (searchBtn) searchBtn.click();
-          else searchInput.form && searchInput.form.submit();
-        }
-      });
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+      const prefill = "{{ isbn_prefill }}";
+      if (!prefill) return;
+      const searchInput = document.getElementById('ol-query');
+      if (!searchInput) return;
+      searchInput.value = prefill;
+      // Trigger the OL search button
+      const searchBtn = document.querySelector('button[onclick*="search"], #ol-search-btn, button.search-btn') ||
+        Array.from(document.querySelectorAll('button')).find(b => b.textContent.trim() === 'Search');
+      if (searchBtn) {
+        setTimeout(() => searchBtn.click(), 300);
+      }
+    });
   </script>
 </body>
 </html>
