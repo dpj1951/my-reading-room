@@ -8,19 +8,140 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --bg: #b0b0b0; --card: #3a3a3a; --border: #4a4a4a; --accent: #2a6b6b; --text: #f0ede8; --muted: #8a8795; --radius: 16px; --shadow: 0 6px 20px rgba(0,0,0,0.6); }
-    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; text-align: center; }
-    .back-link { position: absolute; top: 24px; left: 24px; color: var(--muted); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; transition: color 0.15s; }
-    .back-link:hover { color: var(--text); }
-    .icon { font-size: 4rem; margin-bottom: 24px; }
-    h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; font-weight: 400; margin-bottom: 12px; }
-    p { color: var(--muted); font-size: 0.95rem; font-weight: 300; max-width: 280px; }
+    :root {
+      --bg: #1a1a1a; --card: #1c1c24; --border: #2a2a36;
+      --accent: #3b9eff; --text: #f0ede8; --muted: #8a8795; --radius: 12px;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(14,14,18,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; gap: 16px; height: 64px; width: 100%; }
+    .nav-back { display: flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: 0.875rem; }
+    .nav-back:hover { color: var(--text); }
+    .nav-title { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--accent); }
+    .page { width: 100%; max-width: 480px; padding: 32px 24px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: 1.8rem; font-weight: 400; text-align: center; }
+    .sub { color: var(--muted); font-size: 0.9rem; text-align: center; }
+    #scanner-wrap { position: relative; width: 100%; max-width: 400px; border-radius: var(--radius); overflow: hidden; background: #000; aspect-ratio: 3/4; }
+    #preview { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .aim { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+    .aim-box { width: 70%; aspect-ratio: 3/1; border: 2px solid var(--accent); border-radius: 6px; box-shadow: 0 0 0 2000px rgba(0,0,0,0.45); }
+    .aim-line { position: absolute; width: 70%; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); animation: scan 2s ease-in-out infinite; }
+    @keyframes scan { 0%,100% { top: 32%; } 50% { top: 65%; } }
+    #status { font-size: 0.9rem; color: var(--muted); text-align: center; min-height: 1.4em; }
+    #status.found { color: #4caf50; font-weight: 600; }
+    #status.error { color: #f44336; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: #0e0e12; font-weight: 600; font-size: 0.95rem; padding: 12px 28px; border-radius: 8px; text-decoration: none; border: none; cursor: pointer; }
+    .btn:hover { background: #5aabff; }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .manual-wrap { display: flex; gap: 12px; width: 100%; max-width: 400px; }
+    .manual-wrap input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; color: var(--text); font-size: 1rem; font-family: 'DM Sans', sans-serif; }
+    .manual-wrap input:focus { outline: none; border-color: var(--accent); }
+    .divider { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 400px; color: var(--muted); font-size: 0.85rem; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
   </style>
 </head>
 <body>
-  <a class="back-link" href="/add">← Back</a>
-  <div class="icon">📷</div>
-  <h1>Scanner</h1>
-  <p>Barcode scanning is coming soon. For now, please add books manually.</p>
+  <nav>
+    <a class="nav-back" href="/add">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="m15 18-6-6 6-6"/></svg>
+      Back
+    </a>
+    <span class="nav-title">Scan a Book</span>
+  </nav>
+
+  <div class="page">
+    <div>
+      <h1>Scan Barcode</h1>
+      <p class="sub" style="margin-top:6px">Point your camera at the book's ISBN barcode</p>
+    </div>
+
+    <div id="scanner-wrap">
+      <video id="preview" autoplay playsinline muted></video>
+      <div class="aim">
+        <div class="aim-box"></div>
+        <div class="aim-line"></div>
+      </div>
+    </div>
+
+    <p id="status">Starting camera…</p>
+
+    <div class="divider">or enter ISBN manually</div>
+
+    <div class="manual-wrap">
+      <input type="text" id="isbn-input" placeholder="e.g. 9780385737951" inputmode="numeric">
+      <button class="btn" onclick="goManual()">Go</button>
+    </div>
+
+    <a href="/add/manual" class="btn btn-outline">Skip — add manually</a>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js"></script>
+  <script>
+    const statusEl = document.getElementById('status');
+    const preview = document.getElementById('preview');
+    let scanned = false;
+
+    function goManual() {
+      const isbn = document.getElementById('isbn-input').value.trim().replace(/[^0-9X]/gi, '');
+      if (isbn.length >= 10) window.location.href = '/add/manual?isbn=' + isbn;
+      else statusEl.textContent = 'Please enter a valid ISBN (10 or 13 digits)';
+    }
+
+    document.getElementById('isbn-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') goManual();
+    });
+
+    async function startScanner() {
+      if (typeof ZXing === 'undefined') {
+        statusEl.textContent = 'Scanner library failed to load. Use manual entry below.';
+        statusEl.className = 'error';
+        return;
+      }
+      try {
+        const hints = new Map();
+        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+          ZXing.BarcodeFormat.EAN_13,
+          ZXing.BarcodeFormat.EAN_8,
+          ZXing.BarcodeFormat.CODE_128,
+          ZXing.BarcodeFormat.UPC_A
+        ]);
+        const reader = new ZXing.BrowserMultiFormatReader(hints);
+        const devices = await ZXing.BrowserCodeReader.listVideoInputDevices();
+        if (!devices.length) {
+          statusEl.textContent = 'No camera found. Use manual entry below.';
+          statusEl.className = 'error';
+          return;
+        }
+        // Prefer rear camera on mobile
+        const device = devices.find(d => /back|rear|environment/i.test(d.label)) || devices[devices.length - 1];
+        statusEl.textContent = 'Camera ready — aim at barcode';
+        await reader.decodeFromVideoDevice(device.deviceId, preview, (result, err) => {
+          if (result && !scanned) {
+            const text = result.getText();
+            // Filter for ISBN-like codes (10 or 13 digits, may start with 978/979)
+            const clean = text.replace(/[^0-9X]/gi, '');
+            if (clean.length === 13 || clean.length === 10) {
+              scanned = true;
+              reader.reset();
+              statusEl.textContent = '✓ ISBN found: ' + clean;
+              statusEl.className = 'found';
+              setTimeout(() => {
+                window.location.href = '/add/manual?isbn=' + clean;
+              }, 800);
+            }
+          }
+        });
+      } catch (err) {
+        if (err.name === 'NotAllowedError') {
+          statusEl.textContent = 'Camera permission denied. Use manual entry below.';
+        } else {
+          statusEl.textContent = 'Camera error: ' + err.message;
+        }
+        statusEl.className = 'error';
+      }
+    }
+
+    startScanner();
+  </script>
 </body>
 </html>
