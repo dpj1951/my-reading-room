@@ -87,7 +87,19 @@ Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+
 - `/signup`, `/login`, `/logout`, `/forgot-password`, `/reset-password` routes
 - All book queries scoped to `g.user["id"]`
 
-## Changes (Apr 13 2026)
+## Changes (Apr 13 2026 — Session 2)
+- Barcode scanner fully working end-to-end (scan.html rebuilt with ZXing-js)
+- Scanner uses getUserMedia + decodeContinuously for rear camera on mobile
+- On ISBN detect: redirects to /add/manual?isbn=XXXXXXX
+- add.html auto-populates search box from isbn_prefill and calls doSearch()
+- Format defaults to Paper, Read Date defaults to today when arriving from scanner
+- User taps Select on result → all fields filled, then just Save
+- Tested successfully: scanned Red Lily by Nora Roberts, saved to library with cover
+- Terminal push workflow confirmed: cat > /tmp/fix.py << 'PYEOF' ... PYEOF && python3 /tmp/fix.py
+- Token workflow: generate at github.com/settings/tokens (classic, repo scope), export GH_TOKEN=..., unset when done
+- Known remaining issue: garbled emoji in format buttons on add form (pre-existing UTF-8 bug)
+
+## Changes (Apr 13 2026 — Session 1)
 - Home page nav restructured: Books / Authors / Add a Book / Utilities (Settings and Help removed)
 - "+ Add Book" button removed from Books and Authors navbars — add books via home page only
 - Terminal + GitHub API established as push workflow (python3 script via GH_TOKEN env var)
