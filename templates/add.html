@@ -348,6 +348,11 @@
       searchInput.value = prefill;
       // Trigger the OL search button
       setTimeout(() => doSearch(), 300);
+      const today = new Date().toISOString().split('T')[0];
+      const dateField = document.getElementById('f-date');
+      if (dateField && !dateField.value) dateField.value = today;
+      const paperBtn = document.getElementById('btn-paper');
+      if (paperBtn) paperBtn.click();
     });
   </script>
 </body>
