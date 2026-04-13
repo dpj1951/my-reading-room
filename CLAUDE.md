@@ -87,6 +87,13 @@ Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+
 - `/signup`, `/login`, `/logout`, `/forgot-password`, `/reset-password` routes
 - All book queries scoped to `g.user["id"]`
 
+## Changes (Apr 13 2026)
+- Home page nav restructured: Books / Authors / Add a Book / Utilities (Settings and Help removed)
+- "+ Add Book" button removed from Books and Authors navbars — add books via home page only
+- Terminal + GitHub API established as push workflow (python3 script via GH_TOKEN env var)
+- Scanner page still placeholder — building barcode scanner next session
+- Token workflow: generate at github.com/settings/tokens (classic, repo scope), export GH_TOKEN=..., unset when done
+
 ## Bugs Fixed (Apr 12 2026)
 - Books page navbar updated to match authors page (frosted glass, DM Serif Display, sticky)
 - Books page list view removed — grid only now
