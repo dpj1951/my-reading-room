@@ -347,11 +347,7 @@
       if (!searchInput) return;
       searchInput.value = prefill;
       // Trigger the OL search button
-      const searchBtn = document.querySelector('button[onclick*="search"], #ol-search-btn, button.search-btn') ||
-        Array.from(document.querySelectorAll('button')).find(b => b.textContent.trim() === 'Search');
-      if (searchBtn) {
-        setTimeout(() => searchBtn.click(), 300);
-      }
+      setTimeout(() => doSearch(), 300);
     });
   </script>
 </body>
