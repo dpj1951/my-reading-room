@@ -88,6 +88,8 @@ Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+
 - All book queries scoped to `g.user["id"]`
 
 ## Bugs Fixed (Apr 12 2026)
+- Books page navbar updated to match authors page (frosted glass, DM Serif Display, sticky)
+- Books page list view removed — grid only now
 - Supabase migrated to new API key format — SUPABASE_ANON_KEY updated to sb_publishable_25JxbKV5-pocxq9xrEE6bQ_ORKEBSvL
 - SUPABASE_JWT_SECRET deleted from Render env vars (Supabase rotated JWT signing from HS256 to ECC P-256; app uses unverified decode fallback which works fine)
 - Password reset to Reading2026!
