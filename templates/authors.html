@@ -68,7 +68,7 @@
 </div>
 <div class="page-body">
   {% for author_name, books in authors %}
-    <div class="author-group" data-author="{{ author_name.lower() }}">
+    <div class="author-group" data-author="{{ author_name.lower() }}" data-titles="{{ books|map(attribute='title')|join('|') |lower }}">
       <div class="author-header">
         <span class="author-name">{{ author_name }}</span>
         <span class="author-count">{{ books|length }} book{{ 's' if books|length != 1 else '' }}</span>
@@ -102,7 +102,9 @@
   document.getElementById('search-input').addEventListener('input', function() {
     const q = this.value.trim().toLowerCase();
     document.querySelectorAll('.author-group').forEach(g => {
-      g.style.display = (!q || g.dataset.author.includes(q)) ? '' : 'none';
+      const matchesAuthor = g.dataset.author.includes(q);
+      const matchesTitle = (g.dataset.titles || '').split('|').some(t => t.includes(q));
+      g.style.display = (!q || matchesAuthor || matchesTitle) ? '' : 'none';
     });
   });
 </script>
