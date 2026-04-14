@@ -386,9 +386,6 @@ def import_csv():
 @app.route("/utilities/wipe", methods=["POST"])
 @login_required
 def wipe_library():
-    if str(g.user["id"]).strip() != "13a4418d-7a34-4c6c-bbfd-6bda8cfedd45":
-        flash("You don't have permission to wipe the library.", "error")
-        return redirect(url_for("utilities"))
     try:
         uid = str(g.user["id"]).strip()
         num_deleted = Book.query.filter(Book.user_id == uid).delete(synchronize_session=False)
