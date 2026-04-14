@@ -87,6 +87,14 @@ Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+
 - `/signup`, `/login`, `/logout`, `/forgot-password`, `/reset-password` routes
 - All book queries scoped to `g.user["id"]`
 
+## Changes (Apr 14 2026)
+- Fixed garbled mojibake emoji in format buttons on add.html (📖 Paper, 📱 Ebook, 🎧 Audiobook) and page title — UTF-8 bytes were stored as latin-1 characters
+- Home page shelf: removed 📚 and 🔖, kept only 📖
+- Authors page filter: now searches both author names and book titles (added `data-titles` attribute to each author-group, updated JS filter)
+- Authors page filter: shows "No results found" message instead of blank when search has no matches
+- Wipe Library feature: discussed restricting to owner only — reverted pending decision on approach (hardcoded UID vs email vs DB flag)
+- Push method: GitHub Contents API via Chrome extension JS (GH_TOKEN pasted in chat, revoke after session)
+
 ## Changes (Apr 13 2026 — Session 2)
 - Barcode scanner fully working end-to-end (scan.html rebuilt with ZXing-js)
 - Scanner uses getUserMedia + decodeContinuously for rear camera on mobile
