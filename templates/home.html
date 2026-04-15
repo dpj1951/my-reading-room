@@ -65,13 +65,6 @@
     <a class="menu-btn" href="/authors">Authors</a>
     <a class="menu-btn" href="/add">Add a Book</a>
     <a class="menu-btn" href="/utilities">Utilities</a>
-  {% if current_user %}
-    <a href="/logout" style="margin-left:auto;font-size:0.8rem;color:#888;text-decoration:none;padding:0.3rem 0.7rem;border:1px solid #2a2a4a;border-radius:6px;">
-      {{ current_user['email'] }} &nbsp;·&nbsp; Log out
-    </a>
-  {% else %}
-    <a href="/login" style="margin-left:auto;font-size:0.8rem;color:#c9a96e;text-decoration:none;">Log in</a>
-  {% endif %}
   </nav>
   {% with messages = get_flashed_messages(with_categories=true) %}
   {% for cat, msg in messages %}
