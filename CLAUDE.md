@@ -87,6 +87,10 @@ Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+
 - `/signup`, `/login`, `/logout`, `/forgot-password`, `/reset-password` routes
 - All book queries scoped to `g.user["id"]`
 
+## Changes (Apr 15 2026)
+- Removed "Log in" link from home page (home.html) — was appearing in bottom-right corner for logged-in users
+- Push method: GitHub Contents API via Chrome extension JS (GH_TOKEN pasted in chat, revoke after session)
+
 ## Changes (Apr 14 2026)
 - Fixed garbled mojibake emoji in format buttons on add.html (📖 Paper, 📱 Ebook, 🎧 Audiobook) and page title — UTF-8 bytes were stored as latin-1 characters
 - Home page shelf: removed 📚 and 🔖, kept only 📖
