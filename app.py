@@ -156,7 +156,7 @@ def inject_user():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if get_current_user():
-        return redirect(url_for("books"))
+        return redirect(url_for("home"))
     error = None
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
@@ -166,7 +166,7 @@ def login():
             session["access_token"]  = data["access_token"]
             session["refresh_token"] = data.get("refresh_token", "")
             next_page = request.args.get("next")
-            return redirect(next_page or url_for("books"))
+            return redirect(next_page or url_for("home"))
         error = data.get("error_description") or data.get("msg") or "Invalid email or password."
     return render_template("login.html", error=error)
 
