@@ -121,18 +121,7 @@
 
   <a class="back-link" href="/">&#8592; Back to Home</a>
 
-  <div class="modal-overlay" id="wipeModal">
-    <div class="modal">
-      <h2>Wipe Entire Library?</h2>
-      <p>This will <strong>permanently delete every book</strong> in your library. This cannot be undone. Consider exporting a backup first.</p>
-      <div class="modal-actions">
-        <button class="btn-cancel" onclick="document.getElementById('wipeModal').classList.remove('active')">Cancel</button>
-        <form action="/utilities/wipe" method="POST" style="flex:1">
-          <button type="submit" class="btn-wipe" style="width:100%">Yes, Wipe It</button>
-        </form>
-      </div>
-    </div>
-  </div>
+  
 
   <script>
 // Test whether an image URL actually loads a real image (not a broken link or OL 1px placeholder)
