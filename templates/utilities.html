@@ -110,7 +110,21 @@
     </div>
   </nav>
 
-  <a class="back-link" href="/">&#8592; Back to Home</a>
+  
+<hr class="divider">
+<p class="section-label">Backup &amp; Restore</p>
+<a class="menu-btn" href="/utilities/backup-json">
+  <span class="icon">&#x1F4BE;</span> Backup Library
+  <span class="sub">Download a full JSON backup of all your books</span>
+</a>
+<form class="import-form" action="/utilities/restore-json" method="POST" enctype="multipart/form-data">
+  <label class="menu-btn import-btn" for="restoreFile">
+    <span class="icon">&#x23EA;</span> Restore from Backup
+    <span class="sub">Upload a JSON backup file to restore your library</span>
+    <input type="file" id="restoreFile" name="file" accept=".json" onchange="this.closest('form').submit()">
+  </label>
+</form>
+<a class="back-link" href="/">&#8592; Back to Home</a>
 
   
 
