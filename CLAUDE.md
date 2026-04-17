@@ -8,7 +8,7 @@ This file gives Claude full context on this project so sessions can resume witho
 ## Repository & Deployment
 - **Repo:** https://github.com/dpj1951/my-reading-room
 - **Working branch:** `reading-alcove`
-- **Primary live app:** https://my-reading-room2.onrender.com
+- **Primary live app:** https://myreadingalcove.com (custom domain) / https://my-reading-room2.onrender.com (Render URL)
 - **Secondary service:** https://reading-alcove-auth.onrender.com (older service, ignore)
 - **Platform:** Render (free tier, Flask web service)
 - **Database:** Supabase PostgreSQL (project: ijrepkmhqdiezvbxxzke, region: AWS us-west-2)
@@ -50,7 +50,7 @@ user_id          String(36)   # FK to Supabase auth.users.id
 - **Auth user (owner):** dpjohnson1951@gmail.com (UID: 13a4418d-7a34-4c6c-bbfd-6bda8cfedd45)
 - **Books:** 213 books all assigned to owner user_id
 - **Email confirmations:** disabled (mailer_autoconfirm: true)
-- **Site URL:** https://my-reading-room2.onrender.com
+- **Site URL:** https://myreadingalcove.com
 
 ## Render Environment Variables (my-reading-room2)
 - `DATABASE_URL` — Supabase PostgreSQL connection string
@@ -86,6 +86,13 @@ Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+
 - Logout bar added to books.html, settings.html, utilities.html, authors.html
 - `/signup`, `/login`, `/logout`, `/forgot-password`, `/reset-password` routes
 - All book queries scoped to `g.user["id"]`
+
+## Changes (Apr 16 2026)
+- Custom domain myreadingalcove.com purchased and configured (Namecheap: A @ → 216.24.57.1, CNAME www → my-reading-room2.onrender.com)
+- Supabase Site URL updated to https://myreadingalcove.com
+- PWA manifest start_url fixed: /books → / (was causing mobile PWA to skip home page)
+- Login redirect fixed: now lands on home page instead of books after login
+- Removed Wipe Library UI from utilities page (backend route kept for future use)
 
 ## Changes (Apr 15 2026)
 - Removed "Log in" link from home page (home.html) — was appearing in bottom-right corner for logged-in users
