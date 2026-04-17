@@ -98,6 +98,7 @@
     </div>
   {% endfor %}
 </div>
+<div id="no-results" style="display:none;text-align:center;padding:60px 20px;color:var(--muted);font-family:'DM Serif Display',serif;font-size:1.3rem;">No results found</div>
 <script>
   document.getElementById('search-input').addEventListener('input', function() {
     const q = this.value.trim().toLowerCase();
