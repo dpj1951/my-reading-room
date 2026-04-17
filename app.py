@@ -828,6 +828,67 @@ def remove_duplicates():
     db.session.commit()
     return jsonify({"deleted": deleted})
 
+@app.route("/utilities/backup-json")
+@login_required
+def backup_json():
+    books = Book.query.filter_by(user_id=g.user["id"]).all()
+    data = [b.to_dict() for b in books]
+    output = io.BytesIO(json.dumps(data, indent=2).encode("utf-8"))
+    return send_file(output, mimetype="application/json",
+                     as_attachment=True, download_name="reading_alcove_backup.json")
+
+@app.route("/utilities/restore-json", methods=["POST"])
+@login_required
+def restore_json():
+    file = request.files.get("file")
+    if not file or not file.filename.endswith(".json"):
+        flash("Please upload a .json backup file.", "error")
+        return redirect(url_for("utilities"))
+    try:
+        data = json.loads(file.read().decode("utf-8"))
+    except Exception:
+        flash("Invalid JSON file.", "error")
+        return redirect(url_for("utilities"))
+    if not isinstance(data, list):
+        flash("Invalid backup format.", "error")
+        return redirect(url_for("utilities"))
+    added = 0
+    skipped = 0
+    user_id = g.user["id"]
+    existing_titles = {(b.title.lower().strip(), b.author.lower().strip())
+                       for b in Book.query.filter_by(user_id=user_id).all()}
+    for item in data:
+        title = (item.get("title") or "").strip()
+        author = (item.get("author") or "").strip()
+        if not title:
+            skipped += 1
+            continue
+        if (title.lower(), author.lower()) in existing_titles:
+            skipped += 1
+            continue
+        book = Book(
+            id=str(uuid.uuid4()),
+            title=title,
+            author=author,
+            isbn=item.get("isbn") or "",
+            format=item.get("format") or "",
+            pages=item.get("pages") or "",
+            copyright_year=item.get("copyright_year") or "",
+            read_date=item.get("read_date") or "",
+            rating=item.get("rating") or "",
+            cover_url=item.get("cover_url") or "",
+            summary=item.get("summary") or "",
+            read_time_hrs=item.get("read_time_hrs") or "",
+            user_id=user_id
+        )
+        db.session.add(book)
+        existing_titles.add((title.lower(), author.lower()))
+        added += 1
+    db.session.commit()
+    flash(f"Restore complete: {added} book(s) added, {skipped} skipped (duplicates or empty).", "success")
+    return redirect(url_for("utilities"))
+
+
 if __name__ == "__main__":
     app.run(debug=True)
  
