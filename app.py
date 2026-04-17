@@ -330,6 +330,12 @@ def authors():
 def utilities():
     return render_template("utilities.html")
  
+
+@app.route("/utilities/tools")
+@login_required
+def tools():
+    return render_template("tools.html")
+
 @app.route("/utilities/export")
 @login_required
 def export_csv():
