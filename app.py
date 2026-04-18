@@ -12,6 +12,19 @@ import jwt as pyjwt
 
 app = Flask(__name__)
 app.jinja_env.filters['enumerate'] = enumerate
+
+# ── Maintenance mode ──────────────────────────────────────────────────────────
+MAINTENANCE_MODE = os.environ.get("MAINTENANCE_MODE", "false").lower() == "true"
+
+@app.before_request
+def check_maintenance():
+    if MAINTENANCE_MODE:
+        # Allow static files through so the maintenance page looks nice
+        if request.path.startswith('/static'):
+            return None
+        return render_template('maintenance.html'), 503
+
+
 LIBRARY_FILE = "library.json"
 
 # ── Supabase config ───────────────────────────────────────────────────────────
