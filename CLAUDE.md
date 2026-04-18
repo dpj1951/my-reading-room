@@ -87,6 +87,42 @@ Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+
 - `/signup`, `/login`, `/logout`, `/forgot-password`, `/reset-password` routes
 - All book queries scoped to `g.user["id"]`
 
+## Changes (Apr 18 2026)
+
+### Maintenance Mode
+- Added `MAINTENANCE_MODE` env var toggle to `app.py` (before_request hook)
+- Added `templates/maintenance.html` — styled dark-theme page with animated 📖 icon
+- Set `MAINTENANCE_MODE=true` in Render env vars — site currently closed to public
+- Service worker confirmed pass-through (no caching) — maintenance works correctly
+- To reopen: set `MAINTENANCE_MODE=false` in Render env vars and redeploy
+
+### Subscription / Role System (Phase 2)
+- Added `user_roles` table in Supabase (user_id uuid PK, role text default 'free', created_at)
+  - RLS enabled with policy "Users can read own role"
+  - Owner user (13a4418d-7a34-4c6c-bbfd-6bda8cfedd45) inserted as role='owner'
+- Added to `app.py`:
+  - `get_user_role(user_id)` — fetches role from Supabase REST API at login, cached in session["user_role"]
+  - `is_subscriber()` — returns True if role in ('subscriber', 'beta', 'owner')
+  - `FREE_BOOK_LIMIT = 20` — free tier cap
+  - Login route now fetches and caches role in session after token save
+  - `get_current_user()` now includes 'role' key from session
+  - `import_csv` route: blocked for free users with amber "upgrade" flash message
+  - `add_manual_save` route: checks book count for free users, blocks at 20 with upgrade flash
+- Updated `templates/utilities.html`:
+  - Import CSV shown only to subscriber/beta/owner
+  - Free users see locked 🔒 version with upgrade link to /settings
+  - Added `.flash.upgrade` amber CSS style
+- Updated `templates/add.html`:
+  - Added flash messages block (was missing)
+  - Added free tier limit banner for non-subscribers
+  - Added `.flash.upgrade` amber CSS style
+
+### Role Management (for future users)
+- New signups default to 'free' (no row needed in user_roles)
+- To grant beta/subscriber access, insert into user_roles in Supabase:
+  `insert into user_roles (user_id, role) values ('<uid>', 'beta') on conflict (user_id) do update set role='beta';`
+- Roles: free (20 book limit, no CSV import), beta (full access, free), subscriber (full access, paid), owner (full access, always)
+
 ## Changes (Apr 16 2026)
 - Custom domain myreadingalcove.com purchased and configured (Namecheap: A @ → 216.24.57.1, CNAME www → my-reading-room2.onrender.com)
 - Supabase Site URL updated to https://myreadingalcove.com
@@ -146,9 +182,13 @@ Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+
 - Service role key obtained and documented above
 
 ## Known Issues / Next Session TODO
-- **Login rate limited:** After many failed attempts on Apr 10, Supabase may still be rate-limiting. Try logging in fresh — should work with password Reading2026!
-- **Service worker cache:** May serve stale pages. Hard reload or visit /logout first.
-- **reading-alcove-auth.onrender.com** — old service, ignore or delete.
+- **Site in maintenance mode** — set `MAINTENANCE_MODE=false` in Render to reopen
+- **Stripe billing** — wire up when ready; webhook just sets role='subscriber' in user_roles
+- **Upgrade page** — /settings currently has no upgrade CTA; needs a pricing/upgrade page
+- **book_count in context** — add_manual save blocks correctly but add.html banner uses current_user.book_count which isn't injected yet (cosmetic only, enforcement works)
+- **Service worker cache** — confirmed pass-through, no issues going forward
+
+
 
 ## How to Push Changes
 The GitHub API works from any page. Standard push pattern:
