@@ -32,6 +32,30 @@ SUPABASE_URL        = os.environ.get("SUPABASE_URL", "https://ijrepkmhqdiezvbxxz
 SUPABASE_ANON_KEY   = os.environ.get("SUPABASE_ANON_KEY", "")
 SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET", "")
 
+# ── Role helpers ────────────────────────────────────────────────────────────
+def get_user_role(user_id):
+    """Fetch role from user_roles table. Returns 'free' if not found."""
+    try:
+        url = SUPABASE_URL + "/rest/v1/user_roles?user_id=eq." + user_id + "&select=role"
+        headers = {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+        }
+        resp = requests.get(url, headers=headers, timeout=5)
+        rows = resp.json()
+        if rows and isinstance(rows, list) and len(rows) > 0:
+            return rows[0].get("role", "free")
+    except Exception:
+        pass
+    return "free"
+
+FREE_BOOK_LIMIT = 20
+
+def is_subscriber():
+    """Return True if current user has full access (subscriber, beta, or owner)."""
+    role = session.get("user_role", "free")
+    return role in ("subscriber", "beta", "owner")
+
 # ── Database ──────────────────────────────────────────────────────────────────
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///library.db")
 if DATABASE_URL.startswith("postgres://"):
@@ -80,7 +104,8 @@ def get_current_user():
                                    options={"verify_aud": False})
         else:
             payload = pyjwt.decode(token, options={"verify_signature": False})
-        return {"id": payload.get("sub"), "email": payload.get("email", "")}
+        uid = payload.get("sub")
+        return {"id": uid, "email": payload.get("email", ""), "role": session.get("user_role", "free")}
     except Exception:
         session.pop("access_token", None)
         return None
@@ -178,6 +203,9 @@ def login():
         if "access_token" in data:
             session["access_token"]  = data["access_token"]
             session["refresh_token"] = data.get("refresh_token", "")
+            user_info = get_current_user()
+            if user_info:
+                session["user_role"] = get_user_role(user_info["id"])
             next_page = request.args.get("next")
             return redirect(next_page or url_for("home"))
         error = data.get("error_description") or data.get("msg") or "Invalid email or password."
@@ -308,6 +336,11 @@ def add_manual_save():
     if not title or not author:
         flash("Title and author are required.", "error")
         return redirect(url_for("add_manual"))
+    if not is_subscriber():
+        book_count = Book.query.filter_by(user_id=g.user["id"]).count()
+        if book_count >= FREE_BOOK_LIMIT:
+            flash("Free accounts are limited to " + str(FREE_BOOK_LIMIT) + " books. Upgrade to add unlimited books.", "upgrade")
+            return redirect(url_for("add_manual"))
     db.session.add(Book(
         title          = title,
         author         = author,
@@ -366,6 +399,9 @@ def export_csv():
 @app.route("/utilities/import", methods=["POST"])
 @login_required
 def import_csv():
+    if not is_subscriber():
+        flash("CSV import is available on the subscriber plan. Upgrade to unlock bulk import.", "upgrade")
+        return redirect(url_for("utilities"))
     file = request.files.get("file")
     if not file or not file.filename.endswith(".csv"):
         flash("Please upload a valid .csv file.", "error")
