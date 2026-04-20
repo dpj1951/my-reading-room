@@ -113,5 +113,26 @@
     document.getElementById('no-results').style.display = (q && !anyVisible) ? '' : 'none';
   });
 </script>
+
+<script>
+/* Auto-refresh on focus for multi-device sync */
+(function() {
+  var hiddenAt = null;
+  var STALE_MS = 2 * 60 * 1000;
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      hiddenAt = Date.now();
+    } else {
+      if (hiddenAt && (Date.now() - hiddenAt) > STALE_MS) {
+        window.location.reload();
+      }
+      hiddenAt = null;
+    }
+  });
+  window.addEventListener('online', function() {
+    window.location.reload();
+  });
+})();
+</script>
 </body>
 </html>
