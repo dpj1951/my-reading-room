@@ -1,5 +1,4 @@
 # CLAUDE.md — My Reading Alcove
-
 This file gives Claude full context on this project so sessions can resume without re-explaining.
 
 ## Project Overview
@@ -10,10 +9,10 @@ This file gives Claude full context on this project so sessions can resume witho
 - **Working branch:** `reading-alcove`
 - **Primary live app:** https://myreadingalcove.com (custom domain) / https://my-reading-room2.onrender.com (Render URL)
 - **Secondary service:** https://reading-alcove-auth.onrender.com (older service, ignore)
-- **Platform:** Render (free tier, Flask web service)
+- **Platform:** Render (Starter $0/mo free tier currently), Flask web service
 - **Database:** Supabase PostgreSQL (project: ijrepkmhqdiezvbxxzke, region: AWS us-west-2)
 - **Auth:** Supabase Auth (email/password, JWT tokens stored in Flask session)
-- **Push method:** GitHub Contents API via browser JS
+- **Push method:** GitHub Contents API via browser JS (Claude Chrome extension) OR terminal python3 script with GH_TOKEN
 
 ## Tech Stack
 - **Backend:** Python / Flask (single file: `app.py`)
@@ -26,19 +25,19 @@ This file gives Claude full context on this project so sessions can resume witho
 
 ## Database Model (Book)
 ```python
-id               String(36)   # UUID primary key
-title            String(500)
-author           String(500)
-isbn             String(20)
-format           String(20)   # 'Paper', 'Ebook', 'Audiobook'
-pages            String(10)
-copyright_year   String(10)
-read_date        String(10)   # stored as YYYY-MM-DD
-rating           String(5)
-cover_url        Text
-summary          Text
-read_time_hrs    String(10)
-user_id          String(36)   # FK to Supabase auth.users.id
+id             String(36)   # UUID primary key
+title          String(500)
+author         String(500)
+isbn           String(20)
+format         String(20)   # 'Paper', 'Ebook', 'Audiobook'
+pages          String(10)
+copyright_year String(10)
+read_date      String(10)   # stored as YYYY-MM-DD
+rating         String(5)
+cover_url      Text
+summary        Text
+read_time_hrs  String(10)
+user_id        String(36)   # FK to Supabase auth.users.id
 ```
 
 ## Supabase Config
@@ -59,6 +58,7 @@ user_id          String(36)   # FK to Supabase auth.users.id
 - `SUPABASE_ANON_KEY` — must be the LEGACY JWT key (eyJhbGci...), NOT the sb_publishable_ key
 - `SECRET_KEY` — reading-alcove-secret-2026 (added Apr 10 2026)
 - `SUPABASE_JWT_SECRET` — for JWT token verification
+- `MAINTENANCE_MODE` — currently `true` — set to `false` to reopen site
 
 ## CRITICAL: Password Reset Procedure
 The only working method is the Supabase Admin API. DO NOT use SQL crypt() — it corrupts the GoTrue password.
@@ -66,11 +66,7 @@ Run this from https://supabase.com/dashboard/project/ijrepkmhqdiezvbxxzke/auth/u
 ```javascript
 fetch('https://ijrepkmhqdiezvbxxzke.supabase.co/auth/v1/admin/users/13a4418d-7a34-4c6c-bbfd-6bda8cfedd45', {
   method: 'PUT',
-  headers: {
-    'apikey': 'SERVICE_ROLE_KEY',
-    'Authorization': 'Bearer SERVICE_ROLE_KEY',
-    'Content-Type': 'application/json'
-  },
+  headers: { 'apikey': 'SERVICE_ROLE_KEY', 'Authorization': 'Bearer SERVICE_ROLE_KEY', 'Content-Type': 'application/json' },
   body: JSON.stringify({ password: 'NEW_PASSWORD' })
 }).then(r => r.json()).then(d => { window._r = {email: d.email}; });
 ```
@@ -81,14 +77,44 @@ Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+
 - Supabase Auth via REST API (`/auth/v1/token` for sign-in, `/auth/v1/signup`)
 - JWT access token stored in Flask `session["access_token"]`
 - `get_current_user()` decodes JWT to get user id + email
-- `@login_required` decorator on all routes including home
+- `@login_required` decorator on all routes EXCEPT `/` (see landing page below)
 - `@app.context_processor` injects `current_user` dict into all templates
 - Logout bar added to books.html, settings.html, utilities.html, authors.html
 - `/signup`, `/login`, `/logout`, `/forgot-password`, `/reset-password` routes
 - All book queries scoped to `g.user["id"]`
 
-## Changes (Apr 18 2026)
+## Changes (Apr 20 2026)
 
+### Multi-Device Sync — Auto-Refresh on Focus
+- Added visibilitychange listener to `books.html`, `authors.html`, `home.html`
+- If page has been hidden for 2+ minutes, silently reloads on return to get fresh data
+- Also reloads on `online` event (device reconnects after being offline)
+- No service worker caching — sw.js is already pass-through (network only)
+
+### Subscription / Pricing Model
+- **Model:** 30-day free trial (full access, no credit card) then **$0.99/month**
+- **Trial users** get full access — no book limit, CSV import enabled
+- **After trial:** $0.99/month via Stripe (not wired up yet)
+- **Interest capture:** mailto:freetrial@myreadingalcove.com (not yet set up as mailbox)
+- Wording updated across:
+  - `settings.html` — new green subscription card at top with trial pitch + "Notify me" mailto button
+  - `add.html` — free tier banner now reads "Your 30-day free trial has ended. Subscribe for $0.99/month"
+  - `utilities.html` — locked CSV import now reads "$0.99/month, 30-day free trial"
+
+### Public Landing Page
+- Built `templates/landing.html` — full marketing page for logged-out visitors
+- Sections: hero (trial badge + CTA), features grid (6 cards), Goodreads callout, pricing card, install instructions, footer
+- Key messaging: 30-day free trial, $0.99/month after, editable read dates, Goodreads import, multi-device sync
+- `app.py` `/` route updated: logged-out visitors → `landing.html`, logged-in → `home.html` (no longer @login_required)
+- Landing page is live in code but behind maintenance mode — will show when site reopens
+
+### Push Method Confirmed
+- Best approach: Claude Chrome extension executes JS directly in browser tab
+- Token pasted in chat → Claude runs GitHub API push → user revokes token immediately
+- Terminal python3 fallback: `cat > /tmp/script.py << 'PYEOF' ... PYEOF && python3 /tmp/script.py`
+- Avoid heredoc with triple-quoted strings — use separate file write then run
+
+## Changes (Apr 18 2026)
 ### Maintenance Mode
 - Added `MAINTENANCE_MODE` env var toggle to `app.py` (before_request hook)
 - Added `templates/maintenance.html` — styled dark-theme page with animated 📖 icon
@@ -98,30 +124,23 @@ Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+
 
 ### Subscription / Role System (Phase 2)
 - Added `user_roles` table in Supabase (user_id uuid PK, role text default 'free', created_at)
-  - RLS enabled with policy "Users can read own role"
-  - Owner user (13a4418d-7a34-4c6c-bbfd-6bda8cfedd45) inserted as role='owner'
+- RLS enabled with policy "Users can read own role"
+- Owner user (13a4418d-7a34-4c6c-bbfd-6bda8cfedd45) inserted as role='owner'
 - Added to `app.py`:
   - `get_user_role(user_id)` — fetches role from Supabase REST API at login, cached in session["user_role"]
   - `is_subscriber()` — returns True if role in ('subscriber', 'beta', 'owner')
-  - `FREE_BOOK_LIMIT = 20` — free tier cap
-  - Login route now fetches and caches role in session after token save
-  - `get_current_user()` now includes 'role' key from session
-  - `import_csv` route: blocked for free users with amber "upgrade" flash message
-  - `add_manual_save` route: checks book count for free users, blocks at 20 with upgrade flash
-- Updated `templates/utilities.html`:
-  - Import CSV shown only to subscriber/beta/owner
-  - Free users see locked 🔒 version with upgrade link to /settings
-  - Added `.flash.upgrade` amber CSS style
-- Updated `templates/add.html`:
-  - Added flash messages block (was missing)
-  - Added free tier limit banner for non-subscribers
-  - Added `.flash.upgrade` amber CSS style
+  - `FREE_BOOK_LIMIT = 20` — free tier cap (enforcement stays, but trial users bypass via role)
+- Login route now fetches and caches role in session after token save
+- `get_current_user()` now includes 'role' key from session
+- `import_csv` route: blocked for free users with amber "upgrade" flash message
+- `add_manual_save` route: checks book count for free users, blocks at 20 with upgrade flash
+- Role management: insert into user_roles with role='beta' to grant full access manually
 
-### Role Management (for future users)
-- New signups default to 'free' (no row needed in user_roles)
-- To grant beta/subscriber access, insert into user_roles in Supabase:
-  `insert into user_roles (user_id, role) values ('<uid>', 'beta') on conflict (user_id) do update set role='beta';`
-- Roles: free (20 book limit, no CSV import), beta (full access, free), subscriber (full access, paid), owner (full access, always)
+### Role Reference
+- **free** — 20 book limit, no CSV import (post-trial default)
+- **beta** — full access, free
+- **subscriber** — full access, paid
+- **owner** — full access, always (dpjohnson1951@gmail.com)
 
 ## Changes (Apr 16 2026)
 - Custom domain myreadingalcove.com purchased and configured (Namecheap: A @ → 216.24.57.1, CNAME www → my-reading-room2.onrender.com)
@@ -131,67 +150,43 @@ Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+
 - Removed Wipe Library UI from utilities page (backend route kept for future use)
 
 ## Changes (Apr 15 2026)
-- Removed "Log in" link from home page (home.html) — was appearing in bottom-right corner for logged-in users
-- Push method: GitHub Contents API via Chrome extension JS (GH_TOKEN pasted in chat, revoke after session)
+- Removed "Log in" link from home page (home.html)
+- Push method established: GitHub Contents API via Chrome extension JS
 
 ## Changes (Apr 14 2026)
-- Fixed garbled mojibake emoji in format buttons on add.html (📖 Paper, 📱 Ebook, 🎧 Audiobook) and page title — UTF-8 bytes were stored as latin-1 characters
-- Home page shelf: removed 📚 and 🔖, kept only 📖
-- Authors page filter: now searches both author names and book titles (added `data-titles` attribute to each author-group, updated JS filter)
-- Authors page filter: shows "No results found" message instead of blank when search has no matches
-- Wipe Library feature: discussed restricting to owner only — reverted pending decision on approach (hardcoded UID vs email vs DB flag)
-- Push method: GitHub Contents API via Chrome extension JS (GH_TOKEN pasted in chat, revoke after session)
+- Fixed garbled mojibake emoji in format buttons on add.html
+- Authors page filter: searches both author names and book titles
+- Authors page filter: shows "No results found" when no matches
 
-## Changes (Apr 13 2026 — Session 2)
+## Changes (Apr 13 2026)
 - Barcode scanner fully working end-to-end (scan.html rebuilt with ZXing-js)
-- Scanner uses getUserMedia + decodeContinuously for rear camera on mobile
-- On ISBN detect: redirects to /add/manual?isbn=XXXXXXX
-- add.html auto-populates search box from isbn_prefill and calls doSearch()
-- Format defaults to Paper, Read Date defaults to today when arriving from scanner
-- User taps Select on result → all fields filled, then just Save
-- Tested successfully: scanned Red Lily by Nora Roberts, saved to library with cover
-- Terminal push workflow confirmed: cat > /tmp/fix.py << 'PYEOF' ... PYEOF && python3 /tmp/fix.py
-- Token workflow: generate at github.com/settings/tokens (classic, repo scope), export GH_TOKEN=..., unset when done
-- Known remaining issue: garbled emoji in format buttons on add form (pre-existing UTF-8 bug)
-
-## Changes (Apr 13 2026 — Session 1)
-- Home page nav restructured: Books / Authors / Add a Book / Utilities (Settings and Help removed)
-- "+ Add Book" button removed from Books and Authors navbars — add books via home page only
-- Terminal + GitHub API established as push workflow (python3 script via GH_TOKEN env var)
-- Scanner page still placeholder — building barcode scanner next session
-- Token workflow: generate at github.com/settings/tokens (classic, repo scope), export GH_TOKEN=..., unset when done
+- Scanner redirects to /add/manual?isbn=XXXXXXX on detect
+- add.html auto-populates and calls doSearch() from isbn_prefill
 
 ## Bugs Fixed (Apr 12 2026)
-- Books page navbar updated to match authors page (frosted glass, DM Serif Display, sticky)
-- Books page list view removed — grid only now
-- Supabase migrated to new API key format — SUPABASE_ANON_KEY updated to sb_publishable_25JxbKV5-pocxq9xrEE6bQ_ORKEBSvL
-- SUPABASE_JWT_SECRET deleted from Render env vars (Supabase rotated JWT signing from HS256 to ECC P-256; app uses unverified decode fallback which works fine)
-- Password reset to Reading2026!
-- Import CSV was failing with duplicate key error: import now generates fresh UUIDs instead of reusing CSV ids (avoids conflicts with stale local SQLite on Render disk)
-- Import duplicate check scoped to user_id so books from other users don't cause false skips
-- Wipe button still broken (deletes 0 books) — workaround: delete directly via Supabase REST API with service key filtering by user_id
-
-## Bugs Fixed (Apr 10 2026)
-- Added @login_required to home route (was missing)
-- Authors page now sorts by last name
-- Garbled UTF-8 chars removed from utilities.html script blocks
-- Books page navbar updated to match authors page style (frosted glass, DM Serif Display, SVG back arrow, blue + Add Book button)
-- SUPABASE_ANON_KEY corrected in Render (was sb_publishable_ format, now legacy JWT)
-- SECRET_KEY added to Render env vars
-- /reset-password route and template added for forgot password flow
-- Service role key obtained and documented above
+- Books page list view removed — grid only
+- Supabase migrated to new API key format
+- Import CSV: fresh UUIDs to avoid duplicate key errors, duplicate check scoped to user_id
+- Wipe button still broken (deletes 0 books) — workaround: delete via Supabase REST API with service key
 
 ## Known Issues / Next Session TODO
 - **Site in maintenance mode** — set `MAINTENANCE_MODE=false` in Render to reopen
+- **Email setup** — freetrial@myreadingalcove.com not yet configured (Namecheap forwarding to Gmail, ~2 min setup)
 - **Stripe billing** — wire up when ready; webhook just sets role='subscriber' in user_roles
-- **Upgrade page** — /settings currently has no upgrade CTA; needs a pricing/upgrade page
-- **book_count in context** — add_manual save blocks correctly but add.html banner uses current_user.book_count which isn't injected yet (cosmetic only, enforcement works)
-- **Service worker cache** — confirmed pass-through, no issues going forward
+- **book_count in context** — add.html banner uses current_user.book_count which isn't injected yet (cosmetic only, enforcement works)
+- **Wipe Library button** — still broken, workaround via Supabase REST API
+- **Render upgrade** — upgrade to $7/month Starter when ready to launch (eliminates cold start)
 
-
+## Pre-Launch Checklist
+1. Set up freetrial@myreadingalcove.com email forwarding (Namecheap → Gmail)
+2. Set `MAINTENANCE_MODE=false` in Render env vars and redeploy
+3. Verify landing page looks correct at myreadingalcove.com
+4. Verify logged-in users still go to home.html correctly
+5. Wire up Stripe when ready for paid subscriptions
 
 ## How to Push Changes
-The GitHub API works from any page. Standard push pattern:
+Preferred: Claude Chrome extension — paste token in chat, Claude runs JS push, revoke token immediately.
+
 ```javascript
 (async () => {
   const T = 'ghp_TOKEN';
@@ -211,18 +206,28 @@ The GitHub API works from any page. Standard push pattern:
 })();
 ```
 
+Terminal fallback: `cat > /tmp/script.py << 'PYEOF' ... PYEOF && python3 /tmp/script.py`
+Token: generate at github.com/settings/tokens (classic, repo scope), revoke after session.
+
 ## Planned Development Roadmap
 ### Phase 1 — Auth & Per-User Data ✅ COMPLETE (Apr 8 2026)
-### Phase 2 — Stripe Billing (SKIPPED — staying free for now)
+### Phase 2 — Subscription Model (IN PROGRESS)
+- ✅ Pricing model decided: 30-day free trial → $0.99/month
+- ✅ Landing page built with trial/pricing messaging
+- ✅ In-app wording updated
+- ⬜ Email setup (freetrial@myreadingalcove.com)
+- ⬜ Stripe integration (webhook → sets role='subscriber')
+- ⬜ Trial timer enforcement (trial_started_at column + expiry logic)
 ### Phase 3 — Production Readiness
-- Upgrade Render to $7/month Starter (eliminates cold start)
+- Upgrade Render to $7/month Starter
 - Delete reading-alcove-auth.onrender.com service
 - Privacy policy page
 
 ## Product & Distribution Decisions
 - **Distribution:** Web-first PWA
 - **Auth:** Supabase Auth (complete)
-- **Billing:** None for now (free personal use)
-- **Hosting:** Render free tier (upgrade to Starter $7/mo when ready to launch publicly)
+- **Billing:** $0.99/month after 30-day free trial (Stripe, not yet wired)
+- **Hosting:** Render free tier (upgrade to Starter $7/mo when ready to launch)
 - **Database:** Supabase PostgreSQL
-- **Email:** Not needed yet
+- **Email:** freetrial@myreadingalcove.com (Namecheap forwarding, not yet configured)
+- **Domain:** myreadingalcove.com (Namecheap, pointed to Render)
