@@ -287,9 +287,12 @@ def logout():
     return redirect(url_for("login"))
 
 @app.route("/")
-@login_required
 def index():
-    return render_template("home.html")
+    user = get_current_user()
+    if user:
+        g.user = user
+        return render_template("home.html")
+    return render_template("landing.html")
 
 @app.route("/books")
 @login_required
