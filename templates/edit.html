@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edit — {{ book.title }} — My Reading Alcove</title>
+  <title>Edit â {{ book.title }} â My Reading Alcove</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -117,13 +117,13 @@
           <div class="format-group">
             <button type="button" id="btn-paper"
               class="format-btn {% if book.format == 'Paper' %}active-paper{% endif %}"
-              onclick="setFormat('Paper')">📖 Paper</button>
+              onclick="setFormat('Paper')">ð Paper</button>
             <button type="button" id="btn-ebook"
               class="format-btn {% if book.format == 'Ebook' %}active-ebook{% endif %}"
-              onclick="setFormat('Ebook')">📱 Ebook</button>
+              onclick="setFormat('Ebook')">ð± Ebook</button>
             <button type="button" id="btn-audio"
               class="format-btn {% if book.format == 'Audiobook' %}active-audio{% endif %}"
-              onclick="setFormat('Audiobook')">🎧 Audiobook</button>
+              onclick="setFormat('Audiobook')">ð§ Audiobook</button>
           </div>
           <input type="hidden" name="format" id="f-format" value="{{ book.format or 'Paper' }}">
         </div>
@@ -136,12 +136,12 @@
 
         <div class="field full">
           <label>Cover Image URL</label>
-          <input type="text" name="cover_url" placeholder="https://…" value="{{ book.cover_url or '' }}">
+          <input type="text" name="cover_url" placeholder="https://â¦" value="{{ book.cover_url or '' }}">
         </div>
 
         <div class="field full">
           <label>Plot Summary</label>
-          <textarea name="summary" placeholder="Brief description…">{{ book.summary or '' }}</textarea>
+          <textarea name="summary" placeholder="Brief descriptionâ¦">{{ book.summary or '' }}</textarea>
         </div>
 
         <div class="field full">
@@ -149,7 +149,7 @@
           <div class="star-group">
             {% for i in range(1, 6) %}
             <span class="star {% if book.rating and i <= book.rating|int %}active{% endif %}"
-              data-val="{{ i }}" onclick="setRating({{ i }})" title="{{ i }} star{{ 's' if i > 1 else '' }}">★</span>
+              data-val="{{ i }}" onclick="setRating({{ i }})" title="{{ i }} star{{ 's' if i > 1 else '' }}">â</span>
             {% endfor %}
             <span class="star-label" id="rating-label">
               {% if book.rating %}
@@ -164,6 +164,16 @@
 
       </div>
 
+
+      <div class="field-group" style="padding: 0 16px 16px;">
+        <label style="display:block; margin-bottom:8px; font-size:0.85rem; color:#888;">Reading Status</label>
+        <div class="format-btns" id="status-btns">
+          <button type="button" class="fmt-btn {% if book.status == 'read' or not book.status %}active{% endif %}" data-val="read" onclick="setStatus('read',this)">✅ Read</button>
+          <button type="button" class="fmt-btn {% if book.status == 'reading' %}active{% endif %}" data-val="reading" onclick="setStatus('reading',this)">📖 Reading</button>
+          <button type="button" class="fmt-btn {% if book.status == 'want_to_read' %}active{% endif %}" data-val="want_to_read" onclick="setStatus('want_to_read',this)">🔖 Want to Read</button>
+        </div>
+        <input type="hidden" name="status" id="f-status" value="{{ book.status or 'read' }}">
+      </div>
       <div class="btn-row">
         <a class="btn-cancel" href="/book/{{ book.id }}">Cancel</a>
         <button type="submit" class="btn-save">Save Changes</button>
@@ -190,7 +200,7 @@
     const ratingLabels = ['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'];
     function setRating(val) {
       document.getElementById('f-rating').value = val;
-      document.getElementById('rating-label').textContent = val + ' / 5 — ' + ratingLabels[val];
+      document.getElementById('rating-label').textContent = val + ' / 5 â ' + ratingLabels[val];
       document.querySelectorAll('.star').forEach(s => {
         s.classList.toggle('active', parseInt(s.dataset.val) <= val);
       });
@@ -210,6 +220,12 @@
         });
       });
     });
+  
+    function setStatus(val, btn) {
+      document.getElementById('f-status').value = val;
+      document.querySelectorAll('#status-btns .fmt-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
   </script>
 </body>
 </html>
