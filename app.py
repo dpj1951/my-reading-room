@@ -117,13 +117,12 @@ def get_current_user():
         secret = SUPABASE_JWT_SECRET
         if secret:
             payload = pyjwt.decode(token, secret, algorithms=["HS256"],
-                                   options={"verify_aud": False})
+                                   options={"verify_aud": False, "verify_exp": False})
         else:
             payload = pyjwt.decode(token, options={"verify_signature": False})
         uid = payload.get("sub")
         return {"id": uid, "email": payload.get("email", ""), "role": session.get("user_role", "free")}
     except Exception:
-        session.pop("access_token", None)
         return None
 
 def login_required(f):
