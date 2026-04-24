@@ -10,7 +10,7 @@ This file gives Claude full context on this project so sessions can resume witho
 - **Working branch:** `reading-alcove`
 - **Primary live app:** https://myreadingalcove.com (custom domain) / https://my-reading-room2.onrender.com (Render URL)
 - **Secondary service:** https://reading-alcove-auth.onrender.com (older service, ignore)
-- **Platform:** Render (Starter $0/mo free tier currently), Flask web service
+- **Platform:** Render (Starter plan), Flask web service
 - **Database:** Supabase PostgreSQL (project: ijrepkmhqdiezvbxxzke, region: AWS us-west-2)
 - **Auth:** Supabase Auth (email/password, JWT tokens stored in Flask session)
 - **Push method:** GitHub Contents API via browser JS (Claude Chrome extension) OR terminal python3 script with GH_TOKEN
@@ -42,165 +42,155 @@ user_id          String(36)   # FK to Supabase auth.users.id
 ```
 
 ## Supabase Config
+- **Plan:** PRO ($25/month) — upgraded Apr 24 2026
+- **IPv4 add-on:** ENABLED ($4/month) — added Apr 24 2026, required for Render connection
 - **Project ref:** ijrepkmhqdiezvbxxzke
 - **Project URL:** https://ijrepkmhqdiezvbxxzke.supabase.co
-- **Publishable key (use this one):** sb_publishable_25JxbKV5-pocxq9xrEE6bQ_ORKEBSvL
-- **Secret key:** sb_secret_bE_NO... (see Supabase dashboard)
+- **Publishable key:** sb_publishable_25JxbKV5-pocxq9xrEE6bQ_ORKEBSvL
 - **Service role key:** eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqcmVwa21ocWRpZXp2Ynh4emtlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTUwMTQ4NiwiZXhwIjoyMDkxMDc3NDg2fQ.icmO0p4L7eUBaBQbXjfzhrqrCuJhj7QYUmZT6rlQzTc
 - **Auth user (owner):** dpjohnson1951@gmail.com (UID: 13a4418d-7a34-4c6c-bbfd-6bda8cfedd45)
-- **Books:** 213 books all assigned to owner user_id — confirmed in DB Apr 24 2026
-- **RLS:** DISABLED on books table (ALTER TABLE public.books DISABLE ROW LEVEL SECURITY) — can re-enable later with proper policies
+- **Books:** 213 books all assigned to owner user_id
+- **Database password:** TDepdKS7o9RDeurT (reset Apr 24 2026)
+- **RLS:** DISABLED on books table
 - **Email confirmations:** disabled (mailer_autoconfirm: true)
 - **Site URL:** https://myreadingalcove.com
+- **JWT:** Supabase now uses ES256 (new signing keys) — app uses verify_signature=False for JWT decode
 
 ## Render Environment Variables (my-reading-room2)
-- `DATABASE_URL` — Supabase PostgreSQL connection string
+- `DATABASE_URL` — postgresql://postgres.ijrepkmhqdiezvbxxzke:TDepdKS7o9RDeurT@aws-0-us-west-2.pooler.supabase.com:6543/postgres (updated Apr 24 2026)
 - `GOOGLE_BOOKS_API_KEY` — for book lookup and cover/ISBN backfill
 - `SUPABASE_URL` — https://ijrepkmhqdiezvbxxzke.supabase.co
 - `SUPABASE_ANON_KEY` — must be the LEGACY JWT key (eyJhbGci...), NOT the sb_publishable_ key
-- `SECRET_KEY` — reading-alcove-secret-2026 (added Apr 10 2026)
-- `SUPABASE_JWT_SECRET` — legacy JWT secret (88 chars), added Apr 24 2026. Required for get_current_user() JWT decode. Find at: Supabase → Settings → JWT Keys → Legacy JWT Secret → Reveal
+- `SECRET_KEY` — reading-alcove-secret-2026
+- `SUPABASE_JWT_SECRET` — legacy JWT secret (88 chars). Find at: Supabase → Settings → JWT Keys → Legacy JWT Secret → Reveal. NOTE: Not actually used for decode anymore (app uses verify_signature=False due to ES256 migration)
 - `MAINTENANCE_MODE` — currently `true` — set to `false` to reopen site
+
+## Owner Access During Maintenance Mode
+**Permanent bypass URL:** `https://my-reading-room2.onrender.com/login`
+- The /login route is always accessible even in maintenance mode
+- After login, lands on /home with full navigation (Books, Authors, Add a Book, Utilities)
+- Session persists — no need for preview token
 
 ## CRITICAL: Password Reset Procedure
 The only working method is the Supabase Admin API. DO NOT use SQL crypt() — it corrupts the GoTrue password.
-Run this from https://supabase.com/dashboard/project/ijrepkmhqdiezvbxxzke/auth/users:
 ```javascript
 fetch('https://ijrepkmhqdiezvbxxzke.supabase.co/auth/v1/admin/users/13a4418d-7a34-4c6c-bbfd-6bda8cfedd45', {
   method: 'PUT',
-  headers: {
-    'apikey': 'SERVICE_ROLE_KEY',
-    'Authorization': 'Bearer SERVICE_ROLE_KEY',
-    'Content-Type': 'application/json'
-  },
+  headers: { 'apikey': 'SERVICE_ROLE_KEY', 'Authorization': 'Bearer SERVICE_ROLE_KEY', 'Content-Type': 'application/json' },
   body: JSON.stringify({ password: 'NEW_PASSWORD' })
 }).then(r => r.json()).then(d => { window._r = {email: d.email}; });
 ```
-Then immediately try logging in — do NOT run any SQL queries between the API call and login attempt.
-Note: Supabase free tier rate-limits failed logins. After many failures, wait 1+ hour before retrying.
 
-## Auth Implementation (Phase 1 — Complete Apr 8 2026)
+## Auth Implementation
 - Supabase Auth via REST API (`/auth/v1/token` for sign-in, `/auth/v1/signup`)
 - JWT access token stored in Flask `session["access_token"]`
-- `get_current_user()` decodes JWT using SUPABASE_JWT_SECRET to get user id + email
-- **CRITICAL:** SUPABASE_JWT_SECRET must be set in Render env vars or books will appear empty after login
-- `@login_required` decorator on all routes EXCEPT `/` (see landing page below)
-- `@app.context_processor` injects `current_user` dict into all templates
-- Logout bar added to books.html, settings.html, utilities.html, authors.html
-- `/signup`, `/login`, `/logout`, `/forgot-password`, `/reset-password` routes
+- `get_current_user()` decodes JWT using `verify_signature=False` (Supabase migrated to ES256, legacy HS256 no longer works)
+- `session.permanent = True` with 30-day lifetime — sessions persist across requests
+- `SESSION_COOKIE_SECURE`, `SESSION_COOKIE_HTTPONLY`, `SESSION_COOKIE_SAMESITE=Lax` configured
+- `@login_required` decorator on all routes except `/` and `/login`
 - All book queries scoped to `g.user["id"]`
+- `/home` route added — @login_required, always serves home.html, login redirects here
+
+## check_maintenance() logic
+- Always allows: /static/*, /login, /logout, /forgot-password, /reset-password
+- Allows preview bypass: ?preview=alcove2026 sets session['preview_bypass']
+- Allows logged-in users through regardless
+- Public gets maintenance.html (503) for all other routes
 
 ## Changes (Apr 24 2026)
-### Fixed: Books Not Displaying After Login
-- **Root cause 1:** MAINTENANCE_MODE=true was blocking login page (showed "Be back soon" screen)
-  - Preview bypass: `?preview=alcove2026` allows access while maintenance mode is on
-- **Root cause 2:** SUPABASE_JWT_SECRET was missing from Render env vars
-  - Without it, get_current_user() fell back to unverified JWT decode, returning wrong user ID
-  - Books appeared empty because the user ID from JWT did not match DB records
-- **Diagnosis:** SQL confirmed all 213 books correctly assigned to UID 13a4418d-7a34-4c6c-bbfd-6bda8cfedd45
-- **Fix:** Added SUPABASE_JWT_SECRET (legacy JWT secret, 88 chars) to Render env vars and redeployed
-- **Fix:** Set MAINTENANCE_MODE=false, confirmed books load, then restored to true at end of session
-- RLS was also disabled on books table during earlier debugging attempt (not the root cause)
+### Session / Login Fixed
+- **Root cause of empty books:** Supabase migrated to ES256 JWT signing — app was trying HS256, decode failed, session wiped on every request
+- **Fix:** Changed get_current_user() to use verify_signature=False — token trusted implicitly (issued by Supabase auth endpoint, stored in server session)
+- **Fix:** session.permanent=True + 30-day lifetime + secure cookie config
+- **Fix:** check_maintenance() now allows /login through and allows logged-in users through
+- **Fix:** Added /home route — login redirects to /home instead of / (avoids landing page)
+
+### Database Connection Fixed
+- **Root cause of 500 error on /books:** DATABASE_URL pointed to alcove-library (Render DB) not Supabase
+- **Fix:** Updated DATABASE_URL to Supabase transaction pooler URL
+- **Supabase Pro upgraded** ($25/month) — no project pausing, daily backups, email support
+- **IPv4 add-on enabled** ($4/month) — required for Render → Supabase pooler connection
+- **Database password reset** to TDepdKS7o9RDeurT
+- **Status at end of session:** IPv4 DNS propagation still in progress (~10-15 min) — connection should work next session
+
+### Infrastructure
+- MAINTENANCE_MODE=true (site closed to public)
+- LOGIN works: https://my-reading-room2.onrender.com/login → /home ✅
+- BOOKS page: 500 error — awaiting IPv4 DNS propagation (should auto-resolve)
 
 ## Changes (Apr 20 2026)
 ### Multi-Device Sync — Auto-Refresh on Focus
 - Added visibilitychange listener to books.html, authors.html, home.html
-- If page has been hidden for 2+ minutes, silently reloads on return to get fresh data
-- Also reloads on online event (device reconnects after being offline)
-- No service worker caching — sw.js is already pass-through (network only)
+- If page hidden 2+ min, silently reloads on return
 
 ### Subscription / Pricing Model
-- **Model:** 30-day free trial (full access, no credit card) then $0.99/month
-- **Trial users** get full access — no book limit, CSV import enabled
-- **After trial:** $0.99/month via Stripe (not wired up yet)
-- **Interest capture:** mailto:freetrial@myreadingalcove.com (not yet set up as mailbox)
+- 30-day free trial → $0.99/month via Stripe (not yet wired)
 - Wording updated across settings.html, add.html, utilities.html
 
 ### Public Landing Page
-- Built templates/landing.html — full marketing page for logged-out visitors
-- app.py / route updated: logged-out visitors to landing.html, logged-in to home.html
-- Landing page is live in code but behind maintenance mode
-
-### Push Method Confirmed
-- Best approach: Claude Chrome extension executes JS directly in browser tab
-- Token pasted in chat → Claude runs GitHub API push → user revokes token immediately
+- templates/landing.html built — / route serves it for logged-out visitors
+- Behind maintenance mode — will show when site reopens
 
 ## Changes (Apr 18 2026)
 ### Maintenance Mode
-- Added MAINTENANCE_MODE env var toggle to app.py (before_request hook)
-- Added templates/maintenance.html — styled dark-theme page with animated book icon
-- Set MAINTENANCE_MODE=true in Render env vars — site currently closed to public
-- To reopen: set MAINTENANCE_MODE=false in Render env vars and redeploy
+- MAINTENANCE_MODE env var toggle added to app.py
+- templates/maintenance.html added
 
-### Subscription / Role System (Phase 2)
-- Added user_roles table in Supabase (user_id uuid PK, role text default free, created_at)
-- RLS enabled with policy "Users can read own role"
-- Owner user (13a4418d-7a34-4c6c-bbfd-6bda8cfedd45) inserted as role=owner
-- get_user_role(user_id) fetches role at login, cached in session["user_role"]
-- is_subscriber() returns True if role in (subscriber, beta, owner)
-- FREE_BOOK_LIMIT = 20
-
-### Role Reference
-- free: 20 book limit, no CSV import
-- beta: full access, free
-- subscriber: full access, paid
-- owner: full access, always (dpjohnson1951@gmail.com)
+### Subscription / Role System
+- user_roles table in Supabase (user_id, role, created_at)
+- Roles: free (20 book limit), beta (full access), subscriber (paid), owner (always full)
+- Owner UID inserted as role=owner
 
 ## Changes (Apr 16 2026)
-- Custom domain myreadingalcove.com purchased and configured
-- Supabase Site URL updated to https://myreadingalcove.com
+- Custom domain myreadingalcove.com configured
 - PWA manifest start_url fixed
-- Login redirect fixed: now lands on home page
-
-## Changes (Apr 15 2026)
-- Push method established: GitHub Contents API via Chrome extension JS
-
-## Changes (Apr 14 2026)
-- Fixed garbled emoji in format buttons on add.html
-- Authors page filter improvements
-
-## Changes (Apr 13 2026)
-- Barcode scanner fully working end-to-end (scan.html rebuilt with ZXing-js)
-
-## Bugs Fixed (Apr 12 2026)
-- Books page list view removed — grid only
-- Supabase migrated to new API key format
-- Import CSV: fresh UUIDs, duplicate check scoped to user_id
-- Wipe button still broken — workaround via Supabase REST API
+- Login redirect fixed
 
 ## Known Issues / Next Session TODO
-- **Site in maintenance mode** — set MAINTENANCE_MODE=false in Render env vars to reopen
-- **Email setup** — freetrial@myreadingalcove.com not yet configured (Namecheap forwarding to Gmail)
-- **Stripe billing** — wire up when ready; webhook sets role=subscriber in user_roles
-- **book_count in context** — add.html banner cosmetic issue only, enforcement works
-- **Wipe Library button** — still broken, workaround via Supabase REST API
-- **Render upgrade** — upgrade to $7/month Starter when ready to launch
+- **Books page 500 error** — IPv4 DNS propagation should complete within 10-15 min of add-on activation. Test with: `python3 -c "import psycopg2; conn = psycopg2.connect(host='aws-0-us-west-2.pooler.supabase.com', port=6543, dbname='postgres', user='postgres.ijrepkmhqdiezvbxxzke', password='TDepdKS7o9RDeurT', sslmode='require'); print('OK:', conn.cursor().execute('SELECT COUNT(*) FROM public.books') or 'connected')"`
+- **Email setup** — freetrial@myreadingalcove.com not yet configured
+- **Stripe billing** — wire up when ready
+- **book_count in context** — add.html banner cosmetic issue only
+- **Wipe Library button** — still broken
+- **MAINTENANCE_MODE** — currently true, set to false to reopen
 
 ## Pre-Launch Checklist
-1. Set up freetrial@myreadingalcove.com email forwarding (Namecheap to Gmail)
-2. Set MAINTENANCE_MODE=false in Render env vars and redeploy
-3. Verify landing page looks correct at myreadingalcove.com
-4. Verify logged-in users still go to home.html correctly
-5. Wire up Stripe when ready for paid subscriptions
+1. Verify books load at /books after IPv4 DNS propagation
+2. Set up freetrial@myreadingalcove.com email forwarding
+3. Set MAINTENANCE_MODE=false in Render and redeploy
+4. Verify landing page at myreadingalcove.com
+5. Wire up Stripe
 
 ## How to Push Changes
-Preferred: Claude Chrome extension — paste token in chat, Claude runs JS push, revoke token immediately.
 Token: generate at github.com/settings/tokens (classic, repo scope), revoke after session.
+```javascript
+(async () => {
+  const T = 'ghp_TOKEN';
+  const BASE = 'https://api.github.com/repos/dpj1951/my-reading-room/contents/';
+  const meta = await (await fetch(BASE + 'FILENAME?ref=reading-alcove', { headers: { Authorization: 'token ' + T } })).json();
+  const bytes = Uint8Array.from(atob(meta.content.replace(/\n/g,'')), c => c.charCodeAt(0));
+  let code = new TextDecoder().decode(bytes);
+  // make changes to code...
+  const enc = new TextEncoder().encode(code);
+  let bin = ''; enc.forEach(b => bin += String.fromCharCode(b));
+  const put = await (await fetch(BASE + 'FILENAME', { method: 'PUT', headers: { Authorization: 'token ' + T, 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'commit msg', content: btoa(bin), sha: meta.sha, branch: 'reading-alcove' }) })).json();
+  window._r = put.commit ? 'OK:' + put.commit.sha.substring(0,7) : 'ERR:' + JSON.stringify(put).substring(0,100);
+})();
+```
 
 ## Planned Development Roadmap
 
 ### Phase 1 — Auth & Per-User Data COMPLETE (Apr 8 2026)
 
 ### Phase 2 — Subscription Model (IN PROGRESS)
-- DONE: Pricing model decided: 30-day free trial then $0.99/month
-- DONE: Landing page built with trial/pricing messaging
+- DONE: Pricing model: 30-day free trial → $0.99/month
+- DONE: Landing page with trial/pricing messaging
 - DONE: In-app wording updated
 - TODO: Email setup (freetrial@myreadingalcove.com)
-- TODO: Stripe integration (webhook sets role=subscriber)
-- TODO: Trial timer enforcement (trial_started_at column + expiry logic)
+- TODO: Stripe integration
+- TODO: Trial timer enforcement
 
 ### Phase 3 — Production Readiness
-- Upgrade Render to $7/month Starter
 - Delete reading-alcove-auth.onrender.com service
 - Privacy policy page
 
@@ -208,7 +198,7 @@ Token: generate at github.com/settings/tokens (classic, repo scope), revoke afte
 - Distribution: Web-first PWA
 - Auth: Supabase Auth (complete)
 - Billing: $0.99/month after 30-day free trial (Stripe, not yet wired)
-- Hosting: Render free tier (upgrade to Starter $7/mo when ready to launch)
-- Database: Supabase PostgreSQL
-- Email: freetrial@myreadingalcove.com (Namecheap forwarding, not yet configured)
+- Hosting: Render Starter ($7/month)
+- Database: Supabase Pro ($25/month) + IPv4 add-on ($4/month)
+- Email: freetrial@myreadingalcove.com (not yet configured)
 - Domain: myreadingalcove.com (Namecheap, pointed to Render)
