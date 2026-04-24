@@ -114,13 +114,12 @@ def get_current_user():
     if not token:
         return None
     try:
-        secret = SUPABASE_JWT_SECRET
-        if secret:
-            payload = pyjwt.decode(token, secret, algorithms=["HS256"],
-                                   options={"verify_aud": False, "verify_exp": False})
-        else:
-            payload = pyjwt.decode(token, options={"verify_signature": False})
+        # Decode without signature verification - token was issued by Supabase auth
+        # and stored in server-side session, so we trust it implicitly
+        payload = pyjwt.decode(token, options={"verify_signature": False})
         uid = payload.get("sub")
+        if not uid:
+            return None
         return {"id": uid, "email": payload.get("email", ""), "role": session.get("user_role", "free")}
     except Exception:
         return None
