@@ -19,14 +19,19 @@ MAINTENANCE_MODE = os.environ.get("MAINTENANCE_MODE", "false").lower() == "true"
 @app.before_request
 def check_maintenance():
     if MAINTENANCE_MODE:
-        # Allow static files through
+        # Always allow static files, login, and logout through
         if request.path.startswith('/static'):
+            return None
+        if request.path in ('/login', '/logout', '/forgot-password', '/reset-password'):
             return None
         # Set session flag when preview token is present
         if request.args.get('preview') == 'alcove2026':
             session['preview_bypass'] = True
         # Allow through if session flag is set
         if session.get('preview_bypass'):
+            return None
+        # Allow through if user is logged in
+        if get_current_user():
             return None
         return render_template('maintenance.html'), 503
 
