@@ -34,7 +34,42 @@
     .shelf-icon { font-size: 1.3rem; }
     .shelf-title { font-family: 'DM Serif Display', serif; font-size: 1.15rem; color: #c9a96e; letter-spacing: 0.02em; }
     .shelf-count { font-size: 0.78rem; color: #666; margin-left: auto; }
-    .shelf-reading .cover-grid a img { box-shadow: 0 0 0 2px #c9a96e; border-radius: 3px; }
+    .shelf-reading .cover-grid {
+      display: flex;
+      flex-direction: row;
+      overflow-x: auto;
+      overflow-y: visible;
+      gap: 12px;
+      padding: 12px 10px 16px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .shelf-reading .cover-grid::-webkit-scrollbar { height: 4px; }
+    .shelf-reading .cover-grid::-webkit-scrollbar-track { background: transparent; }
+    .shelf-reading .cover-grid::-webkit-scrollbar-thumb { background: #3a3530; border-radius: 2px; }
+    .shelf-reading .cover-grid a {
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      width: 110px;
+    }
+    .shelf-reading .cover-grid a img {
+      width: 110px;
+      height: 165px;
+      object-fit: cover;
+      border-radius: 4px;
+      box-shadow: 0 0 0 2px #c9a96e, 0 6px 20px rgba(0,0,0,0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .shelf-reading .cover-grid a:hover img {
+      transform: translateY(-4px) scale(1.03);
+      box-shadow: 0 0 0 2px #e8b87a, 0 12px 28px rgba(0,0,0,0.5);
+    }
+    .shelf-reading .no-cover {
+      width: 110px; height: 165px;
+      display: flex; align-items: center; justify-content: center;
+      background: #1e1a16; border-radius: 4px;
+      border: 2px solid #c9a96e; font-size: 2rem;
+    }
     .shelf-want .cover-grid a img { opacity: 0.65; filter: grayscale(20%); }
     .shelf-want .cover-grid a:hover img { opacity: 1; filter: none; }
     .shelf-divider { border: none; border-top: 1px solid #2a2a2a; margin: 8px 12px 0; }
@@ -71,18 +106,18 @@
     {% if reading %}
     <div class="shelf-section shelf-reading">
       <div class="shelf-header">
-        <span class="shelf-icon">📖</span>
+        <span class="shelf-icon">ð</span>
         <span class="shelf-title">Currently Reading</span>
         <span class="shelf-count">{{ reading|length }}</span>
       </div>
       <hr class="shelf-divider">
       <div class="cover-grid">
         {% for book in reading %}
-          <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
+          <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
             {% if book.cover_url %}
               <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
             {% else %}
-              <div class="no-cover">📖</div>
+              <div class="no-cover">ð</div>
             {% endif %}
           </a>
         {% endfor %}
@@ -93,18 +128,18 @@
     {% if books %}
     <div class="shelf-section shelf-read">
       <div class="shelf-header">
-        <span class="shelf-icon">✅</span>
+        <span class="shelf-icon">â</span>
         <span class="shelf-title">Read</span>
         <span class="shelf-count">{{ books|length }}</span>
       </div>
       <hr class="shelf-divider">
       <div class="cover-grid">
         {% for book in books %}
-          <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
+          <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
             {% if book.cover_url %}
               <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
             {% else %}
-              <div class="no-cover">📖</div>
+              <div class="no-cover">ð</div>
             {% endif %}
           </a>
         {% endfor %}
@@ -119,18 +154,18 @@
     {% if want %}
     <div class="shelf-section shelf-want">
       <div class="shelf-header">
-        <span class="shelf-icon">🔖</span>
+        <span class="shelf-icon">ð</span>
         <span class="shelf-title">Want to Read</span>
         <span class="shelf-count">{{ want|length }}</span>
       </div>
       <hr class="shelf-divider">
       <div class="cover-grid">
         {% for book in want %}
-          <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
+          <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
             {% if book.cover_url %}
               <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
             {% else %}
-              <div class="no-cover">🔖</div>
+              <div class="no-cover">ð</div>
             {% endif %}
           </a>
         {% endfor %}
@@ -157,7 +192,7 @@
 <div class="cover-grid">
   {% if books %}
     {% for book in books %}
-      <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
+      <a href="/book/{{ book.id }}" title="{{ book.title }} Ã¢ÂÂ {{ book.author }}">
         {% if book.cover_url %}
           <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
         {% else %}
@@ -196,7 +231,7 @@
     body { font-family: 'Lato', sans-serif; background: #e8e8e8; min-height: 100vh; padding-bottom: 40px; }
     .navbar { background: #2a2a2a; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
     .nav-back { color: #4a9eff; font-size: 1rem; font-weight: 400; text-decoration: none; display: flex; align-items: center; gap: 4px; min-width: 70px; }
-    .nav-back::before { content: 'â¹'; font-size: 1.5rem; line-height: 1; margin-top: -2px; }
+    .nav-back::before { content: 'Ã¢ÂÂ¹'; font-size: 1.5rem; line-height: 1; margin-top: -2px; }
     .nav-title { font-family: 'Lato', sans-serif; font-weight: 700; font-size: 1.1rem; color: #fff; letter-spacing: 0.02em; }
     .nav-add { color: #4a9eff; font-size: 1.6rem; font-weight: 300; text-decoration: none; min-width: 70px; text-align: right; line-height: 1; }
     .filter-bar { background: #c8c8c8; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }
