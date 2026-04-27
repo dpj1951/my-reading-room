@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Authors — My Reading Alcove</title>
+  <title>Authors  My Reading Alcove</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -44,6 +44,10 @@
     .empty { text-align: center; padding: 80px 20px; color: var(--muted); }
     .empty h3 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--text); margin-bottom: 8px; }
     .empty a { display: inline-block; margin-top: 20px; background: var(--accent); color: #0e0e12; font-weight: 600; padding: 10px 22px; border-radius: 8px; text-decoration: none; }
+  
+    .status-pip { font-size: 0.65rem; font-weight: 600; padding: 3px 8px; border-radius: 10px; white-space: nowrap; margin-left: 6px; }
+    .pip-reading { background: rgba(126,200,181,0.15); color: #7ec8b5; border: 1px solid rgba(126,200,181,0.3); }
+    .pip-want { background: rgba(200,126,181,0.15); color: #c87eb5; border: 1px solid rgba(200,126,181,0.3); }
   </style>
 </head>
 <body>
@@ -84,9 +88,12 @@
           {% endif %}
           <div class="row-info">
             <div class="row-title">{{ book.title }}</div>
-            <div class="row-meta">{{ book.copyright_year or '' }}{% if book.copyright_year and book.pages %} · {% endif %}{{ book.pages ~ ' pages' if book.pages else '' }}</div>
+            <div class="row-meta">{{ book.copyright_year or '' }}{% if book.copyright_year and book.pages %} � {% endif %}{{ book.pages ~ ' pages' if book.pages else '' }}</div>
           </div>
           <span class="format-pip pip-{{ book.format }}">{{ book.format }}</span>
+          {% if book.status == 'reading' %}<span class="status-pip pip-reading">📖 Reading</span>
+          {% elif book.status == 'want_to_read' %}<span class="status-pip pip-want">🔖 Want to Read</span>
+          {% endif %}
         </a>
       {% endfor %}
     </div>
