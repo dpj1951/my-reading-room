@@ -106,18 +106,18 @@
     {% if reading %}
     <div class="shelf-section shelf-reading">
       <div class="shelf-header">
-        <span class="shelf-icon">📖</span>
+        <span class="shelf-icon">=�</span>
         <span class="shelf-title">Currently Reading</span>
         <span class="shelf-count">{{ reading|length }}</span>
       </div>
       <hr class="shelf-divider">
       <div class="cover-grid">
         {% for book in reading %}
-          <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
+          <a href="/book/{{ book.id }}" title="{{ book.title }}  {{ book.author }}">
             {% if book.cover_url %}
               <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
             {% else %}
-              <div class="no-cover">📖</div>
+              <div class="no-cover">=�</div>
             {% endif %}
           </a>
         {% endfor %}
@@ -128,18 +128,18 @@
     {% if books %}
     <div class="shelf-section shelf-read">
       <div class="shelf-header">
-        <span class="shelf-icon">✅</span>
+        <span class="shelf-icon"></span>
         <span class="shelf-title">Read</span>
         <span class="shelf-count">{{ books|length }}</span>
       </div>
       <hr class="shelf-divider">
       <div class="cover-grid">
         {% for book in books %}
-          <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
+          <a href="/book/{{ book.id }}" title="{{ book.title }}  {{ book.author }}">
             {% if book.cover_url %}
               <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
             {% else %}
-              <div class="no-cover">📖</div>
+              <div class="no-cover">=�</div>
             {% endif %}
           </a>
         {% endfor %}
@@ -154,18 +154,18 @@
     {% if want %}
     <div class="shelf-section shelf-want">
       <div class="shelf-header">
-        <span class="shelf-icon">🔖</span>
+        <span class="shelf-icon">=</span>
         <span class="shelf-title">Want to Read</span>
         <span class="shelf-count">{{ want|length }}</span>
       </div>
       <hr class="shelf-divider">
       <div class="cover-grid">
         {% for book in want %}
-          <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
+          <a href="/book/{{ book.id }}" title="{{ book.title }}  {{ book.author }}">
             {% if book.cover_url %}
               <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
             {% else %}
-              <div class="no-cover">🔖</div>
+              <div class="no-cover">=</div>
             {% endif %}
           </a>
         {% endfor %}
@@ -192,7 +192,7 @@
 <div class="cover-grid">
   {% if books %}
     {% for book in books %}
-      <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
+      <a href="/book/{{ book.id }}" title="{{ book.title }}  {{ book.author }}">
         {% if book.cover_url %}
           <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
         {% else %}
@@ -216,69 +216,5 @@
       });
     }
   </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Books</title>
-  
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Lato', sans-serif; background: #e8e8e8; min-height: 100vh; padding-bottom: 40px; }
-    .navbar { background: #2a2a2a; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-    .nav-back { color: #4a9eff; font-size: 1rem; font-weight: 400; text-decoration: none; display: flex; align-items: center; gap: 4px; min-width: 70px; }
-    .nav-back::before { content: '‹'; font-size: 1.5rem; line-height: 1; margin-top: -2px; }
-    .nav-title { font-family: 'Lato', sans-serif; font-weight: 700; font-size: 1.1rem; color: #fff; letter-spacing: 0.02em; }
-    .nav-add { color: #4a9eff; font-size: 1.6rem; font-weight: 300; text-decoration: none; min-width: 70px; text-align: right; line-height: 1; }
-    .filter-bar { background: #c8c8c8; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }
-    .filter-left { display: flex; align-items: center; gap: 8px; color: #333; font-size: 0.95rem; cursor: pointer; }
-    .filter-arrow { width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #555; }
-    .book-cover-placeholder { width: 58px; height: 82px; flex-shrink: 0; border-radius: 2px; background: linear-gradient(135deg, #7a4030, #4a2018); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: rgba(255,255,255,0.6); text-align: center; padding: 4px; }
-    .book-details { flex: 1; min-width: 0; }
-    .book-title-link { font-size: 1.05rem; font-weight: 700; color: #2060c0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; text-decoration: none; margin-bottom: 3px; }
-    .book-author-name { font-size: 0.9rem; color: #222; margin-bottom: 2px; }
-    .book-isbn { font-size: 0.88rem; color: #444; margin-bottom: 2px; }
-    .book-meta { font-size: 0.88rem; color: #444; }
-    .group-total { padding: 6px 16px 10px; font-size: 0.88rem; color: #555; background: #e8e8e8; }
-    .alpha-index { position: fixed; right: 4px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 1px; z-index: 50; }
-    .alpha-index a { font-size: 0.72rem; color: #555; text-decoration: none; line-height: 1.4; padding: 0 3px; }
-    .alpha-index a:hover { color: #2060c0; }
-    .empty-state { text-align: center; padding: 80px 20px; color: #888; font-style: italic; }
-  </style>
-</head>
-<body>
-<nav class="topnav">
-  <a class="nav-back" href="/">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="m15 18-6-6 6-6"/></svg>
-    Home
-  </a>
-  <span class="nav-title">My Reading Alcove</span>
-  <a class="nav-add" href="/add">+ Add Book</a>
-</nav>
-
-<script>
-/* Auto-refresh on focus for multi-device sync */
-(function() {
-  var hiddenAt = null;
-  var STALE_MS = 2 * 60 * 1000;
-  document.addEventListener('visibilitychange', function() {
-    if (document.hidden) {
-      hiddenAt = Date.now();
-    } else {
-      if (hiddenAt && (Date.now() - hiddenAt) > STALE_MS) {
-        window.location.reload();
-      }
-      hiddenAt = null;
-    }
-  });
-  window.addEventListener('online', function() {
-    window.location.reload();
-  });
-})();
-</script>
 </body>
 </html>
