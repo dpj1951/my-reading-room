@@ -94,7 +94,11 @@
       font-size:0.9rem; margin-bottom:16px; text-align:center; }
     .flash.success { background:#1a3a1a; border:1px solid #3a7a3a; color:#7dcc7d; }
     .flash.error   { background:#3a1a1a; border:1px solid #7a3a3a; color:#cc7d7d; }
-      </style>
+    .fmt-btn { flex: 1; padding: 10px 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s; text-align: center; margin: 2px; }
+    .fmt-btn:hover { border-color: var(--text); color: var(--text); }
+    .fmt-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(59,158,255,0.1); }
+    .format-btns { display: flex; gap: 8px; }
+  </style>
 </head>
 <body>
   <nav>
@@ -114,9 +118,6 @@
         <div class="flash {{ category }}">{{ message }}</div>
       {% endfor %}{% endif %}
     {% endwith %}
-
-    
-    
 
     <div class="search-section">
       <h2>Search Open Library</h2>
@@ -184,7 +185,7 @@
           <div class="format-group">
             <button type="button" class="format-btn active-paper" id="btn-paper" onclick="setFormat('Paper')">📖 Paper</button>
             <button type="button" class="format-btn" id="btn-ebook" onclick="setFormat('Ebook')">📱 Ebook</button>
-            <button type="button" class="format-btn" id="btn-audio" onclick="setFormat('Audiobook')">>🎧 Audiobook</button>
+            <button type="button" class="format-btn" id="btn-audio" onclick="setFormat('Audiobook')">🎧 Audiobook</button>
           </div>
           <input type="hidden" name="format" id="f-format" value="Paper">
         </div>
@@ -210,15 +211,15 @@
         </div>
         <input type="hidden" name="cover_url" id="f-cover">
       </div>
-        <div class="field full">
-          <label>Reading Status</label>
-          <div class="format-btns" id="status-btns">
-            <button type="button" class="fmt-btn active" data-val="read" onclick="setStatus('read',this)">✅ Read</button>
-            <button type="button" class="fmt-btn" data-val="reading" onclick="setStatus('reading',this)">📖 Reading</button>
-            <button type="button" class="fmt-btn" data-val="want_to_read" onclick="setStatus('want_to_read',this)">🔖 Want to Read</button>
-          </div>
-          <input type="hidden" name="status" id="f-status" value="read">
+      <div class="field full">
+        <label>Reading Status</label>
+        <div class="format-btns" id="status-btns">
+          <button type="button" class="fmt-btn active" data-val="read" onclick="setStatus('read',this)">✅ Read</button>
+          <button type="button" class="fmt-btn" data-val="reading" onclick="setStatus('reading',this)">📖 Reading</button>
+          <button type="button" class="fmt-btn" data-val="want_to_read" onclick="setStatus('want_to_read',this)">🔖 Want to Read</button>
         </div>
+        <input type="hidden" name="status" id="f-status" value="read">
+      </div>
       <button type="submit" class="btn-save">Save to My Library</button>
     </form>
   </div>
@@ -270,7 +271,6 @@
       btn.disabled = true; btn.textContent = 'Searching…';
       resDiv.innerHTML = ''; noRes.style.display = 'none'; searching.style.display = 'block';
       try {
-        // Call Open Library directly from the browser (bypasses server timeout issues)
         const params = new URLSearchParams({
           [field]: q, limit: 8,
           fields: 'key,title,author_name,isbn,first_publish_year,number_of_pages_median,cover_i'
@@ -332,7 +332,6 @@
       document.getElementById('ol-query').value = book.title;
       if (book.work_key) {
         try {
-          // Also call summary directly from the browser
           const r = await fetch('https://openlibrary.org' + book.work_key + '.json');
           const d = await r.json();
           let desc = d.description || '';
@@ -368,18 +367,16 @@
       const searchInput = document.getElementById('ol-query');
       if (!searchInput) return;
       searchInput.value = prefill;
-      // Trigger the OL search button
       setTimeout(() => doSearch(), 300);
       const paperBtn = document.getElementById('btn-paper');
       if (paperBtn) paperBtn.click();
-      // Set date after search+select have had time to run
       setTimeout(() => {
         const today = new Date().toISOString().split('T')[0];
         const dateField = document.getElementById('f-date');
         if (dateField && !dateField.value) dateField.value = today;
       }, 1500);
     });
-  
+
     function setStatus(val, btn) {
       document.getElementById('f-status').value = val;
       document.querySelectorAll('#status-btns .fmt-btn').forEach(b => b.classList.remove('active'));
