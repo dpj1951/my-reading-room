@@ -106,18 +106,18 @@
     {% if reading %}
     <div class="shelf-section shelf-reading">
       <div class="shelf-header">
-        <span class="shelf-icon">ð</span>
+        <span class="shelf-icon">📖</span>
         <span class="shelf-title">Currently Reading</span>
         <span class="shelf-count">{{ reading|length }}</span>
       </div>
       <hr class="shelf-divider">
       <div class="cover-grid">
         {% for book in reading %}
-          <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
+          <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
             {% if book.cover_url %}
               <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
             {% else %}
-              <div class="no-cover">ð</div>
+              <div class="no-cover">📖</div>
             {% endif %}
           </a>
         {% endfor %}
@@ -128,18 +128,18 @@
     {% if books %}
     <div class="shelf-section shelf-read">
       <div class="shelf-header">
-        <span class="shelf-icon">â</span>
+        <span class="shelf-icon">✅</span>
         <span class="shelf-title">Read</span>
         <span class="shelf-count">{{ books|length }}</span>
       </div>
       <hr class="shelf-divider">
       <div class="cover-grid">
         {% for book in books %}
-          <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
+          <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
             {% if book.cover_url %}
               <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
             {% else %}
-              <div class="no-cover">ð</div>
+              <div class="no-cover">📖</div>
             {% endif %}
           </a>
         {% endfor %}
@@ -154,18 +154,18 @@
     {% if want %}
     <div class="shelf-section shelf-want">
       <div class="shelf-header">
-        <span class="shelf-icon">ð</span>
+        <span class="shelf-icon">🔖</span>
         <span class="shelf-title">Want to Read</span>
         <span class="shelf-count">{{ want|length }}</span>
       </div>
       <hr class="shelf-divider">
       <div class="cover-grid">
         {% for book in want %}
-          <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
+          <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
             {% if book.cover_url %}
               <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
             {% else %}
-              <div class="no-cover">ð</div>
+              <div class="no-cover">🔖</div>
             {% endif %}
           </a>
         {% endfor %}
@@ -192,7 +192,7 @@
 <div class="cover-grid">
   {% if books %}
     {% for book in books %}
-      <a href="/book/{{ book.id }}" title="{{ book.title }} Ã¢ÂÂ {{ book.author }}">
+      <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
         {% if book.cover_url %}
           <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
         {% else %}
@@ -231,7 +231,7 @@
     body { font-family: 'Lato', sans-serif; background: #e8e8e8; min-height: 100vh; padding-bottom: 40px; }
     .navbar { background: #2a2a2a; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
     .nav-back { color: #4a9eff; font-size: 1rem; font-weight: 400; text-decoration: none; display: flex; align-items: center; gap: 4px; min-width: 70px; }
-    .nav-back::before { content: 'Ã¢ÂÂ¹'; font-size: 1.5rem; line-height: 1; margin-top: -2px; }
+    .nav-back::before { content: '‹'; font-size: 1.5rem; line-height: 1; margin-top: -2px; }
     .nav-title { font-family: 'Lato', sans-serif; font-weight: 700; font-size: 1.1rem; color: #fff; letter-spacing: 0.02em; }
     .nav-add { color: #4a9eff; font-size: 1.6rem; font-weight: 300; text-decoration: none; min-width: 70px; text-align: right; line-height: 1; }
     .filter-bar { background: #c8c8c8; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }
