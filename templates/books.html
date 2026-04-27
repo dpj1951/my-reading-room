@@ -76,7 +76,12 @@
     .shelf-want .cover-grid a img { opacity: 0.65; filter: grayscale(20%); }
     .shelf-want .cover-grid a:hover img { opacity: 1; filter: none; }
     .shelf-divider { border: none; border-top: 1px solid #2a2a2a; margin: 8px 12px 0; }
-</style>
+
+    .shelf-book { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .shelf-book-label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 8px; border-radius: 10px; white-space: nowrap; }
+    .reading-label { background: rgba(126,200,181,0.15); color: #7ec8b5; border: 1px solid rgba(126,200,181,0.3); }
+    .want-label { background: rgba(200,126,181,0.15); color: #c87eb5; border: 1px solid rgba(200,126,181,0.3); }
+  </style>
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#0e0e12">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -116,13 +121,16 @@
       <hr class="shelf-divider">
       <div class="cover-grid">
         {% for book in reading %}
-          <a href="/book/{{ book.id }}" title="{{ book.title }}  {{ book.author }}">
-            {% if book.cover_url %}
-              <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
-            {% else %}
-              <div class="no-cover">=�</div>
-            {% endif %}
-          </a>
+          <div class="shelf-book">
+            <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
+              {% if book.cover_url %}
+                <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
+              {% else %}
+                <div class="no-cover">📖</div>
+              {% endif %}
+            </a>
+            <span class="shelf-book-label reading-label">📖 Reading</span>
+          </div>
         {% endfor %}
       </div>
     </div>
@@ -138,11 +146,11 @@
       <hr class="shelf-divider">
       <div class="cover-grid">
         {% for book in books %}
-          <a href="/book/{{ book.id }}" title="{{ book.title }}  {{ book.author }}">
+          <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
             {% if book.cover_url %}
               <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
             {% else %}
-              <div class="no-cover">=�</div>
+              <div class="no-cover">📖</div>
             {% endif %}
           </a>
         {% endfor %}
@@ -164,13 +172,16 @@
       <hr class="shelf-divider">
       <div class="cover-grid">
         {% for book in want %}
-          <a href="/book/{{ book.id }}" title="{{ book.title }}  {{ book.author }}">
-            {% if book.cover_url %}
-              <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
-            {% else %}
-              <div class="no-cover">=</div>
-            {% endif %}
-          </a>
+          <div class="shelf-book">
+            <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
+              {% if book.cover_url %}
+                <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
+              {% else %}
+                <div class="no-cover">🔖</div>
+              {% endif %}
+            </a>
+            <span class="shelf-book-label want-label">🔖 Want to Read</span>
+          </div>
         {% endfor %}
       </div>
     </div>
