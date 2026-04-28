@@ -12,11 +12,11 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Lato', sans-serif; background: #1a1a1a; min-height: 100vh; padding-bottom: 40px; }
     .navbar { background: #2a2a2a; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-    nav { position: sticky; top: 0; z-index: 100; background: rgba(14,14,18,0.92); backdrop-filter: blur(16px); border-bottom: 1px solid #2a2a36; padding: 0 24px; display: flex; align-items: center; gap: 16px; height: 56px; }
-    .nav-back { display: flex; align-items: center; gap: 6px; color: #3b9eff; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
-    .nav-back:hover { color: #f0ede8; }
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(14,14,18,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; gap: 16px; height: 64px; }
+    .nav-back { display: flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: 0.875rem; }
+    .nav-back:hover { color: var(--text); }
     .nav-back svg { width: 16px; height: 16px; }
-    .nav-title { font-family: 'Lato', sans-serif; font-weight: 700; font-size: 1.1rem; color: #fff; letter-spacing: 0.02em; }
+    .nav-title { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--accent); }
     .nav-add { margin-left: auto; display: flex; align-items: center; gap: 8px; background: #4a9eff; color: #0e0e12 !important; font-weight: 600; font-size: 0.875rem; padding: 8px 18px; border-radius: 8px; text-decoration: none !important; white-space: nowrap; }
     .cover-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 6px; padding: 10px; }
     .cover-grid a { display: block; text-decoration: none; }
@@ -114,7 +114,7 @@
     {% if reading %}
     <div class="shelf-section shelf-reading">
       <div class="shelf-header">
-        <span class="shelf-icon">=�</span>
+        <span class="shelf-icon">=ï¿½</span>
         <span class="shelf-title">Currently Reading</span>
         <span class="shelf-count">{{ reading|length }}</span>
       </div>
@@ -122,14 +122,14 @@
       <div class="cover-grid">
         {% for book in reading %}
           <div class="shelf-book">
-            <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
+            <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
               {% if book.cover_url %}
                 <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
               {% else %}
-                <div class="no-cover">📖</div>
+                <div class="no-cover">ð</div>
               {% endif %}
             </a>
-            <span class="shelf-book-label reading-label">📖 Reading</span>
+            <span class="shelf-book-label reading-label">ð Reading</span>
           </div>
         {% endfor %}
       </div>
@@ -146,11 +146,11 @@
       <hr class="shelf-divider">
       <div class="cover-grid">
         {% for book in books %}
-          <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
+          <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
             {% if book.cover_url %}
               <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
             {% else %}
-              <div class="no-cover">📖</div>
+              <div class="no-cover">ð</div>
             {% endif %}
           </a>
         {% endfor %}
@@ -173,14 +173,14 @@
       <div class="cover-grid">
         {% for book in want %}
           <div class="shelf-book">
-            <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
+            <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
               {% if book.cover_url %}
                 <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
               {% else %}
-                <div class="no-cover">🔖</div>
+                <div class="no-cover">ð</div>
               {% endif %}
             </a>
-            <span class="shelf-book-label want-label">🔖 Want to Read</span>
+            <span class="shelf-book-label want-label">ð Want to Read</span>
           </div>
         {% endfor %}
       </div>
