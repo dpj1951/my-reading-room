@@ -116,7 +116,7 @@
     {% if reading %}
     <div class="shelf-section shelf-reading">
       <div class="shelf-header">
-        <span class="shelf-icon">=Ã¯Â¿Â½</span>
+        <span class="shelf-icon">&#x1F4D6;</span>
         <span class="shelf-title">Currently Reading</span>
         <span class="shelf-count">{{ reading|length }}</span>
       </div>
@@ -124,14 +124,14 @@
       <div class="cover-grid">
         {% for book in reading %}
           <div class="shelf-book">
-            <a href="/book/{{ book.id }}" title="{{ book.title }} Ã¢ÂÂ {{ book.author }}">
+            <a href="/book/{{ book.id }}" title="{{ book.title }} ÃÂ¢ÃÂÃÂ {{ book.author }}">
               {% if book.cover_url %}
                 <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
               {% else %}
-                <div class="no-cover">Ã°ÂÂÂ</div>
+                <div class="no-cover">ÃÂ°ÃÂÃÂÃÂ</div>
               {% endif %}
             </a>
-            <span class="shelf-book-label reading-label">Ã°ÂÂÂ Reading</span>
+            <span class="shelf-book-label reading-label">ÃÂ°ÃÂÃÂÃÂ Reading</span>
           </div>
         {% endfor %}
       </div>
@@ -141,18 +141,18 @@
     {% if books %}
     <div class="shelf-section shelf-read">
       <div class="shelf-header">
-        <span class="shelf-icon"></span>
+        <span class="shelf-icon">&#x1F516;</span>
         <span class="shelf-title">Read</span>
         <span class="shelf-count">{{ books|length }}</span>
       </div>
       <hr class="shelf-divider">
       <div class="cover-grid">
         {% for book in books %}
-          <a href="/book/{{ book.id }}" title="{{ book.title }} Ã¢ÂÂ {{ book.author }}">
+          <a href="/book/{{ book.id }}" title="{{ book.title }} ÃÂ¢ÃÂÃÂ {{ book.author }}">
             {% if book.cover_url %}
               <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
             {% else %}
-              <div class="no-cover">Ã°ÂÂÂ</div>
+              <div class="no-cover">ÃÂ°ÃÂÃÂÃÂ</div>
             {% endif %}
           </a>
         {% endfor %}
@@ -167,7 +167,7 @@
     {% if want %}
     <div class="shelf-section shelf-want">
       <div class="shelf-header">
-        <span class="shelf-icon">=</span>
+        <span class="shelf-icon">&#x1F4DA;</span>
         <span class="shelf-title">Want to Read</span>
         <span class="shelf-count">{{ want|length }}</span>
       </div>
@@ -175,14 +175,14 @@
       <div class="cover-grid">
         {% for book in want %}
           <div class="shelf-book">
-            <a href="/book/{{ book.id }}" title="{{ book.title }} Ã¢ÂÂ {{ book.author }}">
+            <a href="/book/{{ book.id }}" title="{{ book.title }} ÃÂ¢ÃÂÃÂ {{ book.author }}">
               {% if book.cover_url %}
                 <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
               {% else %}
-                <div class="no-cover">Ã°ÂÂÂ</div>
+                <div class="no-cover">ÃÂ°ÃÂÃÂÃÂ</div>
               {% endif %}
             </a>
-            <span class="shelf-book-label want-label">Ã°ÂÂÂ Want to Read</span>
+            <span class="shelf-book-label want-label">ÃÂ°ÃÂÃÂÃÂ Want to Read</span>
           </div>
         {% endfor %}
       </div>
