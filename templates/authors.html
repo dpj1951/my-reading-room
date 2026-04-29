@@ -91,7 +91,7 @@
           <div class="row-info">
             <div class="row-title">{{ book.title }}</div>
             {% if book.rating %}
-            <div class="row-rating">{% for i in range(book.rating | int) %}&#9733;{% endfor %}{% if book.rating % 1 >= 0.5 %}<span style="font-size:0.7em">&#189;</span>{% endif %}</div>
+            <div class="row-rating">{% for i in range((book.rating | float) | int) %}&#9733;{% endfor %}{% if (book.rating | float) % 1 >= 0.5 %}<span style="font-size:0.7em">&#189;</span>{% endif %}</div>
             {% else %}
             <div class="row-rating nr">NR</div>
             {% endif %}
