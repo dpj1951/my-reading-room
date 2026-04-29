@@ -1,4 +1,4 @@
-# CLAUDE.md â My Reading Alcove
+# CLAUDE.md Ã¢ÂÂ My Reading Alcove
 
 This file gives Claude full context on this project so sessions can resume without re-explaining.
 
@@ -22,10 +22,10 @@ Stripe: NOT YET wired up (next major task)
 Email: freetrial@myreadingalcove.com (Namecheap forwarding to Gmail, needs setup)
 
 ## Current Status (April 28, 2026)
-MAINTENANCE_MODE=true in Render env vars â site closed to public
+MAINTENANCE_MODE=true in Render env vars Ã¢ÂÂ site closed to public
 Preview bypass: myreadingalcove.com/?preview=alcove2026
 215 books in library (213 read + 1 reading + 1 want to read)
-myreadingalcove.com has DNS/CDN caching â use my-reading-room2.onrender.com to verify deploys
+myreadingalcove.com has DNS/CDN caching Ã¢ÂÂ use my-reading-room2.onrender.com to verify deploys
 
 ## Architecture
 Framework: Flask + Gunicorn
@@ -34,67 +34,88 @@ Templates: Jinja2 in /templates/
 Procfile: web: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120
 
 Key files:
-- app.py â main Flask app (all routes)
-- templates/landing.html â public landing page
-- templates/books.html â library view with shelves
-- templates/add.html â add book page
-- templates/edit.html â edit book page
-- templates/authors.html â authors view
-- templates/home.html â logged-in dashboard
+- app.py Ã¢ÂÂ main Flask app (all routes)
+- templates/landing.html Ã¢ÂÂ public landing page
+- templates/books.html Ã¢ÂÂ library view with shelves
+- templates/add.html Ã¢ÂÂ add book page
+- templates/edit.html Ã¢ÂÂ edit book page
+- templates/authors.html Ã¢ÂÂ authors view
+- templates/home.html Ã¢ÂÂ logged-in dashboard
 
 ## Book Status System
-"read" â main grid, sorted by read_date desc
-"reading" â Currently Reading horizontal scroll shelf (top of books page)
-"want_to_read" â Want to Read shelf (bottom of books page)
+"read" Ã¢ÂÂ main grid, sorted by read_date desc
+"reading" Ã¢ÂÂ Currently Reading horizontal scroll shelf (top of books page)
+"want_to_read" Ã¢ÂÂ Want to Read shelf (bottom of books page)
 Default is "read" if no status set
 
 ## Currently Reading Shelf Flow
 Add/edit book, set status to Reading
 Book appears in horizontal scroll shelf at top of books page
-Click cover â open edit page â set read date + status=Read â save
+Click cover Ã¢ÂÂ open edit page Ã¢ÂÂ set read date + status=Read Ã¢ÂÂ save
 Book moves to main grid as most recent
+
+## What Was Done April 29, 2026
+
+### Email Setup — DONE
+Set up two @myreadingalcove.com mailboxes in Namecheap Private Email:
+- freetrial@myreadingalcove.com
+- support@myreadingalcove.com
+Both added to Gmail (dpjohnson1951@gmail.com) via POP3 (mail.privateemail.com, port 995, SSL).
+"Send mail as" configured for support@ via SMTP (mail.privateemail.com, port 587, TLS).
+Key fix: mailboxes must be TURNED ON in Namecheap Private Email dashboard before Gmail can connect.
+Key fix: username must be full email address (not just "freetrial").
+freetrial@ verification email pending (check Gmail sidebar label).
+
+### Half-Star Ratings — DONE
+Upgraded rating system from whole stars (1–5) to half-star increments (0.5–5.0).
+- add.html: New half-star picker UI — hover left half of star = 0.5, right half = full star
+- edit.html: Same half-star picker, pre-fills existing rating on page load via initStars()
+- books.html: Star rating now displayed under each book cover in main grid
+- JS functions: renderStars(), hoverStar(), unhoverStars(), clickStar() replace old setRating()
+- Rating stored as float in hidden input (f-rating), e.g. 2.5, 3.0, 4.5
+- TODO: Verify Supabase 'rating' column is NUMERIC/FLOAT (not INTEGER) to support half values
 
 ## What Was Done April 28 2026
 
-### books.html Nav Header — DONE
+### books.html Nav Header â DONE
 - Nav header now matches authors.html exactly
 - Added :root CSS variables to books.html (--accent, --muted, --border, --text, --bg, --surface, --card, --radius)
 - Updated nav CSS: DM Serif Display font, var(--accent) gold title color, var(--muted) Home link, height 64px, rgba(14,14,18,0.85) background
 
 ## What Was Done April 27 2026
 
-### Encoding Fix â DONE
+### Encoding Fix Ã¢ÂÂ DONE
 All three templates had triple-encoded UTF-8 (garbled emojis, em dashes, etc).
 Fixed by triple-decoding bytes and pushing clean base64 directly via GitHub Contents API.
 Files fixed: add.html, edit.html, books.html
 
-### Free Tier Limit â REMOVED
+### Free Tier Limit Ã¢ÂÂ REMOVED
 Removed 20-book limit banner from add.html (template).
 Removed is_subscriber() block from app.py add_manual_save route.
-No free tier exists â all users get unlimited books.
+No free tier exists Ã¢ÂÂ all users get unlimited books.
 
-### books.html Fixes â DONE
+### books.html Fixes Ã¢ÂÂ DONE
 - Removed duplicate full HTML document that was concatenated at end of file
 - Removed duplicate legacy bare cover-grid loop
 - Fixed nav bar: added dark sticky background so Home button is visible
-- Added ð Reading / ð Want to Read status badge pills under covers on shelf sections
+- Added Ã°ÂÂÂ Reading / Ã°ÂÂÂ Want to Read status badge pills under covers on shelf sections
 - Badges are teal for Reading, purple for Want to Read
 
-### authors.html â DONE
-Added status badge pills to book rows â teal ð Reading, purple ð Want to Read.
+### authors.html Ã¢ÂÂ DONE
+Added status badge pills to book rows Ã¢ÂÂ teal Ã°ÂÂÂ Reading, purple Ã°ÂÂÂ Want to Read.
 Only shown for non-read books. Read books show no badge.
 
-### Landing Page â DONE (April 26)
+### Landing Page Ã¢ÂÂ DONE (April 26)
 Full rewrite of templates/landing.html for $1.99/month pricing
 Dark theme, DM Serif Display + DM Sans, animated floating book spines
 Commit 830c4b2 on reading-alcove branch
 
-### Currently Reading Shelf CSS â DONE (April 26)
+### Currently Reading Shelf CSS Ã¢ÂÂ DONE (April 26)
 Added horizontal scroll CSS to books.html (commit cb3a7bc)
 
 ## Token Push Workflow
 Claude uses the GitHub Contents API via the Chrome extension to push files directly.
-User pastes a short-lived token in chat â Claude pushes immediately â user revokes at github.com/settings/tokens
+User pastes a short-lived token in chat Ã¢ÂÂ Claude pushes immediately Ã¢ÂÂ user revokes at github.com/settings/tokens
 NEVER store tokens. Revoke immediately after each use.
 
 ## Render Deployment Notes
