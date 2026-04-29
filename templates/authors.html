@@ -35,6 +35,8 @@
     .row-cover-placeholder { width: 56px; height: 78px; flex-shrink: 0; border-radius: 5px; background: linear-gradient(145deg, #1e1e28, #252530); display: flex; align-items: center; justify-content: center; }
     .row-cover-placeholder svg { width: 18px; height: 18px; color: var(--border); }
     .row-info { flex: 1; min-width: 0; }
+    .row-rating { font-size: 0.65rem; color: #f5c518; margin-top: 2px; letter-spacing: -0.5px; line-height: 1; }
+    .row-rating.nr { color: #4a9eff; font-family: sans-serif; letter-spacing: 0; }
     .row-title { font-size: 1.05rem; font-weight: 600; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .row-meta { font-size: 0.875rem; color: var(--muted); margin-top: 3px; }
     .format-pip { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 7px; border-radius: 4px; flex-shrink: 0; align-self: flex-start; }
@@ -88,6 +90,11 @@
           {% endif %}
           <div class="row-info">
             <div class="row-title">{{ book.title }}</div>
+            {% if book.rating %}
+            <div class="row-rating">{% for i in range(book.rating | int) %}&#9733;{% endfor %}{% if book.rating % 1 >= 0.5 %}<span style="font-size:0.7em">&#189;</span>{% endif %}</div>
+            {% else %}
+            <div class="row-rating nr">NR</div>
+            {% endif %}
             <div class="row-meta">{{ book.copyright_year or '' }}{% if book.copyright_year and book.pages %} � {% endif %}{{ book.pages ~ ' pages' if book.pages else '' }}</div>
           </div>
           <span class="format-pip pip-{{ book.format }}">{{ book.format }}</span>
