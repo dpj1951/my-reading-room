@@ -125,14 +125,14 @@
       <div class="cover-grid">
         {% for book in reading %}
           <div class="shelf-book">
-            <a href="/book/{{ book.id }}" title="{{ book.title }} ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ {{ book.author }}">
+            <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
               {% if book.cover_url %}
                 <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
               {% else %}
-                <div class="no-cover">ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ</div>
+                <div class="no-cover">ð</div>
               {% endif %}
             </a>
-            <span class="shelf-book-label reading-label">ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ Reading</span>
+            <span class="shelf-book-label reading-label">ð Reading</span>
           </div>
         {% endfor %}
       </div>
@@ -149,13 +149,20 @@
       <hr class="shelf-divider">
       <div class="cover-grid">
         {% for book in books %}
-          <a href="/book/{{ book.id }}" title="{{ book.title }} ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ {{ book.author }}">
-            {% if book.cover_url %}
-              <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
+          <div style="position:relative">
+            <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
+              {% if book.cover_url %}
+                <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
+              {% else %}
+                <div class="no-cover">ð</div>
+              {% endif %}
+            </a>
+            {% if book.rating %}
+            <div class="book-stars">{% for i in range(book.rating | int) %}&#9733;{% endfor %}{% if book.rating % 1 >= 0.5 %}<span style="font-size:0.55em;vertical-align:middle">&#189;</span>{% endif %}</div>
             {% else %}
-              <div class="no-cover">ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ</div>
+            <div class="book-stars" style="color:#4a9eff;font-family:sans-serif;font-size:0.55rem;letter-spacing:0">NR</div>
             {% endif %}
-          </a>
+          </div>
         {% endfor %}
       </div>
     </div>
@@ -176,14 +183,14 @@
       <div class="cover-grid">
         {% for book in want %}
           <div class="shelf-book">
-            <a href="/book/{{ book.id }}" title="{{ book.title }} ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ {{ book.author }}">
+            <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
               {% if book.cover_url %}
                 <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
               {% else %}
-                <div class="no-cover">ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ</div>
+                <div class="no-cover">ð</div>
               {% endif %}
             </a>
-            <span class="shelf-book-label want-label">ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ Want to Read</span>
+            <span class="shelf-book-label want-label">ð Want to Read</span>
           </div>
         {% endfor %}
       </div>
