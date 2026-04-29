@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edit — {{ book.title }} — My Reading Alcove</title>
+  <title>Edit â {{ book.title }} â My Reading Alcove</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -41,10 +41,13 @@
     .format-btn.active-audio { border-color: var(--audio); color: var(--audio); background: rgba(200,126,181,0.1); }
     .audio-field { display: none; }
     .audio-field.show { display: flex; }
-    .star-group { display: flex; gap: 6px; align-items: center; }
-    .star { font-size: 1.75rem; cursor: pointer; color: var(--border); transition: color 0.15s, transform 0.1s; line-height: 1; user-select: none; }
-    .star:hover, .star.active { color: #f5c518; }
-    .star:hover { transform: scale(1.15); }
+    .star-group { display: flex; gap: 2px; align-items: center; }
+    .star-wrap { position: relative; display: inline-block; width: 1.75rem; height: 1.75rem; font-size: 1.75rem; line-height: 1; cursor: pointer; user-select: none; transition: transform 0.1s; }
+    .star-wrap:hover { transform: scale(1.1); }
+    .star-bg { color: var(--border); }
+    .star-fg-left { position: absolute; top: 0; left: 0; width: 50%; overflow: hidden; color: #f5c518; pointer-events: none; opacity: 0; transition: opacity 0.1s; }
+    .star-fg-right { position: absolute; top: 0; left: 0; width: 100%; overflow: hidden; color: #f5c518; pointer-events: none; opacity: 0; transition: opacity 0.1s; }
+    .star-fg-left.on, .star-fg-right.on { opacity: 1; }
     .star-label { font-size: 0.8rem; color: var(--muted); margin-left: 8px; }
     .btn-row { margin-top: 24px; display: flex; gap: 12px; }
     .btn-save { flex: 1; background: var(--accent); color: #0e0e12; border: none; border-radius: 8px; padding: 14px; font-family: 'DM Serif Display', serif; font-size: 1.05rem; cursor: pointer; transition: background 0.2s, transform 0.1s; }
@@ -117,13 +120,13 @@
           <div class="format-group">
             <button type="button" id="btn-paper"
               class="format-btn {% if book.format == 'Paper' %}active-paper{% endif %}"
-              onclick="setFormat('Paper')">📖 Paper</button>
+              onclick="setFormat('Paper')">ð Paper</button>
             <button type="button" id="btn-ebook"
               class="format-btn {% if book.format == 'Ebook' %}active-ebook{% endif %}"
-              onclick="setFormat('Ebook')">📱 Ebook</button>
+              onclick="setFormat('Ebook')">ð± Ebook</button>
             <button type="button" id="btn-audio"
               class="format-btn {% if book.format == 'Audiobook' %}active-audio{% endif %}"
-              onclick="setFormat('Audiobook')">🎧 Audiobook</button>
+              onclick="setFormat('Audiobook')">ð§ Audiobook</button>
           </div>
           <input type="hidden" name="format" id="f-format" value="{{ book.format or 'Paper' }}">
         </div>
@@ -146,14 +149,19 @@
 
         <div class="field full">
           <label>My Rating</label>
-          <div class="star-group">
+          <div class="star-group" id="star-group">
             {% for i in range(1, 6) %}
-            <span class="star {% if book.rating and i <= book.rating|int %}active{% endif %}"
-              data-val="{{ i }}" onclick="setRating({{ i }})" title="{{ i }} star{{ 's' if i > 1 else '' }}">★</span>
+            <span class="star-wrap" data-val="{{ i }}"
+              onmousemove="hoverStar(event,{{ i }})" onmouseleave="unhoverStars()" onclick="clickStar(event,{{ i }})"
+              title="{{ i }} star{{ 's' if i > 1 else '' }}">
+              <span class="star-bg">&#9733;</span>
+              <span class="star-fg-left" id="sfl-{{ i }}">&#9733;</span>
+              <span class="star-fg-right" id="sfr-{{ i }}">&#9733;</span>
+            </span>
             {% endfor %}
             <span class="star-label" id="rating-label">
               {% if book.rating %}
-                {{ book.rating }} / 5
+                {{ book.rating }} star{{ 's' if book.rating != 1 else '' }}
               {% else %}
                 No rating
               {% endif %}
@@ -168,9 +176,9 @@
       <div class="field-group" style="padding: 0 16px 16px;">
         <label style="display:block; margin-bottom:8px; font-size:0.85rem; color:#888;">Reading Status</label>
         <div class="format-btns" id="status-btns">
-          <button type="button" class="fmt-btn {% if book.status == 'read' or not book.status %}active{% endif %}" data-val="read" onclick="setStatus('read',this)">✅ Read</button>
-          <button type="button" class="fmt-btn {% if book.status == 'reading' %}active{% endif %}" data-val="reading" onclick="setStatus('reading',this)">📖 Reading</button>
-          <button type="button" class="fmt-btn {% if book.status == 'want_to_read' %}active{% endif %}" data-val="want_to_read" onclick="setStatus('want_to_read',this)">🔖 Want to Read</button>
+          <button type="button" class="fmt-btn {% if book.status == 'read' or not book.status %}active{% endif %}" data-val="read" onclick="setStatus('read',this)">â Read</button>
+          <button type="button" class="fmt-btn {% if book.status == 'reading' %}active{% endif %}" data-val="reading" onclick="setStatus('reading',this)">ð Reading</button>
+          <button type="button" class="fmt-btn {% if book.status == 'want_to_read' %}active{% endif %}" data-val="want_to_read" onclick="setStatus('want_to_read',this)">ð Want to Read</button>
         </div>
         <input type="hidden" name="status" id="f-status" value="{{ book.status or 'read' }}">
       </div>
@@ -198,29 +206,46 @@
     }
 
     const ratingLabels = ['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'];
-    function setRating(val) {
-      document.getElementById('f-rating').value = val;
-      document.getElementById('rating-label').textContent = val + ' / 5 — ' + ratingLabels[val];
-      document.querySelectorAll('.star').forEach(s => {
-        s.classList.toggle('active', parseInt(s.dataset.val) <= val);
-      });
+    function renderStars(val) {
+      for (let n = 1; n <= 5; n++) {
+        const fl = document.getElementById('sfl-' + n);
+        const fr = document.getElementById('sfr-' + n);
+        if (!fl || !fr) continue;
+        if (val >= n) { fl.classList.remove('on'); fr.classList.add('on'); }
+        else if (val >= n - 0.5) { fl.classList.add('on'); fr.classList.remove('on'); }
+        else { fl.classList.remove('on'); fr.classList.remove('on'); }
+      }
     }
-
-    document.querySelectorAll('.star').forEach(s => {
-      s.addEventListener('mouseover', () => {
-        const v = parseInt(s.dataset.val);
-        document.querySelectorAll('.star').forEach(st => {
-          st.style.color = parseInt(st.dataset.val) <= v ? '#f5c518' : '';
-        });
-      });
-      s.addEventListener('mouseleave', () => {
-        const cur = parseInt(document.getElementById('f-rating').value) || 0;
-        document.querySelectorAll('.star').forEach(st => {
-          st.style.color = parseInt(st.dataset.val) <= cur ? '#f5c518' : '';
-        });
-      });
-    });
-  
+    function hoverStar(e, n) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const half = (e.clientX - rect.left) < rect.width / 2;
+      const val = half ? n - 0.5 : n;
+      renderStars(val);
+      const lbl = document.getElementById('rating-label');
+      if (lbl) lbl.textContent = val + ' star' + (val !== 1 ? 's' : '');
+    }
+    function unhoverStars() {
+      const cur = parseFloat(document.getElementById('f-rating').value) || 0;
+      renderStars(cur);
+      const lbl = document.getElementById('rating-label');
+      if (lbl) lbl.textContent = cur ? cur + ' star' + (cur !== 1 ? 's' : '') : 'No rating';
+    }
+    function clickStar(e, n) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const half = (e.clientX - rect.left) < rect.width / 2;
+      const val = half ? n - 0.5 : n;
+      document.getElementById('f-rating').value = val;
+      renderStars(val);
+      const lbl = document.getElementById('rating-label');
+      if (lbl) lbl.textContent = val + ' star' + (val !== 1 ? 's' : '');
+    }
+        function initStars() {
+      const val = parseFloat(document.getElementById('f-rating').value) || 0;
+      renderStars(val);
+      const lbl = document.getElementById('rating-label');
+      if (lbl && val) lbl.textContent = val + ' star' + (val !== 1 ? 's' : '');
+    }
+    document.addEventListener('DOMContentLoaded', initStars);
     function setStatus(val, btn) {
       document.getElementById('f-status').value = val;
       document.querySelectorAll('#status-btns .fmt-btn').forEach(b => b.classList.remove('active'));
