@@ -1,4 +1,4 @@
-# CLAUDE.md ÃÂ¢ÃÂÃÂ My Reading Alcove
+# CLAUDE.md — My Reading Alcove
 
 This file gives Claude full context on this project so sessions can resume without re-explaining.
 
@@ -6,137 +6,139 @@ This file gives Claude full context on this project so sessions can resume witho
 My Reading Alcove is a personal book tracking web app. Users can log books they've read, store cover art, ratings, summaries, read dates, and format (paper/ebook/audiobook). It has a barcode scanner for ISBN lookup, Google Books and Open Library API integration, CSV import/export, cover/ISBN backfill tools, and backup/restore. It is a PWA (installable on mobile).
 
 ## Repository & Deployment
-Repo: https://github.com/dpj1951/my-reading-room
-Working branch: reading-alcove
-Primary live app: https://myreadingalcove.com (custom domain) / https://my-reading-room2.onrender.com
-Platform: Render (Starter plan), Flask + Gunicorn
-Database: Supabase PostgreSQL (Pro + IPv4, direct connection)
-Render service ID: srv-d6fo4v1r0fns73ai5e2g
-Render shell URL: https://dashboard.render.com/web/srv-d6fo4v1r0fns73ai5e2g/shell
+- Repo: https://github.com/dpj1951/my-reading-room
+- Working branch: reading-alcove
+- Primary live app: https://myreadingalcove.com / https://my-reading-room2.onrender.com
+- Platform: Render (Starter $7/mo — always-on, no sleep)
+- Flask + Gunicorn
+- Database: Supabase PostgreSQL (Pro + IPv4, direct connection)
+- Render service ID: srv-d6fo4v1r0fns73ai5e2g
+- Render shell URL: https://dashboard.render.com/web/srv-d6fo4v1r0fns73ai5e2g/shell
 
 ## Pricing & Business Model
-$1.99/month after a 30-day free trial
-No credit card required to start trial
-One plan, everything included
-Stripe: NOT YET wired up (next major task)
-Email: freetrial@myreadingalcove.com (Namecheap forwarding to Gmail, needs setup)
+- $1.99/month after a 30-day free trial
+- No credit card required to start trial
+- One plan, everything included
+- Stripe: NOT YET wired up (next major task)
+- Email: freetrial@myreadingalcove.com (Namecheap Private Email, forwarding to Gmail)
 
-## Current Status (April 28, 2026)
-MAINTENANCE_MODE=true in Render env vars ÃÂ¢ÃÂÃÂ site closed to public
-Preview bypass: myreadingalcove.com/?preview=alcove2026
-215 books in library (213 read + 1 reading + 1 want to read)
-myreadingalcove.com has DNS/CDN caching ÃÂ¢ÃÂÃÂ use my-reading-room2.onrender.com to verify deploys
+## Current Status (April 30, 2026)
+- MAINTENANCE_MODE=true in Render env vars — site closed to public
+- Preview bypass: myreadingalcove.com/?preview=alcove2026
+- 215 books in library (213 read + 1 reading + 1 want to read)
+- Use my-reading-room2.onrender.com to verify deploys (DNS caching on custom domain)
 
 ## Architecture
-Framework: Flask + Gunicorn
-Auth: Supabase Auth (JWT in session)
-Templates: Jinja2 in /templates/
-Procfile: web: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120
+- Framework: Flask + Gunicorn
+- Auth: Supabase Auth (JWT in session)
+- Templates: Jinja2 in /templates/
+- Procfile: web: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120
 
-Key files:
-- app.py ÃÂ¢ÃÂÃÂ main Flask app (all routes)
-- templates/landing.html ÃÂ¢ÃÂÃÂ public landing page
-- templates/books.html ÃÂ¢ÃÂÃÂ library view with shelves
-- templates/add.html ÃÂ¢ÃÂÃÂ add book page
-- templates/edit.html ÃÂ¢ÃÂÃÂ edit book page
-- templates/authors.html ÃÂ¢ÃÂÃÂ authors view
-- templates/home.html ÃÂ¢ÃÂÃÂ logged-in dashboard
+### Key files
+- app.py — main Flask app (all routes)
+- templates/landing.html — public landing page
+- templates/books.html — library view with shelves
+- templates/add.html — add book page
+- templates/edit.html — edit book page
+- templates/authors.html — authors view
+- templates/home.html — logged-in dashboard (nav: Books, Authors, Add a Book, Utilities, Stats)
+- templates/stats.html — reading stats page
 
 ## Book Status System
-"read" ÃÂ¢ÃÂÃÂ main grid, sorted by read_date desc
-"reading" ÃÂ¢ÃÂÃÂ Currently Reading horizontal scroll shelf (top of books page)
-"want_to_read" ÃÂ¢ÃÂÃÂ Want to Read shelf (bottom of books page)
-Default is "read" if no status set
+- 'read' — main grid, sorted by read_date desc
+- 'reading' — Currently Reading horizontal scroll shelf (top of books page)
+- 'want_to_read' — Want to Read shelf (bottom of books page)
+- Default is 'read' if no status set
 
-## Currently Reading Shelf Flow
-Add/edit book, set status to Reading
-Book appears in horizontal scroll shelf at top of books page
-Click cover ÃÂ¢ÃÂÃÂ open edit page ÃÂ¢ÃÂÃÂ set read date + status=Read ÃÂ¢ÃÂÃÂ save
-Book moves to main grid as most recent
+## Supabase Schema (books table — 14 columns)
+id, title, author, isbn, format, pages (varchar), copyright_year, read_date (varchar), rating (varchar/float), cover_url, summary, read_time_hrs, user_id, status
+- read_date formats: %m/%d/%y, %Y-%m-%d, %m/%d/%Y
+- pages stored as varchar string — parse with int()
+- rating stored as float (supports half-stars e.g. 2.5, 3.0, 4.5)
+
+## Google Books API
+- Key stored in Render env var: GOOGLE_BOOKS_API_KEY
+- Already wired into app.py: GOOGLE_BOOKS_API_KEY = os.environ.get('GOOGLE_BOOKS_API_KEY', '')
+- All Google Books calls pass 'key': api_key in params
+- Key restricted in Google Cloud Console (project: my-project-37669-book-trace)
+- HTTP referrer restricted to: myreadingalcove.com/* and my-reading-room2.onrender.com/*
+- Quota: 10,000 requests/day
+
+## Scalability Notes
+- Render Starter ($7/mo): always-on, 512MB RAM, 0.5 CPU — good for early growth
+- Set WEB_CONCURRENCY=3 env var on Render when traffic grows
+- Supabase Pro: handles 100k MAU; switch to PgBouncer pooler at ~200 concurrent users
+- CSV import does synchronous Google Books/Open Library lookups — future: use ThreadPoolExecutor
+- Render pricing update coming August 1, 2026 — review before that date
+
+## What Was Done April 30, 2026
+
+### Stats Page
+- New /stats route added to app.py (inserted after /books route)
+- New templates/stats.html — dark theme, DM Serif Display, matches app style
+- Summary cards: Total Books, Total Pages, This Month, This Year, Pages/Week (52-wk avg), Pages This Year
+- Bar chart toggle: Books or Pages per month (last 12 months)
+- By-year table with progress bars for books and pages (newest first)
+- Nudge banner when books missing page counts or read dates
+- Stats button added to home.html nav (after Utilities)
+- Stats page nav: Library, Authors, Add, Utilities, Stats (active), Home
+- pages and read_date are nullable — stats work with partial data, users self-edit to improve
+
+### Google Books API Key
+- Created in Google Cloud Console
+- Restricted to Books API only + HTTP referrers
+- Added to Render env vars as GOOGLE_BOOKS_API_KEY
+- Code was already wired up — no app.py changes needed
+
+### Render Plan Confirmed
+- Workspace: Hobby (legacy)
+- Service instance: Starter ($7/mo) — always-on, no sleep
 
 ## What Was Done April 29, 2026
 
-### Email Setup â DONE
-Set up two @myreadingalcove.com mailboxes in Namecheap Private Email:
-- freetrial@myreadingalcove.com
-- support@myreadingalcove.com
-Both added to Gmail (dpjohnson1951@gmail.com) via POP3 (mail.privateemail.com, port 995, SSL).
-"Send mail as" configured for support@ via SMTP (mail.privateemail.com, port 587, TLS).
-Key fix: mailboxes must be TURNED ON in Namecheap Private Email dashboard before Gmail can connect.
-Key fix: username must be full email address (not just "freetrial").
-freetrial@ verification email pending (check Gmail sidebar label).
+### Email Setup
+- freetrial@myreadingalcove.com and support@myreadingalcove.com in Namecheap Private Email
+- Both added to Gmail via POP3; Send mail as support@ via SMTP (port 587, TLS)
 
-### Half-Star Ratings â DONE
-Upgraded rating system from whole stars (1â5) to half-star increments (0.5â5.0).
-- add.html: New half-star picker UI â hover left half of star = 0.5, right half = full star
-- edit.html: Same half-star picker, pre-fills existing rating on page load via initStars()
-- books.html: Star rating now displayed under each book cover in main grid
-- JS functions: renderStars(), hoverStar(), unhoverStars(), clickStar() replace old setRating()
-- Rating stored as float in hidden input (f-rating), e.g. 2.5, 3.0, 4.5
+### Half-Star Ratings
+- Upgraded from whole stars (1-5) to half-star increments (0.5-5.0)
+- add.html + edit.html: half-star picker UI
+- books.html + authors.html: star display with half symbol
+- Rating stored as float
 
-### Rating Display Follow-up (April 29 evening)
-- books.html: Fixed triple-encoding garble (ÃÂÃÂ mess) — same fix pattern as April 27
-- books.html: Book grid now shows ★★★½ under covers, or blue "NR" badge if no rating set
-- authors.html: Rating display added below book title in each row — ★★★½ or blue "NR"
-- Note: Half-star displayed as ½ symbol to save space
-- TODO: Verify Supabase 'rating' column is NUMERIC/FLOAT (not INTEGER) to support half values
+## What Was Done April 28, 2026
+- books.html nav header updated to match authors.html
+- Added :root CSS variables to books.html
 
-## What Was Done April 28 2026
+## What Was Done April 27, 2026
+- Fixed triple-encoded UTF-8 in add.html, edit.html, books.html
+- Removed 20-book free tier limit from add.html and app.py
+- Fixed books.html: removed duplicate HTML, fixed nav, added status badge pills
+- authors.html: added status badge pills
 
-### books.html Nav Header Ã¢ÂÂ DONE
-- Nav header now matches authors.html exactly
-- Added :root CSS variables to books.html (--accent, --muted, --border, --text, --bg, --surface, --card, --radius)
-- Updated nav CSS: DM Serif Display font, var(--accent) gold title color, var(--muted) Home link, height 64px, rgba(14,14,18,0.85) background
-
-## What Was Done April 27 2026
-
-### Encoding Fix ÃÂ¢ÃÂÃÂ DONE
-All three templates had triple-encoded UTF-8 (garbled emojis, em dashes, etc).
-Fixed by triple-decoding bytes and pushing clean base64 directly via GitHub Contents API.
-Files fixed: add.html, edit.html, books.html
-
-### Free Tier Limit ÃÂ¢ÃÂÃÂ REMOVED
-Removed 20-book limit banner from add.html (template).
-Removed is_subscriber() block from app.py add_manual_save route.
-No free tier exists ÃÂ¢ÃÂÃÂ all users get unlimited books.
-
-### books.html Fixes ÃÂ¢ÃÂÃÂ DONE
-- Removed duplicate full HTML document that was concatenated at end of file
-- Removed duplicate legacy bare cover-grid loop
-- Fixed nav bar: added dark sticky background so Home button is visible
-- Added ÃÂ°ÃÂÃÂÃÂ Reading / ÃÂ°ÃÂÃÂÃÂ Want to Read status badge pills under covers on shelf sections
-- Badges are teal for Reading, purple for Want to Read
-
-### authors.html ÃÂ¢ÃÂÃÂ DONE
-Added status badge pills to book rows ÃÂ¢ÃÂÃÂ teal ÃÂ°ÃÂÃÂÃÂ Reading, purple ÃÂ°ÃÂÃÂÃÂ Want to Read.
-Only shown for non-read books. Read books show no badge.
-
-### Landing Page ÃÂ¢ÃÂÃÂ DONE (April 26)
-Full rewrite of templates/landing.html for $1.99/month pricing
-Dark theme, DM Serif Display + DM Sans, animated floating book spines
-Commit 830c4b2 on reading-alcove branch
-
-### Currently Reading Shelf CSS ÃÂ¢ÃÂÃÂ DONE (April 26)
-Added horizontal scroll CSS to books.html (commit cb3a7bc)
+## What Was Done April 26, 2026
+- Full rewrite of landing.html for $1.99/month pricing
+- Added horizontal scroll CSS for Currently Reading shelf
 
 ## Token Push Workflow
-Claude uses the GitHub Contents API via the Chrome extension to push files directly.
-User pastes a short-lived token in chat ÃÂ¢ÃÂÃÂ Claude pushes immediately ÃÂ¢ÃÂÃÂ user revokes at github.com/settings/tokens
-NEVER store tokens. Revoke immediately after each use.
+- User pastes short-lived GitHub token in chat
+- Claude pushes via GitHub Contents API through Chrome extension
+- User revokes immediately at github.com/settings/tokens
+- NEVER store tokens. Revoke immediately after each use.
 
 ## Render Deployment Notes
-Auto-deploys on push to reading-alcove branch
-If old page still serves after deploy: Render Shell -> kill -9 $(pgrep -f gunicorn)
-Render restarts Gunicorn automatically after kill
-Shell URL: https://dashboard.render.com/web/srv-d6fo4v1r0fns73ai5e2g/shell
+- Auto-deploys on push to reading-alcove branch
+- If old page serves after deploy: Render Shell -> kill -9 $(pgrep -f gunicorn)
+- Render restarts Gunicorn automatically
 
 ## Chrome Extension
-Browser 1, macOS, deviceId: faa72e7f-e3e3-4136-a503-62581d7b9376
-Can access: github.com, dashboard.render.com
-Cannot access: myreadingalcove.com, my-reading-room2.onrender.com
-Use JS fetch() in extension to call GitHub API, push files via Contents API
+- Browser 1, macOS, deviceId: faa72e7f-e3e3-4136-a503-62581d7b9376
+- Can access: github.com, dashboard.render.com
+- Cannot access: myreadingalcove.com, my-reading-room2.onrender.com
+- Use JS fetch() in extension to call GitHub API
 
 ## Next Tasks
 1. Wire up Stripe ($1.99/month after 30-day trial)
-2. Set up freetrial@myreadingalcove.com email forwarding (Namecheap -> Gmail)
+2. Second new feature (TBD — discuss next session)
 3. Turn off maintenance mode when ready to launch
+4. Review Render pricing changes before August 1, 2026
