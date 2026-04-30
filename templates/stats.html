@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reading Stats – My Reading Alcove</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --accent:  #c9a84c;
+      --muted:   #888;
+      --border:  rgba(255,255,255,0.08);
+      --text:    #e8e0d0;
+      --bg:      #0e0e12;
+      --surface: #16161c;
+      --card:    #1c1c24;
+      --radius:  10px;
+      --teal:    #4ecdc4;
+      --purple:  #a78bfa;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+    nav {
+      position: sticky; top: 0; z-index: 100; height: 64px;
+      background: rgba(14,14,18,0.85); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 28px; gap: 28px;
+    }
+    nav .brand { font-family: 'DM Serif Display', serif; font-size: 1.35rem; color: var(--accent); text-decoration: none; }
+    nav a:not(.brand) { color: var(--muted); text-decoration: none; font-size: .88rem; font-weight: 500; transition: color .15s; }
+    nav a:not(.brand):hover { color: var(--text); }
+    nav a.active { color: var(--accent); }
+    nav .spacer { flex: 1; }
+    .page { max-width: 960px; margin: 0 auto; padding: 48px 24px 80px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: 2.2rem; color: var(--accent); margin-bottom: 6px; }
+    .subtitle { color: var(--muted); font-size: .9rem; margin-bottom: 40px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-bottom: 48px; }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 18px; display: flex; flex-direction: column; gap: 6px; }
+    .stat-card .label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+    .stat-card .value { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--text); line-height: 1; }
+    .stat-card .value.accent { color: var(--accent); }
+    .stat-card .sub { font-size: .78rem; color: var(--muted); }
+    .section { margin-bottom: 48px; }
+    .section-title { font-family: 'DM Serif Display', serif; font-size: 1.25rem; color: var(--text); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .chart-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px 16px; }
+    .chart-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .chart-tab { padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: .8rem; font-weight: 500; cursor: pointer; transition: all .15s; }
+    .chart-tab.active { background: var(--accent); border-color: var(--accent); color: #0e0e12; }
+    .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 140px; padding-bottom: 28px; position: relative; }
+    .bar-chart::after { content: ''; position: absolute; bottom: 28px; left: 0; right: 0; height: 1px; background: var(--border); }
+    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; position: relative; }
+    .bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 2px; transition: height .4s cubic-bezier(.4,0,.2,1); cursor: pointer; position: relative; }
+    .bar.books-bar { background: var(--accent); }
+    .bar.pages-bar { background: var(--teal); }
+    .bar:hover { filter: brightness(1.25); }
+    .bar-tip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #2a2a38; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: .75rem; color: var(--text); white-space: nowrap; z-index: 10; pointer-events: none; }
+    .bar:hover .bar-tip { display: block; }
+    .bar-label { position: absolute; bottom: 0; font-size: .62rem; color: var(--muted); white-space: nowrap; transform: translateX(-50%); left: 50%; }
+    .years-table { width: 100%; border-collapse: collapse; }
+    .years-table th { text-align: left; font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; padding: 0 12px 10px; font-weight: 600; }
+    .years-table td { padding: 10px 12px; border-top: 1px solid var(--border); font-size: .9rem; }
+    .years-table tr:last-child td { border-bottom: 1px solid var(--border); }
+    .year-num { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--accent); }
+    .progress-bar-wrap { height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; width: 100%; max-width: 220px; }
+    .progress-bar-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+    .progress-bar-fill.teal { background: var(--teal); }
+    .nudge { background: rgba(201,168,76,0.07); border: 1px solid rgba(201,168,76,0.25); border-radius: var(--radius); padding: 14px 18px; font-size: .85rem; color: var(--muted); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+    .nudge a { color: var(--accent); text-decoration: none; }
+    .nudge a:hover { text-decoration: underline; }
+    @media (max-width: 600px) { .summary-grid { grid-template-columns: repeat(2, 1fr); } h1 { font-size: 1.7rem; } }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="brand">My Reading Alcove</a>
+  <a href="/books">Library</a>
+  <a href="/authors">Authors</a>
+  <a href="/add">Add</a>
+  <a href="/utilities">Utilities</a>
+  <a href="/stats" class="active">Stats</a>
+  <span class="spacer"></span>
+  <a href="/logout">Log out</a>
+</nav>
+<div class="page">
+  <h1>Reading Stats</h1>
+  <p class="subtitle">Your reading life, by the numbers.</p>
+
+  {% if missing_pages > 0 or missing_dates > 0 %}
+  <div class="nudge">
+    &#x1F4CA;
+    <span>
+      {% if missing_pages > 0 %}{{ missing_pages }} book{{ 's' if missing_pages != 1 }} missing page counts{% endif %}{% if missing_pages > 0 and missing_dates > 0 %} &middot; {% endif %}{% if missing_dates > 0 %}{{ missing_dates }} book{{ 's' if missing_dates != 1 }} missing read dates{% endif %}.
+      <a href="/books">Edit your books</a> to improve accuracy.
+    </span>
+  </div>
+  {% endif %}
+
+  <div class="summary-grid">
+    <div class="stat-card">
+      <div class="label">Total Books</div>
+      <div class="value accent">{{ total_books }}</div>
+      <div class="sub">all time</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Total Pages</div>
+      <div class="value">{{ "{:,}".format(total_pages) }}</div>
+      <div class="sub">from {{ total_books - missing_pages }} books</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">This Month</div>
+      <div class="value accent">{{ books_this_month }}</div>
+      <div class="sub">book{{ 's' if books_this_month != 1 }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">This Year</div>
+      <div class="value">{{ books_this_year }}</div>
+      <div class="sub">book{{ 's' if books_this_year != 1 }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Pages / Week</div>
+      <div class="value accent">{{ "{:,}".format(avg_pages_per_week) }}</div>
+      <div class="sub">52-week avg</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Pages This Year</div>
+      <div class="value">{{ "{:,}".format(pages_this_year) }}</div>
+      <div class="sub">{{ "{:,}".format(pages_this_month) }} this month</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Last 12 Months</div>
+    <div class="chart-wrap">
+      <div class="chart-tabs">
+        <button class="chart-tab active" onclick="showChart('books-month')">Books</button>
+        <button class="chart-tab" onclick="showChart('pages-month')">Pages</button>
+      </div>
+      <div id="books-month" class="bar-chart">
+        {% set max_b = months_12 | map(attribute='books') | max %}
+        {% for m in months_12 %}
+        <div class="bar-col">
+          <div class="bar books-bar" style="height: {{ ((m.books / max_b * 112) | int) if max_b > 0 else 2 }}px">
+            <div class="bar-tip">{{ m.books }} book{{ 's' if m.books != 1 }}</div>
+          </div>
+          <div class="bar-label">{{ m.label }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      <div id="pages-month" class="bar-chart" style="display:none">
+        {% set max_p = months_12 | map(attribute='pages') | max %}
+        {% for m in months_12 %}
+        <div class="bar-col">
+          <div class="bar pages-bar" style="height: {{ ((m.pages / max_p * 112) | int) if max_p > 0 else 2 }}px">
+            <div class="bar-tip">{{ "{:,}".format(m.pages) }} pages</div>
+          </div>
+          <div class="bar-label">{{ m.label }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  {% if years_data %}
+  <div class="section">
+    <div class="section-title">By Year</div>
+    <div class="chart-wrap">
+      {% set max_yb = years_data | map(attribute='books') | max %}
+      {% set max_yp = years_data | map(attribute='pages') | max %}
+      <table class="years-table">
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th>Books</th>
+            <th style="min-width:140px"></th>
+            <th>Pages</th>
+            <th style="min-width:140px"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for y in years_data | reverse %}
+          <tr>
+            <td class="year-num">{{ y.year }}</td>
+            <td>{{ y.books }}</td>
+            <td><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width: {{ ((y.books / max_yb * 100) | int) if max_yb > 0 else 0 }}%"></div></div></td>
+            <td>{{ "{:,}".format(y.pages) }}</td>
+            <td><div class="progress-bar-wrap"><div class="progress-bar-fill teal" style="width: {{ ((y.pages / max_yp * 100) | int) if max_yp > 0 else 0 }}%"></div></div></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+<script>
+function showChart(id) {
+  document.getElementById('books-month').style.display = 'none';
+  document.getElementById('pages-month').style.display  = 'none';
+  document.getElementById(id).style.display = 'flex';
+  document.querySelectorAll('.chart-tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && id === 'books-month') || (i === 1 && id === 'pages-month'));
+  });
+}
+</script>
+</body>
+</html>
