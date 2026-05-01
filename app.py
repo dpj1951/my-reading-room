@@ -486,117 +486,20 @@ def authors():
 
 
 # ─────────────────────────────────────────────────────────────────
-# AUTHOR SHELF  /author/<name>  — full publication shelf
+# AUTHOR SHELF  /author/<name>  — client-side Google Books fetch
 # ─────────────────────────────────────────────────────────────────
 @app.route("/author/<path:author_name>")
 @login_required
 def author_shelf(author_name):
-    user_id = g.user["id"]
-
-    # Get user's books by this author
-    library_books = Book.query.filter_by(user_id=user_id, author=author_name).all()
-    library_by_isbn = {}
-    library_by_title = {}
-    for b in library_books:
-        bd = b.to_dict()
-        if bd.get("isbn"):
-            library_by_isbn[bd["isbn"].strip()] = bd
-        library_by_title[bd["title"].strip().lower()] = bd
-
-    # Fetch author's books from Google Books API
-    # No API key — server requests have no Referer header so the browser-restricted
-    # key gets a 403. Unauthenticated quota is 1000 req/day, plenty for this feature.
-    all_books = []
-    seen_titles = set()
-
-    for start_index in [0, 40]:
-        params = {
-            "q": 'inauthor:"' + author_name + '"',
-            "maxResults": 40,
-            "startIndex": start_index,
-            "printType": "books",
-        }
-        try:
-            resp = requests.get("https://www.googleapis.com/books/v1/volumes", params=params, timeout=10)
-            data = resp.json()
-        except Exception:
-            break
-
-        items = data.get("items", [])
-        if not items:
-            break
-
-        for item in items:
-            vi = item.get("volumeInfo", {})
-            title = vi.get("title", "").strip()
-            if not title:
-                continue
-            norm_title = title.lower()
-            if norm_title in seen_titles:
-                continue
-
-            # Filter: must actually list this author (check last name match)
-            authors_list = [a.lower() for a in vi.get("authors", [])]
-            last_name = author_name.strip().split()[-1].lower()
-            if authors_list and not any(last_name in a for a in authors_list):
-                continue
-
-            seen_titles.add(norm_title)
-
-            # Published year
-            pub_date = vi.get("publishedDate", "")
-            pub_year = None
-            if pub_date:
-                try:
-                    pub_year = int(pub_date[:4])
-                except ValueError:
-                    pass
-
-            # Cover
-            image_links = vi.get("imageLinks", {})
-            cover_url = image_links.get("thumbnail") or image_links.get("smallThumbnail")
-            if cover_url:
-                cover_url = cover_url.replace("http://", "https://")
-
-            # ISBN
-            isbn = None
-            for iid in vi.get("industryIdentifiers", []):
-                if iid.get("type") in ("ISBN_13", "ISBN_10"):
-                    isbn = iid["identifier"]
-                    if iid["type"] == "ISBN_13":
-                        break
-
-            # Cross-reference with library
-            library_match = None
-            if isbn and isbn in library_by_isbn:
-                library_match = library_by_isbn[isbn]
-            elif norm_title in library_by_title:
-                library_match = library_by_title[norm_title]
-
-            all_books.append({
-                "title": title,
-                "isbn": isbn,
-                "cover_url": cover_url,
-                "published_year": pub_year,
-                "library_status": library_match["status"] if library_match else None,
-                "library_id": library_match["id"] if library_match else None,
-            })
-
-        if len(items) < 40:
-            break
-
-    # Sort by published year ascending (oldest first)
-    all_books.sort(key=lambda b: (b["published_year"] or 9999, b["title"]))
-
-    owned_count = sum(1 for b in all_books if b["library_status"])
-    total_count = len(all_books)
-
+    # Pass library books + API key to template.
+    # Google Books fetch happens client-side so the HTTP-referrer-restricted
+    # API key is sent with the correct Referer header from the browser.
+    library_books = Book.query.filter_by(user_id=g.user["id"], author=author_name).all()
     return render_template(
         "author_shelf.html",
         author_name=author_name,
-        all_books=all_books,
-        owned_count=owned_count,
-        total_count=total_count,
+        library_books=[b.to_dict() for b in library_books],
+        google_api_key=GOOGLE_BOOKS_API_KEY,
         current_user=g.user,
     )
 
