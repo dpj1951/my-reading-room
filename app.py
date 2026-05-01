@@ -329,7 +329,7 @@ def books():
                 continue
         return datetime.min
     reading = [b for b in all_books if (b.get("status") or "read") == "reading"]
-    want    = [b for b in all_books if (b.get("status") or "read") == "want_to_read"]
+    want    = sorted([b for b in all_books if (b.get("status") or "read") == "want_to_read"], key=lambda b: (b.get("title") or "").lower())
     read    = [b for b in all_books if (b.get("status") or "read") == "read"]
     read    = sorted(read, key=parse_date, reverse=True)
     return render_template("books.html", reading=reading, want=want, books=read)
