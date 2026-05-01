@@ -515,7 +515,7 @@ def add_want_to_read():
     title   = data.get("title", "").strip()
     isbn    = data.get("isbn", "").strip() or None
     cover   = data.get("coverUrl", "").strip() or None
-    year    = data.get("year", "").strip() or None
+    year    = str(data.get("year", "") or "").strip() or None
     author  = data.get("author", "").strip() or None
 
     # Duplicate check
