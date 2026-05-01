@@ -263,8 +263,27 @@
           body: JSON.stringify({title:book.title,isbn:book.isbn,coverUrl:book.coverUrl,year:book.pubYear,author:AUTHOR_NAME})
         });
         const data = await res.json();
-        if (data.success) { showToast(`✓ Added “${book.title}” to Want to Read`); setTimeout(()=>{ window.location='/books#want-shelf'; },1500); }
-        else showToast('Error: '+(data.error||'Could not add book'));
+        if (data.success) {
+          showToast(`✓ Added “${book.title}” to Want to Read`);
+          // Update the card in place — no page navigation needed
+          const cards = document.querySelectorAll('.book-card.state-none');
+          for (const card of cards) {
+            const lbl = card.querySelector('.book-title-label');
+            if (lbl && lbl.textContent.trim() === book.title.trim()) {
+              card.className = 'book-card state-want_to_read';
+              card.style.cursor = 'default';
+              card.replaceWith(card.cloneNode(true)); // remove old event listeners
+              const fresh = document.querySelector('.book-card.state-want_to_read .add-overlay');
+              if (fresh) {
+                const badge = document.createElement('div');
+                badge.className = 'status-badge badge-want';
+                badge.textContent = 'Want';
+                fresh.replaceWith(badge);
+              }
+              break;
+            }
+          }
+        } else showToast('Error: '+(data.error||'Could not add book'));
       } catch(e) { showToast('Network error — please try again'); }
     }
     document.getElementById('addModal').addEventListener('click', function(e) { if(e.target===this) closeModal(); });
