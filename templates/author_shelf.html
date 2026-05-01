@@ -256,7 +256,8 @@
     }
     async function confirmAdd() {
       if (!pendingBook) return;
-      const book = pendingBook; closeModal();
+      const book = pendingBook;
+      closeModal();
       try {
         const res = await fetch('/add_want_to_read', {
           method: 'POST', headers: {'Content-Type':'application/json'},
@@ -264,28 +265,36 @@
         });
         const data = await res.json();
         if (data.success) {
-          showToast(`✓ Added “${book.title}” to Want to Read`);
-          // Update the card in place — no page navigation needed
-          const cards = document.querySelectorAll('.book-card.state-none');
-          for (const card of cards) {
-            const lbl = card.querySelector('.book-title-label');
+          showToast('✓ Added "' + book.title + '" to Want to Read');
+          // Find the card and update it in place
+          document.querySelectorAll('.book-card').forEach(function(card) {
+            var lbl = card.querySelector('.book-title-label');
             if (lbl && lbl.textContent.trim() === book.title.trim()) {
+              // Switch class
               card.className = 'book-card state-want_to_read';
               card.style.cursor = 'default';
-              card.replaceWith(card.cloneNode(true)); // remove old event listeners
-              const fresh = document.querySelector('.book-card.state-want_to_read .add-overlay');
-              if (fresh) {
-                const badge = document.createElement('div');
+              card.style.pointerEvents = 'none';
+              // Replace the add overlay with Want badge
+              var overlay = card.querySelector('.add-overlay');
+              if (overlay) {
+                var badge = document.createElement('div');
                 badge.className = 'status-badge badge-want';
                 badge.textContent = 'Want';
-                fresh.replaceWith(badge);
+                overlay.parentNode.replaceChild(badge, overlay);
               }
-              break;
+              // Remove the cover's grayscale filter
+              var cover = card.querySelector('.book-cover');
+              if (cover) cover.style.filter = 'none';
             }
-          }
-        } else showToast('Error: '+(data.error||'Could not add book'));
-      } catch(e) { showToast('Network error — please try again'); }
+          });
+        } else {
+          showToast('Error: ' + (data.error || 'Could not add book'));
+        }
+      } catch(e) {
+        showToast('Network error — please try again');
+      }
     }
+
     document.getElementById('addModal').addEventListener('click', function(e) { if(e.target===this) closeModal(); });
     init();
   </script>
