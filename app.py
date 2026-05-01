@@ -504,7 +504,8 @@ def author_shelf(author_name):
         library_by_title[bd["title"].strip().lower()] = bd
 
     # Fetch author's books from Google Books API
-    api_key = GOOGLE_BOOKS_API_KEY
+    # No API key — server requests have no Referer header so the browser-restricted
+    # key gets a 403. Unauthenticated quota is 1000 req/day, plenty for this feature.
     all_books = []
     seen_titles = set()
 
@@ -514,12 +515,9 @@ def author_shelf(author_name):
             "maxResults": 40,
             "startIndex": start_index,
             "printType": "books",
-            "langRestrict": "en",
         }
-        if api_key:
-            params["key"] = api_key
         try:
-            resp = requests.get("https://www.googleapis.com/books/v1/volumes", params=params, timeout=8)
+            resp = requests.get("https://www.googleapis.com/books/v1/volumes", params=params, timeout=10)
             data = resp.json()
         except Exception:
             break
@@ -537,10 +535,10 @@ def author_shelf(author_name):
             if norm_title in seen_titles:
                 continue
 
-            # Filter: must actually be by this author
+            # Filter: must actually list this author (check last name match)
             authors_list = [a.lower() for a in vi.get("authors", [])]
             last_name = author_name.strip().split()[-1].lower()
-            if not any(last_name in a for a in authors_list):
+            if authors_list and not any(last_name in a for a in authors_list):
                 continue
 
             seen_titles.add(norm_title)
