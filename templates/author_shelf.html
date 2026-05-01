@@ -253,27 +253,40 @@
       t.textContent = msg; t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 3000);
     }
-    async function confirmAdd() {
+    async function confirmAdd() { // v5-final
       if (!pendingBook) return;
-      const book = pendingBook;
+      var book = pendingBook;
       closeModal();
       try {
-        const res = await fetch('/add_want_to_read', {
-          method: 'POST', headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({title:book.title,isbn:book.isbn,coverUrl:book.coverUrl,year:book.pubYear,author:AUTHOR_NAME})
+        var res = await fetch('/add_want_to_read', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            title: book.title,
+            isbn: book.isbn,
+            coverUrl: book.coverUrl,
+            year: book.pubYear,
+            author: AUTHOR_NAME
+          })
         });
-        const data = await res.json();
+        var data = await res.json();
         if (data.success) {
           showToast('✓ Added "' + book.title + '" to Want to Read');
-          // Find the card and update it in place
-          document.querySelectorAll('.book-card').forEach(function(card) {
+          // Update card in place
+          var allCards = document.querySelectorAll('.book-card');
+          for (var i = 0; i < allCards.length; i++) {
+            var card = allCards[i];
             var lbl = card.querySelector('.book-title-label');
             if (lbl && lbl.textContent.trim() === book.title.trim()) {
-              // Switch class
               card.className = 'book-card state-want_to_read';
               card.style.cursor = 'default';
               card.style.pointerEvents = 'none';
-              // Replace the add overlay with Want badge
+              var cover = card.querySelector('.book-cover');
+              if (cover) {
+                cover.style.borderColor = '#a78bfa';
+                cover.style.boxShadow = '0 0 8px rgba(167,139,250,0.3)';
+                cover.style.filter = 'none';
+              }
               var overlay = card.querySelector('.add-overlay');
               if (overlay) {
                 var badge = document.createElement('div');
@@ -281,11 +294,9 @@
                 badge.textContent = 'Want';
                 overlay.parentNode.replaceChild(badge, overlay);
               }
-              // Remove the cover's grayscale filter
-              var cover = card.querySelector('.book-cover');
-              if (cover) cover.style.filter = 'none';
+              break;
             }
-          });
+          }
         } else {
           showToast('Error: ' + (data.error || 'Could not add book'));
         }
