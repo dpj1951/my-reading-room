@@ -27,7 +27,25 @@
     .page-body { max-width: 1100px; margin: 28px auto 60px; padding: 0 24px; }
     .author-group { margin-bottom: 40px; scroll-margin-top: 80px; }
     .author-header { display: flex; align-items: baseline; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
-    .author-name { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--accent); }
+    
+        .author-name-pill {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.15rem;
+            color: var(--text);
+            text-decoration: none;
+            background: rgba(59,158,255,0.08);
+            border: 1px solid rgba(59,158,255,0.25);
+            border-radius: 20px;
+            padding: 3px 14px;
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
+            display: inline-block;
+        }
+        .author-name-pill:hover {
+            background: rgba(59,158,255,0.18);
+            border-color: rgba(59,158,255,0.55);
+            color: #7ec8ff;
+        }
+        .author-name { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--accent); }
     .author-count { font-size: 0.875rem; color: var(--muted); }
     .book-row { display: flex; gap: 16px; align-items: center; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-decoration: none; color: inherit; transition: border-color 0.15s, background 0.15s; margin-bottom: 8px; }
     .book-row:hover { border-color: var(--accent); background: #21212c; }
@@ -76,7 +94,7 @@
   {% for author_name, books in authors %}
     <div class="author-group" data-author="{{ author_name.lower() }}" data-titles="{{ books|map(attribute='title')|join('|') |lower }}">
       <div class="author-header">
-        <span class="author-name">{{ author_name }}</span>
+        <a class="author-name-pill" href="/author/{{ author_name | urlencode }}">{{ author_name }}</a>
         <span class="author-count">{{ books|length }} book{{ 's' if books|length != 1 else '' }}</span>
       </div>
       {% for book in books %}
@@ -95,11 +113,11 @@
             {% else %}
             <div class="row-rating nr">NR</div>
             {% endif %}
-            <div class="row-meta">{{ book.copyright_year or '' }}{% if book.copyright_year and book.pages %} � {% endif %}{{ book.pages ~ ' pages' if book.pages else '' }}</div>
+            <div class="row-meta">{{ book.copyright_year or '' }}{% if book.copyright_year and book.pages %} ï¿½ {% endif %}{{ book.pages ~ ' pages' if book.pages else '' }}</div>
           </div>
           <span class="format-pip pip-{{ book.format }}">{{ book.format }}</span>
-          {% if book.status == 'reading' %}<span class="status-pip pip-reading">📖 Reading</span>
-          {% elif book.status == 'want_to_read' %}<span class="status-pip pip-want">🔖 Want to Read</span>
+          {% if book.status == 'reading' %}<span class="status-pip pip-reading">ð Reading</span>
+          {% elif book.status == 'want_to_read' %}<span class="status-pip pip-want">ð Want to Read</span>
           {% endif %}
         </a>
       {% endfor %}
