@@ -205,3 +205,18 @@
     window.addEventListener('offline',updateOnlineStatus);
     updateOnlineStatus();
   </script>
+<script>
+  // If arriving via #want-shelf anchor (e.g. after adding from author shelf),
+  // scroll that section into view once the page has rendered
+  if (window.location.hash === '#want-shelf') {
+    window.addEventListener('DOMContentLoaded', function() {
+      var el = document.getElementById('want-shelf');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    // Fallback in case DOMContentLoaded already fired
+    setTimeout(function() {
+      var el = document.getElementById('want-shelf');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
+  }
+</script>
