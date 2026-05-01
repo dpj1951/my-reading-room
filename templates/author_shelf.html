@@ -11,117 +11,85 @@
     :root {
       --bg: #d8d8d8; --surface: #16161c; --card: #1c1c24; --border: #2a2a36;
       --accent: #3b9eff; --text: #f0ede8; --muted: #8a8795;
-      --paper: #7ec8b5; --ebook: #7aaae8; --audio: #c87eb5;
-      --want-color: #a78bfa;
+      --paper: #7ec8b5; --want-color: #a78bfa;
     }
     body { font-family: 'DM Sans', sans-serif; background: var(--surface); color: var(--text); min-height: 100vh; }
-
     nav { position: sticky; top: 0; z-index: 100; background: rgba(14,14,18,0.85);
           backdrop-filter: blur(16px); border-bottom: 1px solid var(--border);
           padding: 0.75rem 1.25rem; display: flex; align-items: center; gap: 1rem; }
-    .nav-back { display: flex; align-items: center; gap: 5px; color: var(--muted);
-                text-decoration: none; font-size: 0.875rem; }
+    .nav-back { display: flex; align-items: center; gap: 5px; color: var(--muted); text-decoration: none; font-size: 0.875rem; }
     .nav-back:hover { color: var(--text); }
     .nav-links { display: flex; gap: 1.25rem; margin-left: auto; }
     .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.875rem; }
     .nav-links a:hover { color: var(--text); }
-
-    .page-header { background: var(--surface); border-bottom: 1px solid var(--border);
-                   padding: 2rem 1.5rem 1.5rem; text-align: center; }
+    .page-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 2rem 1.5rem 1.5rem; text-align: center; }
     .author-title { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--text); margin-bottom: 0.4rem; }
-    .author-subtitle { color: var(--muted); font-size: 0.9rem; }
-    .legend { display: flex; align-items: center; gap: 1.5rem; justify-content: center;
-              margin-top: 1rem; flex-wrap: wrap; }
+    .author-subtitle { color: var(--muted); font-size: 0.9rem; min-height: 1.3em; }
+    .legend { display: flex; align-items: center; gap: 1.5rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap; }
     .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--muted); }
     .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
-
     .shelf-section { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
-    .shelf-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em;
-                   text-transform: uppercase; color: var(--muted); margin-bottom: 1rem;
-                   padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+    .shelf-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+                   color: var(--muted); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
     .shelf { display: flex; flex-wrap: wrap; gap: 1rem; }
-
+    .loading-state { text-align: center; padding: 4rem 1rem; }
+    .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent);
+               border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state p { color: var(--muted); font-size: 0.9rem; }
     .book-card { position: relative; width: 110px; cursor: default; transition: transform 0.2s; }
     .book-card:hover { transform: translateY(-4px); }
-    .book-cover { width: 110px; height: 165px; border-radius: 4px; overflow: hidden;
-                  position: relative; border: 2px solid transparent; background: var(--card); }
+    .book-cover { width: 110px; height: 165px; border-radius: 4px; overflow: hidden; position: relative;
+                  border: 2px solid transparent; background: var(--card); }
     .book-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .no-cover { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
                 background: linear-gradient(135deg, #1e1e2e, #2a2a3e); padding: 8px; text-align: center; }
     .no-cover-text { font-size: 0.65rem; color: var(--muted); line-height: 1.3; }
-
-    .book-card.state-read .book-cover {
-      border-color: #3b9eff;
-      box-shadow: 0 0 12px rgba(59,158,255,0.4), 0 0 24px rgba(59,158,255,0.15);
-    }
-    .book-card.state-reading .book-cover {
-      border-color: var(--paper); box-shadow: 0 0 10px rgba(126,200,181,0.35);
-    }
-    .book-card.state-want_to_read .book-cover {
-      border-color: var(--want-color); box-shadow: 0 0 8px rgba(167,139,250,0.3);
-    }
+    .book-card.state-read .book-cover { border-color: #3b9eff; box-shadow: 0 0 12px rgba(59,158,255,0.4), 0 0 24px rgba(59,158,255,0.15); }
+    .book-card.state-reading .book-cover { border-color: var(--paper); box-shadow: 0 0 10px rgba(126,200,181,0.35); }
+    .book-card.state-want_to_read .book-cover { border-color: var(--want-color); box-shadow: 0 0 8px rgba(167,139,250,0.3); }
     .book-card.state-none .book-cover { border-color: var(--border); filter: grayscale(0.3) brightness(0.75); }
     .book-card.state-none { cursor: pointer; }
     .book-card.state-none:hover .book-cover { border-color: var(--want-color); filter: none; box-shadow: 0 0 8px rgba(167,139,250,0.3); }
-
+    .book-card.state-read, .book-card.state-reading, .book-card.state-want_to_read { cursor: pointer; }
     .status-badge { position: absolute; top: 5px; right: 5px; font-size: 0.55rem; font-weight: 700;
-                    letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 5px;
-                    border-radius: 4px; backdrop-filter: blur(4px); }
+                    letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 5px; border-radius: 4px; backdrop-filter: blur(4px); }
     .badge-read { background: rgba(59,158,255,0.85); color: #fff; }
     .badge-reading { background: rgba(126,200,181,0.85); color: #0e1a17; }
     .badge-want { background: rgba(167,139,250,0.85); color: #1a0e2e; }
-
-    .add-overlay { position: absolute; inset: 0; background: rgba(167,139,250,0.15);
-                   display: flex; align-items: center; justify-content: center;
-                   opacity: 0; transition: opacity 0.2s; border-radius: 2px; }
+    .add-overlay { position: absolute; inset: 0; background: rgba(167,139,250,0.15); display: flex;
+                   align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; border-radius: 2px; }
     .book-card.state-none:hover .add-overlay { opacity: 1; }
     .add-overlay svg { color: var(--want-color); }
-
     .book-title-label { font-size: 0.68rem; color: var(--muted); margin-top: 5px; line-height: 1.3;
-                        max-height: 2.6em; overflow: hidden; display: -webkit-box;
-                        -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+                        max-height: 2.6em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
     .book-year { font-size: 0.62rem; color: #5a5a6e; margin-top: 2px; }
-
     #toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(60px);
              background: var(--card); border: 1px solid var(--want-color); color: var(--text);
              padding: 0.7rem 1.2rem; border-radius: 8px; font-size: 0.85rem;
              box-shadow: 0 4px 20px rgba(0,0,0,0.4); z-index: 1000;
-             transition: transform 0.3s ease, opacity 0.3s; opacity: 0; }
+             transition: transform 0.3s ease, opacity 0.3s; opacity: 0; white-space: nowrap; }
     #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-                     z-index: 500; align-items: center; justify-content: center; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 500; align-items: center; justify-content: center; }
     .modal-overlay.open { display: flex; }
-    .modal { background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-             padding: 1.5rem; max-width: 320px; width: 90%; text-align: center; }
+    .modal { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; max-width: 320px; width: 90%; text-align: center; }
     .modal h3 { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--text); margin-bottom: 0.5rem; }
-    .modal-cover { width: 80px; height: 120px; object-fit: cover; border-radius: 4px;
-                   margin: 0.75rem auto; display: block; border: 1px solid var(--border); }
+    .modal-cover { width: 80px; height: 120px; object-fit: cover; border-radius: 4px; margin: 0.75rem auto; display: block; border: 1px solid var(--border); }
     .modal-title-text { font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem; line-height: 1.4; }
     .modal-btns { display: flex; gap: 0.75rem; justify-content: center; }
-    .btn-confirm { background: var(--want-color); color: #1a0e2e; border: none;
-                   padding: 0.55rem 1.2rem; border-radius: 20px; font-weight: 600;
-                   font-size: 0.85rem; cursor: pointer; }
+    .btn-confirm { background: var(--want-color); color: #1a0e2e; border: none; padding: 0.55rem 1.2rem; border-radius: 20px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
     .btn-confirm:hover { opacity: 0.9; }
-    .btn-cancel { background: transparent; color: var(--muted); border: 1px solid var(--border);
-                  padding: 0.55rem 1.2rem; border-radius: 20px; font-size: 0.85rem; cursor: pointer; }
+    .btn-cancel { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 0.55rem 1.2rem; border-radius: 20px; font-size: 0.85rem; cursor: pointer; }
     .btn-cancel:hover { color: var(--text); }
-
     .empty-state { text-align: center; padding: 3rem; color: var(--muted); }
     .empty-state h3 { font-family: 'DM Serif Display', serif; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
-
-    @media (max-width: 600px) {
-      .book-card { width: 85px; } .book-cover { width: 85px; height: 128px; }
-      .author-title { font-size: 1.5rem; }
-    }
+    @media (max-width: 600px) { .book-card { width: 85px; } .book-cover { width: 85px; height: 128px; } .author-title { font-size: 1.5rem; } }
   </style>
 </head>
 <body>
-
   <div class="user-bar" style="background:#16213e;border-bottom:1px solid #2a2a4a;padding:0.4rem 1rem;display:flex;align-items:center;justify-content:space-between;font-size:0.8rem;">
     {% if current_user %}<span style="color:#c9a96e;">{{ current_user['email'] }}</span><a href="/logout" style="color:#c9a96e;text-decoration:none;padding:0.2rem 0.6rem;border:1px solid #c9a96e33;border-radius:4px;margin-left:0.75rem;">Logout</a>{% endif %}
   </div>
-
   <nav>
     <a class="nav-back" href="/authors">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="m15 18-6-6 6-6"/></svg>
@@ -133,80 +101,28 @@
       <a href="/add">Add</a>
     </div>
   </nav>
-
   <div class="page-header">
     <div class="author-title">{{ author_name }}</div>
-    <div class="author-subtitle">
-      {{ owned_count }} book{{ 's' if owned_count != 1 else '' }} in your library
-      {% if total_count > owned_count %}&nbsp;&middot;&nbsp;{{ total_count - owned_count }} more to discover{% endif %}
-    </div>
+    <div class="author-subtitle" id="subtitle">Loading books…</div>
     <div class="legend">
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#3b9eff;box-shadow:0 0 6px rgba(59,158,255,0.5);"></div> Read
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#7ec8b5;box-shadow:0 0 6px rgba(126,200,181,0.5);"></div> Reading
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#a78bfa;box-shadow:0 0 6px rgba(167,139,250,0.4);"></div> Want to Read
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#2a2a36;border:1px solid #8a8795;"></div> Not in library &mdash; click to add
-      </div>
+      <div class="legend-item"><div class="legend-dot" style="background:#3b9eff;box-shadow:0 0 6px rgba(59,158,255,0.5);"></div> Read</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7ec8b5;box-shadow:0 0 6px rgba(126,200,181,0.5);"></div> Reading</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#a78bfa;box-shadow:0 0 6px rgba(167,139,250,0.4);"></div> Want to Read</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2a2a36;border:1px solid #8a8795;"></div> Not in library — click to add</div>
     </div>
   </div>
-
   <div class="shelf-section">
-    {% if all_books %}
-      <div class="shelf-label">{{ total_count }} book{{ 's' if total_count != 1 else '' }} by {{ author_name }}, sorted by publish year</div>
-      <div class="shelf">
-        {% for book in all_books %}
-          {% set state = book.library_status or 'none' %}
-          <div class="book-card state-{{ state }}"
-            {% if state == 'none' %}
-              onclick="openAddModal('{{ book.title | replace("'", "\'") | e }}', '{{ book.isbn or '' }}', '{{ book.cover_url or '' }}', '{{ book.published_year or '' }}')"
-              title="Add '{{ book.title | e }}' to Want to Read"
-            {% else %}
-              {% if book.library_id %}onclick="window.location='/book/{{ book.library_id }}'"{% endif %}
-              style="cursor:pointer"
-              title="{{ book.title | e }}"
-            {% endif %}
-          >
-            <div class="book-cover">
-              {% if book.cover_url %}
-                <img src="{{ book.cover_url }}" alt="{{ book.title | e }}" loading="lazy"
-                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-                <div class="no-cover" style="display:none"><span class="no-cover-text">{{ book.title }}</span></div>
-              {% else %}
-                <div class="no-cover"><span class="no-cover-text">{{ book.title }}</span></div>
-              {% endif %}
-              {% if state == 'read' %}
-                <div class="status-badge badge-read">Read</div>
-              {% elif state == 'reading' %}
-                <div class="status-badge badge-reading">Reading</div>
-              {% elif state == 'want_to_read' %}
-                <div class="status-badge badge-want">Want</div>
-              {% elif state == 'none' %}
-                <div class="add-overlay">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="28" height="28">
-                    <circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>
-                  </svg>
-                </div>
-              {% endif %}
-            </div>
-            <div class="book-title-label">{{ book.title }}</div>
-            {% if book.published_year %}<div class="book-year">{{ book.published_year }}</div>{% endif %}
-          </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="empty-state">
-        <h3>No books found</h3>
-        <p>Couldn't find any books by {{ author_name }} in Google Books.</p>
-      </div>
-    {% endif %}
+    <div id="loading-state" class="loading-state">
+      <div class="spinner"></div>
+      <p>Fetching books by {{ author_name }}…</p>
+    </div>
+    <div id="shelf-label" class="shelf-label" style="display:none"></div>
+    <div id="shelf" class="shelf"></div>
+    <div id="empty-state" class="empty-state" style="display:none">
+      <h3>No books found</h3>
+      <p>Couldn’t find any books by {{ author_name }} in Google Books.</p>
+    </div>
   </div>
-
   <div class="modal-overlay" id="addModal">
     <div class="modal">
       <h3>Add to Want to Read?</h3>
@@ -221,55 +137,138 @@
   <div id="toast"></div>
 
   <script>
+    const AUTHOR_NAME = {{ author_name | tojson }};
+    const GOOGLE_API_KEY = {{ google_api_key | tojson }};
+    const LIBRARY = {{ library_books | tojson }};
+    const libraryByIsbn = {};
+    const libraryByTitle = {};
+    LIBRARY.forEach(b => {
+      if (b.isbn) libraryByIsbn[b.isbn.trim()] = b;
+      libraryByTitle[b.title.trim().toLowerCase()] = b;
+    });
     let pendingBook = null;
-    const AUTHOR = {{ author_name | tojson }};
 
-    function openAddModal(title, isbn, coverUrl, year) {
-      pendingBook = { title, isbn, coverUrl, year, author: AUTHOR };
+    async function fetchAllBooks() {
+      const allBooks = [];
+      const seenTitles = new Set();
+      const lastName = AUTHOR_NAME.trim().split(' ').pop().toLowerCase();
+      for (const startIndex of [0, 40]) {
+        const params = new URLSearchParams({
+          q: `inauthor:"${AUTHOR_NAME}"`,
+          maxResults: '40',
+          startIndex: String(startIndex),
+          printType: 'books',
+          key: GOOGLE_API_KEY,
+        });
+        let data;
+        try {
+          const resp = await fetch(`https://www.googleapis.com/books/v1/volumes?${params}`);
+          data = await resp.json();
+        } catch(e) { break; }
+        const items = data.items || [];
+        if (!items.length) break;
+        for (const item of items) {
+          const vi = item.volumeInfo || {};
+          const title = (vi.title || '').trim();
+          if (!title) continue;
+          const normTitle = title.toLowerCase();
+          if (seenTitles.has(normTitle)) continue;
+          const authorsList = (vi.authors || []).map(a => a.toLowerCase());
+          if (authorsList.length && !authorsList.some(a => a.includes(lastName))) continue;
+          seenTitles.add(normTitle);
+          let pubYear = null;
+          if (vi.publishedDate) { const y = parseInt(vi.publishedDate.substring(0,4)); if (!isNaN(y)) pubYear = y; }
+          const imgLinks = vi.imageLinks || {};
+          let coverUrl = imgLinks.thumbnail || imgLinks.smallThumbnail || null;
+          if (coverUrl) coverUrl = coverUrl.replace('http://', 'https://');
+          let isbn = null;
+          for (const id of (vi.industryIdentifiers || [])) {
+            if (id.type === 'ISBN_13') { isbn = id.identifier; break; }
+            if (id.type === 'ISBN_10') isbn = id.identifier;
+          }
+          let match = null;
+          if (isbn && libraryByIsbn[isbn]) match = libraryByIsbn[isbn];
+          else if (libraryByTitle[normTitle]) match = libraryByTitle[normTitle];
+          allBooks.push({ title, isbn, coverUrl, pubYear, status: match ? match.status : null, libraryId: match ? match.id : null });
+        }
+        if (items.length < 40) break;
+      }
+      allBooks.sort((a,b) => (a.pubYear||9999)-(b.pubYear||9999) || a.title.localeCompare(b.title));
+      return allBooks;
+    }
+
+    function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+    function makeCard(book) {
+      const state = book.status || 'none';
+      const card = document.createElement('div');
+      card.className = `book-card state-${state}`;
+      let coverHtml = book.coverUrl
+        ? `<img src="${esc(book.coverUrl)}" alt="${esc(book.title)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-cover" style="display:none"><span class="no-cover-text">${esc(book.title)}</span></div>`
+        : `<div class="no-cover"><span class="no-cover-text">${esc(book.title)}</span></div>`;
+      let badge = '';
+      if (state==='read') badge='<div class="status-badge badge-read">Read</div>';
+      else if (state==='reading') badge='<div class="status-badge badge-reading">Reading</div>';
+      else if (state==='want_to_read') badge='<div class="status-badge badge-want">Want</div>';
+      else badge='<div class="add-overlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="28" height="28"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg></div>';
+      card.innerHTML = `<div class="book-cover">${coverHtml}${badge}</div><div class="book-title-label">${esc(book.title)}</div>${book.pubYear ? `<div class="book-year">${book.pubYear}</div>` : ''}`;
+      if (state==='none') {
+        card.addEventListener('click', () => openAddModal(book));
+        card.title = `Add "${book.title}" to Want to Read`;
+      } else if (book.libraryId) {
+        card.addEventListener('click', () => window.location = `/book/${book.libraryId}`);
+        card.title = book.title;
+      }
+      return card;
+    }
+
+    async function init() {
+      const books = await fetchAllBooks();
+      document.getElementById('loading-state').style.display = 'none';
+      if (!books.length) {
+        document.getElementById('empty-state').style.display = 'block';
+        document.getElementById('subtitle').textContent = '0 books in your library';
+        return;
+      }
+      const ownedCount = books.filter(b => b.status).length;
+      document.getElementById('subtitle').textContent =
+        `${ownedCount} book${ownedCount!==1?'s':''} in your library` +
+        (books.length > ownedCount ? ` · ${books.length-ownedCount} more to discover` : '');
+      const label = document.getElementById('shelf-label');
+      label.textContent = `${books.length} book${books.length!==1?'s':''} by ${AUTHOR_NAME}, sorted by publish year`;
+      label.style.display = 'block';
+      const shelf = document.getElementById('shelf');
+      books.forEach(b => shelf.appendChild(makeCard(b)));
+    }
+
+    function openAddModal(book) {
+      pendingBook = book;
       const img = document.getElementById('modalCover');
-      if (coverUrl) { img.src = coverUrl; img.style.display = 'block'; }
-      else { img.style.display = 'none'; }
-      document.getElementById('modalTitleText').textContent = title + (year ? ' (' + year + ')' : '');
+      if (book.coverUrl) { img.src = book.coverUrl; img.style.display='block'; } else { img.style.display='none'; }
+      document.getElementById('modalTitleText').textContent = book.title + (book.pubYear ? ` (${book.pubYear})` : '');
       document.getElementById('addModal').classList.add('open');
     }
-
-    function closeModal() {
-      document.getElementById('addModal').classList.remove('open');
-      pendingBook = null;
-    }
-
+    function closeModal() { document.getElementById('addModal').classList.remove('open'); pendingBook=null; }
     function showToast(msg) {
       const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.add('show');
+      t.textContent = msg; t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 3000);
     }
-
     async function confirmAdd() {
       if (!pendingBook) return;
-      const book = pendingBook;
-      closeModal();
+      const book = pendingBook; closeModal();
       try {
         const res = await fetch('/add_want_to_read', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(book)
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({title:book.title,isbn:book.isbn,coverUrl:book.coverUrl,year:book.pubYear,author:AUTHOR_NAME})
         });
         const data = await res.json();
-        if (data.success) {
-          showToast('\u2713 Added \u201c' + book.title + '\u201d to Want to Read');
-          setTimeout(() => location.reload(), 1500);
-        } else {
-          showToast('Error: ' + (data.error || 'Could not add book'));
-        }
-      } catch(e) {
-        showToast('Network error \u2014 please try again');
-      }
+        if (data.success) { showToast(`✓ Added “${book.title}” to Want to Read`); setTimeout(()=>location.reload(),1500); }
+        else showToast('Error: '+(data.error||'Could not add book'));
+      } catch(e) { showToast('Network error — please try again'); }
     }
-
-    document.getElementById('addModal').addEventListener('click', function(e) {
-      if (e.target === this) closeModal();
-    });
+    document.getElementById('addModal').addEventListener('click', function(e) { if(e.target===this) closeModal(); });
+    init();
   </script>
 </body>
 </html>
