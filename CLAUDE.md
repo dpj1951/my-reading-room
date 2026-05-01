@@ -19,7 +19,7 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 - $1.99/month after a 30-day free trial
 - No credit card required to start trial
 - One plan, everything included
-- Stripe: NOT YET wired up (next major task)
+- Stripe: NOT YET wired up (next task after author shelf)
 - Email: freetrial@myreadingalcove.com (Namecheap Private Email, forwarding to Gmail)
 
 ## Current Status (April 30, 2026)
@@ -70,6 +70,19 @@ id, title, author, isbn, format, pages (varchar), copyright_year, read_date (var
 - Supabase Pro: handles 100k MAU; switch to PgBouncer pooler at ~200 concurrent users
 - CSV import does synchronous Google Books/Open Library lookups — future: use ThreadPoolExecutor
 - Render pricing update coming August 1, 2026 — review before that date
+
+## What Was Done May 1, 2026
+- **Author shelf feature** — full publication shelf for each author
+  - Author name on authors page is now a clickable pill button
+  - New route `/author/<name>` renders author_shelf.html
+  - Google Books API called CLIENT-SIDE (browser fetch) — server-side calls blocked by Render IP
+  - Books cross-referenced with user library: read=blue glow, reading=teal, want=purple, unowned=dimmed
+  - Clicking unowned book opens confirm modal, adds to want_to_read, card flips in place (no page reload)
+  - Deleting from library restores unowned state on next shelf load
+  - New Flask route `/add_want_to_read` POST endpoint
+  - New template: `templates/author_shelf.html`
+  - Key bug fixed: year sent as int from JS, route called .strip() — fixed with str() conversion
+  - Want to Read shelf on books page now sorted by insertion order (newest last)
 
 ## What Was Done April 30, 2026
 
