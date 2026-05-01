@@ -216,7 +216,6 @@
         card.addEventListener('click', () => openAddModal(book));
         card.title = `Add "${book.title}" to Want to Read`;
       } else if (book.libraryId) {
-        card.addEventListener('click', () => window.location = `/book/${book.libraryId}`);
         card.title = book.title;
       }
       return card;
