@@ -253,7 +253,7 @@
       t.textContent = msg; t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 3000);
     }
-    async function confirmAdd() { // v5-final
+    async function confirmAdd() { // v6
       if (!pendingBook) return;
       var book = pendingBook;
       closeModal();
@@ -261,24 +261,17 @@
         var res = await fetch('/add_want_to_read', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            title: book.title,
-            isbn: book.isbn,
-            coverUrl: book.coverUrl,
-            year: book.pubYear,
-            author: AUTHOR_NAME
-          })
+          body: JSON.stringify({title:book.title,isbn:book.isbn,coverUrl:book.coverUrl,year:book.pubYear,author:AUTHOR_NAME})
         });
         var data = await res.json();
         if (data.success) {
           showToast('✓ Added "' + book.title + '" to Want to Read');
-          // Update card in place
           var allCards = document.querySelectorAll('.book-card');
           for (var i = 0; i < allCards.length; i++) {
             var card = allCards[i];
             var lbl = card.querySelector('.book-title-label');
             if (lbl && lbl.textContent.trim() === book.title.trim()) {
-              card.className = 'book-card state-want_to_read';
+              card.setAttribute('class', 'book-card state-want_to_read');
               card.style.cursor = 'default';
               card.style.pointerEvents = 'none';
               var cover = card.querySelector('.book-cover');
@@ -289,19 +282,16 @@
               }
               var overlay = card.querySelector('.add-overlay');
               if (overlay) {
-                var badge = document.createElement('div');
-                badge.className = 'status-badge badge-want';
-                badge.textContent = 'Want';
-                overlay.parentNode.replaceChild(badge, overlay);
+                overlay.outerHTML = '<div class="status-badge" style="position:absolute;top:5px;right:5px;font-size:0.55rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;padding:2px 5px;border-radius:4px;background:rgba(167,139,250,0.85);color:#1a0e2e">Want</div>';
               }
               break;
             }
           }
         } else {
-          showToast('Error: ' + (data.error || 'Could not add book'));
+          showToast('Error: ' + (data.error || 'Could not add'));
         }
       } catch(e) {
-        showToast('Network error — please try again');
+        showToast('Network error');
       }
     }
 
