@@ -31,18 +31,18 @@
         .author-name-pill {
             font-family: 'DM Serif Display', serif;
             font-size: 1.15rem;
-            color: var(--text);
+            color: #f0ede8;
             text-decoration: none;
-            background: rgba(59,158,255,0.08);
-            border: 1px solid rgba(59,158,255,0.25);
+            background: #23233a;
+            border: 1px solid rgba(59,158,255,0.4);
             border-radius: 20px;
             padding: 3px 14px;
             transition: background 0.2s, border-color 0.2s, color 0.2s;
             display: inline-block;
         }
         .author-name-pill:hover {
-            background: rgba(59,158,255,0.18);
-            border-color: rgba(59,158,255,0.55);
+            background: #2a2a50;
+            border-color: rgba(59,158,255,0.75);
             color: #7ec8ff;
         }
         .author-name { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--accent); }
@@ -113,11 +113,11 @@
             {% else %}
             <div class="row-rating nr">NR</div>
             {% endif %}
-            <div class="row-meta">{{ book.copyright_year or '' }}{% if book.copyright_year and book.pages %} ï¿½ {% endif %}{{ book.pages ~ ' pages' if book.pages else '' }}</div>
+            <div class="row-meta">{{ book.copyright_year or '' }}{% if book.copyright_year and book.pages %} Ã¯Â¿Â½ {% endif %}{{ book.pages ~ ' pages' if book.pages else '' }}</div>
           </div>
           <span class="format-pip pip-{{ book.format }}">{{ book.format }}</span>
-          {% if book.status == 'reading' %}<span class="status-pip pip-reading">ð Reading</span>
-          {% elif book.status == 'want_to_read' %}<span class="status-pip pip-want">ð Want to Read</span>
+          {% if book.status == 'reading' %}<span class="status-pip pip-reading">Ã°ÂÂÂ Reading</span>
+          {% elif book.status == 'want_to_read' %}<span class="status-pip pip-want">Ã°ÂÂÂ Want to Read</span>
           {% endif %}
         </a>
       {% endfor %}
