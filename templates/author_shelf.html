@@ -263,7 +263,7 @@
           body: JSON.stringify({title:book.title,isbn:book.isbn,coverUrl:book.coverUrl,year:book.pubYear,author:AUTHOR_NAME})
         });
         const data = await res.json();
-        if (data.success) { showToast(`✓ Added “${book.title}” to Want to Read`); setTimeout(()=>location.reload(),1500); }
+        if (data.success) { showToast(`✓ Added “${book.title}” to Want to Read`); setTimeout(()=>{ window.location='/books#want-shelf'; },1500); }
         else showToast('Error: '+(data.error||'Could not add book'));
       } catch(e) { showToast('Network error — please try again'); }
     }
