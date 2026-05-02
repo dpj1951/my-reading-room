@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edit ÃÂ¢ÃÂÃÂ {{ book.title }} ÃÂ¢ÃÂÃÂ My Reading Alcove</title>
+  <title>Edit ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ {{ book.title }} ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ My Reading Alcove</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -123,13 +123,13 @@
           <div class="format-group">
             <button type="button" id="btn-paper"
               class="format-btn {% if book.format == 'Paper' %}active-paper{% endif %}"
-              onclick="setFormat('Paper')">ÃÂ°ÃÂÃÂÃÂ Paper</button>
+              onclick="setFormat('Paper')">&#128214; Paper</button>
             <button type="button" id="btn-ebook"
               class="format-btn {% if book.format == 'Ebook' %}active-ebook{% endif %}"
-              onclick="setFormat('Ebook')">ÃÂ°ÃÂÃÂÃÂ± Ebook</button>
+              onclick="setFormat('Ebook')">&#128241; Ebook</button>
             <button type="button" id="btn-audio"
               class="format-btn {% if book.format == 'Audiobook' %}active-audio{% endif %}"
-              onclick="setFormat('Audiobook')">ÃÂ°ÃÂÃÂÃÂ§ Audiobook</button>
+              onclick="setFormat('Audiobook')">&#127911; Audiobook</button>
           </div>
           <input type="hidden" name="format" id="f-format" value="{{ book.format or 'Paper' }}">
         </div>
