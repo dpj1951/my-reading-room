@@ -111,6 +111,17 @@
 
 
 
+    <button type="button" class="menu-btn" id="missingDatesBtn" onclick="startMissingDates()">
+      <span class="icon">&#x1F4C5;</span> Find Missing Read Dates
+      <span class="sub">List books with no read date recorded</span>
+    </button>
+    <div class="progress-box" id="missingDatesBox" style="display:none">
+      <div class="progress-label" id="missingDatesLabel">Scanning library...</div>
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="missingDatesFill"></div></div>
+      <div class="progress-count" id="missingDatesCount"></div>
+      <div id="missingDatesList" style="margin-top:12px;width:100%;max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+
   </nav>
 
   <a class="back-link" href="/utilities">&#8592; Back to Utilities</a>
@@ -407,7 +418,7 @@
       const result = await r.json();
       fill.style.width = '100%';
       label.textContent = '\u2705 Updated ' + result.updated + ' book(s).' + (notFound.length ? ' ' + notFound.length + ' not found:' : ' All done!');
-      count.textContent = notFound.length ? 'These still need manual entry — click to edit:' : '';
+      count.textContent = notFound.length ? 'These still need manual entry â click to edit:' : '';
       updates.forEach(b => addRow(list, b, true));
       notFound.forEach(b => addRow(list, b, false));
     } catch(e) { label.textContent = 'Save failed: ' + e.message; }
@@ -424,6 +435,44 @@
     row.addEventListener('mouseenter', () => row.style.background = found ? '#1f4a1f' : '#333');
     row.addEventListener('mouseleave', () => row.style.background = found ? '#1a3a1a' : '#2a2a2a');
     list.appendChild(row);
+  }
+  async function startMissingDates() {
+    const btn = document.getElementById('missingDatesBtn');
+    const box = document.getElementById('missingDatesBox');
+    const label = document.getElementById('missingDatesLabel');
+    const fill = document.getElementById('missingDatesFill');
+    const count = document.getElementById('missingDatesCount');
+    const list = document.getElementById('missingDatesList');
+    btn.disabled = true;
+    box.style.display = 'block';
+    list.innerHTML = '';
+    label.textContent = 'Scanning library...';
+    fill.style.width = '30%';
+    count.textContent = '';
+    try {
+      const r = await fetch('/utilities/missing-dates');
+      const data = await r.json();
+      fill.style.width = '100%';
+      if (data.error) { label.textContent = 'Error: ' + data.error; btn.disabled = false; return; }
+      const books = data.books || [];
+      if (books.length === 0) {
+        label.textContent = '\u2705 All books have read dates!';
+      } else {
+        label.textContent = books.length + ' book' + (books.length === 1 ? '' : 's') + ' missing read dates:';
+        count.textContent = 'Click a title to edit it.';
+        books.forEach(b => {
+          const row = document.createElement('a');
+          row.href = '/book/' + b.id + '/edit';
+          row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:#2a2a2a;border-radius:8px;padding:8px 12px;color:#f0ede8;text-decoration:none;font-size:0.85rem;gap:8px;';
+          row.innerHTML = '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + b.title + '</span>' +
+            '<span style="color:#8a8795;white-space:nowrap;">' + (b.author || '\u2014') + '</span>';
+          row.addEventListener('mouseenter', () => row.style.background = '#333');
+          row.addEventListener('mouseleave', () => row.style.background = '#2a2a2a');
+          list.appendChild(row);
+        });
+      }
+    } catch(e) { label.textContent = 'Error: ' + e.message; }
+    btn.disabled = false;
   }
   </script>
   <script src="/static/enrich.js"></script>
