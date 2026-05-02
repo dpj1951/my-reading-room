@@ -1086,6 +1086,20 @@ def missing_pages_save():
     return jsonify({"updated": updated})
 
 
+@app.route("/utilities/missing-dates")
+@login_required
+def missing_dates():
+    """Return list of books with missing or empty read dates."""
+    books = Book.query.all()
+    missing = []
+    for b in books:
+        read_date = (b.read_date or "").strip()
+        if not read_date:
+            missing.append({"id": b.id, "title": b.title, "author": b.author})
+    missing.sort(key=lambda x: x.get("title", "").lower())
+    return jsonify({"books": missing})
+
+
 @app.route("/utilities/cover-lookup")
 def cover_lookup():
     """Server-side Google Books cover lookup ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ tries ISBN first, then title+author."""
