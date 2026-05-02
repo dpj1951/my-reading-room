@@ -1,4 +1,4 @@
-# CLAUDE.md — My Reading Alcove
+# CLAUDE.md â My Reading Alcove
 
 This file gives Claude full context on this project so sessions can resume without re-explaining.
 
@@ -9,7 +9,7 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 - Repo: https://github.com/dpj1951/my-reading-room
 - Working branch: reading-alcove
 - Primary live app: https://myreadingalcove.com / https://my-reading-room2.onrender.com
-- Platform: Render (Starter $7/mo — always-on, no sleep)
+- Platform: Render (Starter $7/mo â always-on, no sleep)
 - Flask + Gunicorn
 - Database: Supabase PostgreSQL (Pro + IPv4, direct connection)
 - Render service ID: srv-d6fo4v1r0fns73ai5e2g
@@ -23,7 +23,7 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 - Email: freetrial@myreadingalcove.com (Namecheap Private Email, forwarding to Gmail)
 
 ## Current Status (April 30, 2026)
-- MAINTENANCE_MODE=true in Render env vars — site closed to public
+- MAINTENANCE_MODE=true in Render env vars â site closed to public
 - Preview bypass: myreadingalcove.com/?preview=alcove2026
 - 215 books in library (213 read + 1 reading + 1 want to read)
 - Use my-reading-room2.onrender.com to verify deploys (DNS caching on custom domain)
@@ -35,25 +35,25 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 - Procfile: web: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120
 
 ### Key files
-- app.py — main Flask app (all routes)
-- templates/landing.html — public landing page
-- templates/books.html — library view with shelves
-- templates/add.html — add book page
-- templates/edit.html — edit book page
-- templates/authors.html — authors view
-- templates/home.html — logged-in dashboard (nav: Books, Authors, Add a Book, Utilities, Stats)
-- templates/stats.html — reading stats page
+- app.py â main Flask app (all routes)
+- templates/landing.html â public landing page
+- templates/books.html â library view with shelves
+- templates/add.html â add book page
+- templates/edit.html â edit book page
+- templates/authors.html â authors view
+- templates/home.html â logged-in dashboard (nav: Books, Authors, Add a Book, Utilities, Stats)
+- templates/stats.html â reading stats page
 
 ## Book Status System
-- 'read' — main grid, sorted by read_date desc
-- 'reading' — Currently Reading horizontal scroll shelf (top of books page)
-- 'want_to_read' — Want to Read shelf (bottom of books page)
+- 'read' â main grid, sorted by read_date desc
+- 'reading' â Currently Reading horizontal scroll shelf (top of books page)
+- 'want_to_read' â Want to Read shelf (bottom of books page)
 - Default is 'read' if no status set
 
-## Supabase Schema (books table — 14 columns)
+## Supabase Schema (books table â 14 columns)
 id, title, author, isbn, format, pages (varchar), copyright_year, read_date (varchar), rating (varchar/float), cover_url, summary, read_time_hrs, user_id, status
 - read_date formats: %m/%d/%y, %Y-%m-%d, %m/%d/%Y
-- pages stored as varchar string — parse with int()
+- pages stored as varchar string â parse with int()
 - rating stored as float (supports half-stars e.g. 2.5, 3.0, 4.5)
 
 ## Google Books API
@@ -65,47 +65,59 @@ id, title, author, isbn, format, pages (varchar), copyright_year, read_date (var
 - Quota: 10,000 requests/day
 
 ## Scalability Notes
-- Render Starter ($7/mo): always-on, 512MB RAM, 0.5 CPU — good for early growth
+- Render Starter ($7/mo): always-on, 512MB RAM, 0.5 CPU â good for early growth
 - Set WEB_CONCURRENCY=3 env var on Render when traffic grows
 - Supabase Pro: handles 100k MAU; switch to PgBouncer pooler at ~200 concurrent users
-- CSV import does synchronous Google Books/Open Library lookups — future: use ThreadPoolExecutor
-- Render pricing update coming August 1, 2026 — review before that date
+- CSV import does synchronous Google Books/Open Library lookups â future: use ThreadPoolExecutor
+- Render pricing update coming August 1, 2026 â review before that date
 
-## What Was Done May 1, 2026
-- **Author shelf feature** — full publication shelf for each author
+## What Was Done May 2, 2026
+Find & Fill Missing Page Counts utility added to More Tools
+New button: Find & Fill Missing Page Counts (replaces simple lister)
+Auto-lookups page counts from Open Library (by ISBN, then title/author) and Google Books (by ISBN, then title/author) — 4 sources tried in order
+Progress bar shows live lookup progress across all missing books
+Auto-saves all found page counts in one batch POST to /utilities/missing-pages-save
+Results list: found books shown in green with page count, not-found in grey with click-to-edit link
+New Flask routes: GET /utilities/missing-pages, POST /utilities/missing-pages-save
+Both use SQLAlchemy Book.query pattern (not Supabase client)
+More Tools card description on utilities.html updated to include "find missing pages"
+First run: 24 of 33 missing books auto-filled (73% hit rate)
+
+What Was Done May 1, 2026
+- **Author shelf feature** â full publication shelf for each author
   - Author name on authors page is now a clickable pill button
   - New route `/author/<name>` renders author_shelf.html
-  - Google Books API called CLIENT-SIDE (browser fetch) — server-side calls blocked by Render IP
+  - Google Books API called CLIENT-SIDE (browser fetch) â server-side calls blocked by Render IP
   - Books cross-referenced with user library: read=blue glow, reading=teal, want=purple, unowned=dimmed
   - Clicking unowned book opens confirm modal, adds to want_to_read, card flips in place (no page reload)
   - Deleting from library restores unowned state on next shelf load
   - New Flask route `/add_want_to_read` POST endpoint
   - New template: `templates/author_shelf.html`
-  - Key bug fixed: year sent as int from JS, route called .strip() — fixed with str() conversion
+  - Key bug fixed: year sent as int from JS, route called .strip() â fixed with str() conversion
   - Want to Read shelf on books page now sorted by insertion order (newest last)
 
 ## What Was Done April 30, 2026
 
 ### Stats Page
 - New /stats route added to app.py (inserted after /books route)
-- New templates/stats.html — dark theme, DM Serif Display, matches app style
+- New templates/stats.html â dark theme, DM Serif Display, matches app style
 - Summary cards: Total Books, Total Pages, This Month, This Year, Pages/Week (52-wk avg), Pages This Year
 - Bar chart toggle: Books or Pages per month (last 12 months)
 - By-year table with progress bars for books and pages (newest first)
 - Nudge banner when books missing page counts or read dates
 - Stats button added to home.html nav (after Utilities)
 - Stats page nav: Library, Authors, Add, Utilities, Stats (active), Home
-- pages and read_date are nullable — stats work with partial data, users self-edit to improve
+- pages and read_date are nullable â stats work with partial data, users self-edit to improve
 
 ### Google Books API Key
 - Created in Google Cloud Console
 - Restricted to Books API only + HTTP referrers
 - Added to Render env vars as GOOGLE_BOOKS_API_KEY
-- Code was already wired up — no app.py changes needed
+- Code was already wired up â no app.py changes needed
 
 ### Render Plan Confirmed
 - Workspace: Hobby (legacy)
-- Service instance: Starter ($7/mo) — always-on, no sleep
+- Service instance: Starter ($7/mo) â always-on, no sleep
 
 ## What Was Done April 29, 2026
 
@@ -152,6 +164,6 @@ id, title, author, isbn, format, pages (varchar), copyright_year, read_date (var
 
 ## Next Tasks
 1. Wire up Stripe ($1.99/month after 30-day trial)
-2. Second new feature (TBD — discuss next session)
+2. Second new feature (TBD â discuss next session)
 3. Turn off maintenance mode when ready to launch
 4. Review Render pricing changes before August 1, 2026
