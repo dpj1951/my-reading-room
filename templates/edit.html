@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edit Ã¢ÂÂ {{ book.title }} Ã¢ÂÂ My Reading Alcove</title>
+  <title>Edit ÃÂ¢ÃÂÃÂ {{ book.title }} ÃÂ¢ÃÂÃÂ My Reading Alcove</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -39,6 +39,9 @@
     .format-btn.active-paper { border-color: var(--paper); color: var(--paper); background: rgba(126,200,181,0.1); }
     .format-btn.active-ebook { border-color: var(--ebook); color: var(--ebook); background: rgba(126,170,232,0.1); }
     .format-btn.active-audio { border-color: var(--audio); color: var(--audio); background: rgba(200,126,181,0.1); }
+    .fmt-btn { flex:1; padding:10px 8px; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:500; cursor:pointer; transition:all 0.15s; text-align:center; }
+    .fmt-btn:hover { border-color:var(--accent); color:var(--accent); }
+    .fmt-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(59,158,255,0.12); }
     .audio-field { display: none; }
     .audio-field.show { display: flex; }
     .star-group { display: flex; gap: 2px; align-items: center; }
@@ -120,13 +123,13 @@
           <div class="format-group">
             <button type="button" id="btn-paper"
               class="format-btn {% if book.format == 'Paper' %}active-paper{% endif %}"
-              onclick="setFormat('Paper')">Ã°ÂÂÂ Paper</button>
+              onclick="setFormat('Paper')">ÃÂ°ÃÂÃÂÃÂ Paper</button>
             <button type="button" id="btn-ebook"
               class="format-btn {% if book.format == 'Ebook' %}active-ebook{% endif %}"
-              onclick="setFormat('Ebook')">Ã°ÂÂÂ± Ebook</button>
+              onclick="setFormat('Ebook')">ÃÂ°ÃÂÃÂÃÂ± Ebook</button>
             <button type="button" id="btn-audio"
               class="format-btn {% if book.format == 'Audiobook' %}active-audio{% endif %}"
-              onclick="setFormat('Audiobook')">Ã°ÂÂÂ§ Audiobook</button>
+              onclick="setFormat('Audiobook')">ÃÂ°ÃÂÃÂÃÂ§ Audiobook</button>
           </div>
           <input type="hidden" name="format" id="f-format" value="{{ book.format or 'Paper' }}">
         </div>
@@ -176,10 +179,10 @@
       <div class="field-group" style="padding: 0 16px 16px;">
         <label style="display:block; margin-bottom:8px; font-size:0.85rem; color:#888;">Reading Status</label>
         <div class="format-btns" id="status-btns">
-          <button type="button" class="fmt-btn {% if book.status == 'read' or not book.status %}active{% endif %}" data-val="read" onclick="setStatus('read',this)">Ã¢ÂÂ Read</button>
-          <button type="button" class="fmt-btn {% if book.status == 'reading' %}active{% endif %}" data-val="reading" onclick="setStatus('reading',this)">Ã°ÂÂÂ Reading</button>
-          <button type="button" class="fmt-btn {% if book.status == 'want_to_read' %}active{% endif %}" data-val="want_to_read" onclick="setStatus('want_to_read',this)">Ã°ÂÂÂ Want to Read</button>
-          <button type="button" class="fmt-btn {% if book.status == 'dnf' %}active{% endif %}" data-val="dnf" onclick="setStatus('dnf',this)">✗ DNF</button>
+          <button type="button" class="fmt-btn {% if book.status == 'read' or not book.status %}active{% endif %}" data-val="read" onclick="setStatus('read',this)">&#10003; Read</button>
+          <button type="button" class="fmt-btn {% if book.status == 'reading' %}active{% endif %}" data-val="reading" onclick="setStatus('reading',this)">&#9654; Reading</button>
+          <button type="button" class="fmt-btn {% if book.status == 'want_to_read' %}active{% endif %}" data-val="want_to_read" onclick="setStatus('want_to_read',this)">&#128218; Want to Read</button>
+          <button type="button" class="fmt-btn {% if book.status == 'dnf' %}active{% endif %}" data-val="dnf" onclick="setStatus('dnf',this)">&#10007; DNF</button>
         </div>
         <input type="hidden" name="status" id="f-status" value="{{ book.status or 'read' }}">
       </div>
