@@ -418,7 +418,7 @@
       const result = await r.json();
       fill.style.width = '100%';
       label.textContent = '\u2705 Updated ' + result.updated + ' book(s).' + (notFound.length ? ' ' + notFound.length + ' not found:' : ' All done!');
-      count.textContent = notFound.length ? 'These still need manual entry â click to edit:' : '';
+      count.textContent = notFound.length ? 'These still need manual entry Ã¢ÂÂ click to edit:' : '';
       updates.forEach(b => addRow(list, b, true));
       notFound.forEach(b => addRow(list, b, false));
     } catch(e) { label.textContent = 'Save failed: ' + e.message; }
@@ -464,8 +464,9 @@
           const row = document.createElement('a');
           row.href = '/book/' + b.id + '/edit';
           row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:#2a2a2a;border-radius:8px;padding:8px 12px;color:#f0ede8;text-decoration:none;font-size:0.85rem;gap:8px;';
+          const dateHint = b.date_added ? '<span style="color:#5a8a5a;white-space:nowrap;margin-left:8px;font-size:0.8rem;">added ' + b.date_added + '</span>' : '';
           row.innerHTML = '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + b.title + '</span>' +
-            '<span style="color:#8a8795;white-space:nowrap;">' + (b.author || '\u2014') + '</span>';
+            '<span style="color:#8a8795;white-space:nowrap;">' + (b.author || '\u2014') + '</span>' + dateHint;
           row.addEventListener('mouseenter', () => row.style.background = '#333');
           row.addEventListener('mouseleave', () => row.style.background = '#2a2a2a');
           list.appendChild(row);
