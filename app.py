@@ -1051,6 +1051,25 @@ def backfill_covers_save():
     db.session.commit()
     return jsonify({"updated": updated})
 
+@app.route("/utilities/missing-pages")
+@login_required
+def missing_pages():
+    """Return list of books with missing or zero page counts."""
+    user_id = session.get("user_id")
+    try:
+        result = supabase.table("books").select("id, title, author, pages").eq("user_id", user_id).execute()
+        books = result.data or []
+        missing = []
+        for b in books:
+            pages = b.get("pages", None)
+            if not pages or str(pages).strip() in ("", "0", "None"):
+                missing.append({"id": b["id"], "title": b.get("title", ""), "author": b.get("author", "")})
+        missing.sort(key=lambda x: x.get("title", "").lower())
+        return jsonify({"books": missing})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/utilities/cover-lookup")
 def cover_lookup():
     """Server-side Google Books cover lookup ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ tries ISBN first, then title+author."""
