@@ -5,7 +5,7 @@ import uuid
 import requests
 import csv
 import io
-from datetime import date
+from datetime import date, datetime
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 import jwt as pyjwt
@@ -101,6 +101,7 @@ class Book(db.Model):
     read_time_hrs  = db.Column(db.String(10), default="")
     user_id        = db.Column(db.String(36), nullable=True)
     status         = db.Column(db.String(20), default="read")
+    date_added     = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
         return {"id": self.id, "title": self.title, "author": self.author, "isbn": self.isbn,
@@ -468,6 +469,7 @@ def add_manual_save():
         cover_url      = request.form.get("cover_url", "").strip(),
         rating         = request.form.get("rating") or None,
         status         = request.form.get("status", "read").strip() or "read",
+        date_added     = datetime.utcnow(),
     ))
     db.session.commit()
     return redirect(url_for("books"))
@@ -538,6 +540,7 @@ def add_want_to_read():
         rating=None,
         summary=None,
         read_time_hrs=None,
+        date_added=datetime.utcnow(),
     )
     db.session.add(new_book)
     db.session.commit()
@@ -682,6 +685,7 @@ def import_csv():
                 summary       = summary,
                 read_time_hrs = read_time or None,
                 status        = status,
+                date_added    = datetime.utcnow(),
             ))
             added += 1
 
@@ -1095,7 +1099,8 @@ def missing_dates():
     for b in books:
         read_date = (b.read_date or "").strip()
         if not read_date:
-            missing.append({"id": b.id, "title": b.title, "author": b.author})
+            date_added = b.date_added.strftime("%m/%d/%Y") if b.date_added else None
+            missing.append({"id": b.id, "title": b.title, "author": b.author, "date_added": date_added})
     missing.sort(key=lambda x: x.get("title", "").lower())
     return jsonify({"books": missing})
 
