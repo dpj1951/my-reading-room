@@ -321,10 +321,10 @@
         count.textContent = 'Click a title to edit it.';
         books.forEach(b => {
           const row = document.createElement('a');
-          row.href = '/edit/' + b.id;
+          row.href = '/book/' + b.id + '/edit';
           row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:#2a2a2a;border-radius:8px;padding:8px 12px;color:#f0ede8;text-decoration:none;font-size:0.85rem;';
           row.innerHTML = '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + b.title.replace(/"/g,'&quot;') + '">' + b.title + '</span>' +
-            '<span style="color:#8a8795;margin-left:12px;white-space:nowrap;">' + (b.author || '—') + '</span>';
+            '<span style="color:#8a8795;margin-left:12px;white-space:nowrap;">' + (b.author || 'â') + '</span>';
           row.addEventListener('mouseenter', () => row.style.background = '#333');
           row.addEventListener('mouseleave', () => row.style.background = '#2a2a2a');
           list.appendChild(row);
