@@ -179,7 +179,7 @@
           <button type="button" class="fmt-btn {% if book.status == 'read' or not book.status %}active{% endif %}" data-val="read" onclick="setStatus('read',this)">Ã¢ÂÂ Read</button>
           <button type="button" class="fmt-btn {% if book.status == 'reading' %}active{% endif %}" data-val="reading" onclick="setStatus('reading',this)">Ã°ÂÂÂ Reading</button>
           <button type="button" class="fmt-btn {% if book.status == 'want_to_read' %}active{% endif %}" data-val="want_to_read" onclick="setStatus('want_to_read',this)">Ã°ÂÂÂ Want to Read</button>
-          <button type="button" class="fmt-btn {% if book.status == 'dnf' %}active{% endif %}" data-val="dnf" onclick="setStatus('dnf',this)">&#x2717; DNF</button>
+          <button type="button" class="fmt-btn {% if book.status == 'dnf' %}active{% endif %}" data-val="dnf" onclick="setStatus('dnf',this)">✗ DNF</button>
         </div>
         <input type="hidden" name="status" id="f-status" value="{{ book.status or 'read' }}">
       </div>
