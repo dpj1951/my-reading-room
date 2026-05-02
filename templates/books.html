@@ -84,6 +84,9 @@
     .shelf-book-label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 8px; border-radius: 10px; white-space: nowrap; }
     .reading-label { background: rgba(126,200,181,0.15); color: #7ec8b5; border: 1px solid rgba(126,200,181,0.3); }
     .want-label { background: rgba(200,126,181,0.15); color: #c87eb5; border: 1px solid rgba(200,126,181,0.3); }
+    .dnf-label  { background: rgba(200,80,80,0.15); color: #e07070; border: 1px solid rgba(200,80,80,0.3); }
+    .shelf-dnf .cover-grid a img { opacity: 0.5; filter: grayscale(40%); }
+    .shelf-dnf .cover-grid a:hover img { opacity: 0.85; filter: grayscale(10%); }
   </style>
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#0e0e12">
@@ -125,14 +128,14 @@
       <div class="cover-grid">
         {% for book in reading %}
           <div class="shelf-book">
-            <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
+            <a href="/book/{{ book.id }}" title="{{ book.title }} Ã¢ÂÂ {{ book.author }}">
               {% if book.cover_url %}
                 <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
               {% else %}
-                <div class="no-cover">ð</div>
+                <div class="no-cover">Ã°ÂÂÂ</div>
               {% endif %}
             </a>
-            <span class="shelf-book-label reading-label">ð Reading</span>
+            <span class="shelf-book-label reading-label">Ã°ÂÂÂ Reading</span>
           </div>
         {% endfor %}
       </div>
@@ -150,11 +153,11 @@
       <div class="cover-grid">
         {% for book in books %}
           <div style="position:relative">
-            <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
+            <a href="/book/{{ book.id }}" title="{{ book.title }} Ã¢ÂÂ {{ book.author }}">
               {% if book.cover_url %}
                 <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
               {% else %}
-                <div class="no-cover">ð</div>
+                <div class="no-cover">Ã°ÂÂÂ</div>
               {% endif %}
             </a>
             {% if book.rating %}
@@ -183,14 +186,39 @@
       <div class="cover-grid">
         {% for book in want %}
           <div class="shelf-book">
-            <a href="/book/{{ book.id }}" title="{{ book.title }} â {{ book.author }}">
+            <a href="/book/{{ book.id }}" title="{{ book.title }} Ã¢ÂÂ {{ book.author }}">
               {% if book.cover_url %}
                 <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
               {% else %}
-                <div class="no-cover">ð</div>
+                <div class="no-cover">Ã°ÂÂÂ</div>
               {% endif %}
             </a>
-            <span class="shelf-book-label want-label">ð Want to Read</span>
+            <span class="shelf-book-label want-label">Ã°ÂÂÂ Want to Read</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if dnf %}
+    <div class="shelf-section shelf-dnf" id="dnf-shelf">
+      <div class="shelf-header">
+        <span class="shelf-icon">&#x274C;</span>
+        <span class="shelf-title">Did Not Finish</span>
+        <span class="shelf-count">{{ dnf|length }}</span>
+      </div>
+      <hr class="shelf-divider">
+      <div class="cover-grid">
+        {% for book in dnf %}
+          <div class="shelf-book">
+            <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
+              {% if book.cover_url %}
+                <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
+              {% else %}
+                <div class="no-cover">📖</div>
+              {% endif %}
+            </a>
+            <span class="shelf-book-label dnf-label">✗ DNF</span>
           </div>
         {% endfor %}
       </div>
