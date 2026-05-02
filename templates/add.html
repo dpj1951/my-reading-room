@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add Book ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ My Reading Alcove</title>
+  <title>Add Book ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ My Reading Alcove</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -125,7 +125,7 @@
     <div class="search-section">
       <h2>Search Open Library</h2>
       <div class="search-row">
-        <input type="text" id="ol-query" placeholder="Title, author, or ISBNÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦">
+        <input type="text" id="ol-query" placeholder="Title, author, or ISBNÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¦">
         <select id="ol-field">
           <option value="q">All</option>
           <option value="title">Title</option>
@@ -134,7 +134,7 @@
         </select>
         <button class="btn-search" id="btn-search" onclick="doSearch()">Search</button>
       </div>
-      <div id="searching">SearchingÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦</div>
+      <div id="searching">SearchingÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¦</div>
       <div id="no-results">No results found.</div>
       <div id="results"></div>
     </div>
@@ -146,12 +146,12 @@
           <h3 id="preview-title"></h3>
           <p id="preview-author"></p>
           <div class="preview-meta">
-            <span class="pmeta">Pages: <strong id="preview-pages">ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ</strong></span>
-            <span class="pmeta">Year: <strong id="preview-year">ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ</strong></span>
-            <span class="pmeta">ISBN: <strong id="preview-isbn">ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ</strong></span>
+            <span class="pmeta">Pages: <strong id="preview-pages">ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ</strong></span>
+            <span class="pmeta">Year: <strong id="preview-year">ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ</strong></span>
+            <span class="pmeta">ISBN: <strong id="preview-isbn">ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ</strong></span>
           </div>
         </div>
-        <button class="btn-clear" onclick="clearSelection()">ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Clear</button>
+        <button class="btn-clear" onclick="clearSelection()">ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Clear</button>
       </div>
       <div class="preview-summary" id="preview-summary" style="display:none"></div>
     </div>
@@ -186,9 +186,15 @@
         <div class="field full">
           <label>Format</label>
           <div class="format-group">
-            <button type="button" class="format-btn active-paper" id="btn-paper" onclick="setFormat('Paper')">ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ Paper</button>
-            <button type="button" class="format-btn" id="btn-ebook" onclick="setFormat('Ebook')">ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ± Ebook</button>
-            <button type="button" class="format-btn" id="btn-audio" onclick="setFormat('Audiobook')">ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ§ Audiobook</button>
+            <button type="button" id="btn-paper"
+              class="format-btn active-paper"
+              onclick="setFormat('Paper')">&#128214; Paper</button>
+            <button type="button" id="btn-ebook"
+              class="format-btn"
+              onclick="setFormat('Ebook')">&#128241; Ebook</button>
+            <button type="button" id="btn-audio"
+              class="format-btn"
+              onclick="setFormat('Audiobook')">&#127911; Audiobook</button>
           </div>
           <input type="hidden" name="format" id="f-format" value="Paper">
         </div>
@@ -198,7 +204,7 @@
         </div>
         <div class="field full">
           <label>Plot Summary</label>
-          <textarea name="plot_summary" id="f-summary" placeholder="Brief descriptionÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦"></textarea>
+          <textarea name="plot_summary" id="f-summary" placeholder="Brief descriptionÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¦"></textarea>
         </div>
         <div class="field full">
           <label>My Rating</label>
@@ -283,7 +289,7 @@
       const resDiv = document.getElementById('results');
       const noRes = document.getElementById('no-results');
       const searching = document.getElementById('searching');
-      btn.disabled = true; btn.textContent = 'SearchingÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦';
+      btn.disabled = true; btn.textContent = 'SearchingÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¦';
       resDiv.innerHTML = ''; noRes.style.display = 'none'; searching.style.display = 'block';
       try {
         const params = new URLSearchParams({
@@ -313,9 +319,9 @@
             '<div class="result-text">' +
               '<div class="result-title">' + book.title + '</div>' +
               '<div class="result-author">' + book.author + '</div>' +
-              '<div class="result-meta">' + (book.pages ? book.pages + ' pages ÃÂÃÂÃÂÃÂ· ' : '') + (book.copyright_year || '') + '</div>' +
+              '<div class="result-meta">' + (book.pages ? book.pages + ' pages ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ· ' : '') + (book.copyright_year || '') + '</div>' +
             '</div>' +
-            '<span class="result-select">Select ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ</span>';
+            '<span class="result-select">Select ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ</span>';
           div.onclick = () => selectBook(book);
           resDiv.appendChild(div);
         });
@@ -339,9 +345,9 @@
       document.getElementById('preview-cover').src = book.cover_url || '';
       document.getElementById('preview-title').textContent = book.title;
       document.getElementById('preview-author').textContent = book.author;
-      document.getElementById('preview-pages').textContent = book.pages || 'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ';
-      document.getElementById('preview-year').textContent = book.copyright_year || 'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ';
-      document.getElementById('preview-isbn').textContent = book.isbn || 'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ';
+      document.getElementById('preview-pages').textContent = book.pages || 'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ';
+      document.getElementById('preview-year').textContent = book.copyright_year || 'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ';
+      document.getElementById('preview-isbn').textContent = book.isbn || 'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ';
       preview.classList.add('show');
       document.getElementById('results').innerHTML = '';
       document.getElementById('ol-query').value = book.title;
