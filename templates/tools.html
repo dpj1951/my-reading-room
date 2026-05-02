@@ -97,6 +97,18 @@
       <div class="progress-count" id="dedupCount">Running...</div>
     </div>
 
+
+    <button type="button" class="menu-btn" id="missingPagesBtn" onclick="startMissingPages()">
+      <span class="icon">&#x1F4D6;</span> Find Missing Page Counts
+      <span class="sub">List books with no page count recorded</span>
+    </button>
+    <div class="progress-box" id="missingPagesBox" style="display:none">
+      <div class="progress-label" id="missingPagesLabel">Scanning library...</div>
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="missingPagesFill"></div></div>
+      <div class="progress-count" id="missingPagesCount"></div>
+      <div id="missingPagesList" style="margin-top:12px;width:100%;max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+
   </nav>
 
   <a class="back-link" href="/utilities">&#8592; Back to Utilities</a>
@@ -279,6 +291,46 @@
       fill.style.width = '100%';
       countEl.textContent = data.deleted === 0 ? 'No duplicates found!' : 'Done! Removed ' + data.deleted + ' duplicate book(s).';
     } catch (e) { countEl.textContent = 'Error: ' + e.message; }
+    btn.disabled = false;
+  }
+
+  async function startMissingPages() {
+    const btn = document.getElementById('missingPagesBtn');
+    const box = document.getElementById('missingPagesBox');
+    const label = document.getElementById('missingPagesLabel');
+    const fill = document.getElementById('missingPagesFill');
+    const count = document.getElementById('missingPagesCount');
+    const list = document.getElementById('missingPagesList');
+    btn.disabled = true;
+    box.style.display = 'block';
+    list.innerHTML = '';
+    label.textContent = 'Scanning library...';
+    fill.style.width = '30%';
+    count.textContent = '';
+    try {
+      const r = await fetch('/utilities/missing-pages');
+      const data = await r.json();
+      fill.style.width = '100%';
+      if (data.error) { label.textContent = 'Error: ' + data.error; btn.disabled = false; return; }
+      const books = data.books || [];
+      if (books.length === 0) {
+        label.textContent = '\u2705 All books have page counts!';
+        count.textContent = '';
+      } else {
+        label.textContent = books.length + ' book' + (books.length === 1 ? '' : 's') + ' missing page counts:';
+        count.textContent = 'Click a title to edit it.';
+        books.forEach(b => {
+          const row = document.createElement('a');
+          row.href = '/edit/' + b.id;
+          row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:#2a2a2a;border-radius:8px;padding:8px 12px;color:#f0ede8;text-decoration:none;font-size:0.85rem;';
+          row.innerHTML = '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + b.title.replace(/"/g,'&quot;') + '">' + b.title + '</span>' +
+            '<span style="color:#8a8795;margin-left:12px;white-space:nowrap;">' + (b.author || '—') + '</span>';
+          row.addEventListener('mouseenter', () => row.style.background = '#333');
+          row.addEventListener('mouseleave', () => row.style.background = '#2a2a2a');
+          list.appendChild(row);
+        });
+      }
+    } catch(e) { label.textContent = 'Error: ' + e.message; }
     btn.disabled = false;
   }
   </script>
