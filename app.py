@@ -1065,6 +1065,27 @@ def missing_pages():
     return jsonify({"books": missing})
 
 
+@app.route("/utilities/missing-pages-save", methods=["POST"])
+@login_required
+def missing_pages_save():
+    """Accept a list of {id, pages} pairs and update the database."""
+    data = request.get_json()
+    if not data or not isinstance(data, list):
+        return jsonify({"error": "Invalid data"}), 400
+    updated = 0
+    for item in data:
+        book_id = item.get("id", "").strip()
+        pages = str(item.get("pages", "")).strip()
+        if not book_id or not pages:
+            continue
+        book = db.session.get(Book, book_id)
+        if book:
+            book.pages = pages
+            updated += 1
+    db.session.commit()
+    return jsonify({"updated": updated})
+
+
 @app.route("/utilities/cover-lookup")
 def cover_lookup():
     """Server-side Google Books cover lookup ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ tries ISBN first, then title+author."""
