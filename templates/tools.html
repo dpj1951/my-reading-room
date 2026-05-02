@@ -99,8 +99,8 @@
 
 
     <button type="button" class="menu-btn" id="missingPagesBtn" onclick="startMissingPages()">
-      <span class="icon">&#x1F4D6;</span> Find Missing Page Counts
-      <span class="sub">List books with no page count recorded</span>
+      <span class="icon">&#x1F4D6;</span> Find &amp; Fill Missing Page Counts
+      <span class="sub">Auto-lookup page counts from Open Library &amp; Google Books</span>
     </button>
     <div class="progress-box" id="missingPagesBox" style="display:none">
       <div class="progress-label" id="missingPagesLabel">Scanning library...</div>
@@ -108,6 +108,8 @@
       <div class="progress-count" id="missingPagesCount"></div>
       <div id="missingPagesList" style="margin-top:12px;width:100%;max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
     </div>
+
+
 
   </nav>
 
@@ -305,33 +307,123 @@
     box.style.display = 'block';
     list.innerHTML = '';
     label.textContent = 'Scanning library...';
-    fill.style.width = '30%';
+    fill.style.width = '10%';
     count.textContent = '';
+
+    // Step 1: get books missing pages
+    let books = [];
     try {
       const r = await fetch('/utilities/missing-pages');
       const data = await r.json();
-      fill.style.width = '100%';
       if (data.error) { label.textContent = 'Error: ' + data.error; btn.disabled = false; return; }
-      const books = data.books || [];
-      if (books.length === 0) {
-        label.textContent = '\u2705 All books have page counts!';
-        count.textContent = '';
-      } else {
-        label.textContent = books.length + ' book' + (books.length === 1 ? '' : 's') + ' missing page counts:';
-        count.textContent = 'Click a title to edit it.';
-        books.forEach(b => {
-          const row = document.createElement('a');
-          row.href = '/book/' + b.id + '/edit';
-          row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:#2a2a2a;border-radius:8px;padding:8px 12px;color:#f0ede8;text-decoration:none;font-size:0.85rem;';
-          row.innerHTML = '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + b.title.replace(/"/g,'&quot;') + '">' + b.title + '</span>' +
-            '<span style="color:#8a8795;margin-left:12px;white-space:nowrap;">' + (b.author || 'â') + '</span>';
-          row.addEventListener('mouseenter', () => row.style.background = '#333');
-          row.addEventListener('mouseleave', () => row.style.background = '#2a2a2a');
-          list.appendChild(row);
-        });
+      books = data.books || [];
+    } catch(e) { label.textContent = 'Error: ' + e.message; btn.disabled = false; return; }
+
+    if (books.length === 0) {
+      fill.style.width = '100%';
+      label.textContent = '\u2705 All books have page counts!';
+      btn.disabled = false;
+      return;
+    }
+
+    // Step 2: look up page counts
+    label.textContent = 'Looking up page counts...';
+    const total = books.length;
+    const updates = [];
+    const notFound = [];
+
+    for (let i = 0; i < total; i++) {
+      const book = books[i];
+      fill.style.width = (10 + ((i + 1) / total * 60)) + '%';
+      count.textContent = (i + 1) + ' / ' + total + ' looked up';
+      label.textContent = book.title;
+      let pages = '';
+
+      // Try Open Library by ISBN first
+      if (!pages && book.isbn) {
+        try {
+          const r = await fetch('https://openlibrary.org/api/books?bibkeys=ISBN:' + encodeURIComponent(book.isbn) + '&format=json&jscmd=data');
+          const json = await r.json();
+          const key = 'ISBN:' + book.isbn;
+          if (json[key] && json[key].number_of_pages) pages = String(json[key].number_of_pages);
+        } catch(e) {}
       }
-    } catch(e) { label.textContent = 'Error: ' + e.message; }
+
+      // Try Open Library search by title+author
+      if (!pages) {
+        try {
+          const q = encodeURIComponent(book.title + ' ' + (book.author || ''));
+          const r = await fetch('https://openlibrary.org/search.json?q=' + q + '&limit=3&fields=number_of_pages_median,title');
+          const json = await r.json();
+          const doc = (json.docs || []).find(d => d.number_of_pages_median && d.number_of_pages_median > 10);
+          if (doc) pages = String(doc.number_of_pages_median);
+        } catch(e) {}
+      }
+
+      // Try Google Books by ISBN
+      if (!pages && book.isbn) {
+        try {
+          const r = await fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:' + encodeURIComponent(book.isbn) + '&maxResults=1');
+          const json = await r.json();
+          const vol = (json.items || [])[0];
+          if (vol && vol.volumeInfo && vol.volumeInfo.pageCount) pages = String(vol.volumeInfo.pageCount);
+        } catch(e) {}
+      }
+
+      // Try Google Books by title+author
+      if (!pages) {
+        try {
+          const q = encodeURIComponent('intitle:' + book.title + (book.author ? ' inauthor:' + book.author : ''));
+          const r = await fetch('https://www.googleapis.com/books/v1/volumes?q=' + q + '&maxResults=3');
+          const json = await r.json();
+          const vol = (json.items || []).find(v => v.volumeInfo && v.volumeInfo.pageCount && v.volumeInfo.pageCount > 10);
+          if (vol) pages = String(vol.volumeInfo.pageCount);
+        } catch(e) {}
+      }
+
+      if (pages) updates.push({id: book.id, pages, title: book.title, author: book.author});
+      else notFound.push(book);
+    }
+
+    // Step 3: save found pages
+    if (updates.length === 0) {
+      fill.style.width = '100%';
+      label.textContent = 'No page counts found for ' + total + ' book(s). Try editing manually.';
+      count.textContent = '';
+      notFound.forEach(b => addRow(list, b, false));
+      btn.disabled = false;
+      return;
+    }
+
+    fill.style.width = '75%';
+    label.textContent = 'Saving ' + updates.length + ' page count(s)...';
+    count.textContent = '';
+    try {
+      const r = await fetch('/utilities/missing-pages-save', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(updates)
+      });
+      const result = await r.json();
+      fill.style.width = '100%';
+      label.textContent = '\u2705 Updated ' + result.updated + ' book(s).' + (notFound.length ? ' ' + notFound.length + ' not found:' : ' All done!');
+      count.textContent = notFound.length ? 'These still need manual entry — click to edit:' : '';
+      updates.forEach(b => addRow(list, b, true));
+      notFound.forEach(b => addRow(list, b, false));
+    } catch(e) { label.textContent = 'Save failed: ' + e.message; }
     btn.disabled = false;
+  }
+
+  function addRow(list, b, found) {
+    const row = document.createElement('a');
+    row.href = '/book/' + b.id + '/edit';
+    row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:' + (found ? '#1a3a1a' : '#2a2a2a') + ';border-radius:8px;padding:8px 12px;color:#f0ede8;text-decoration:none;font-size:0.85rem;gap:8px;';
+    const titleSpan = '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + b.title + '</span>';
+    const pagesSpan = found ? '<span style="color:#7dcc7d;white-space:nowrap;">' + b.pages + ' pages</span>' : '<span style="color:#8a8795;white-space:nowrap;">not found</span>';
+    row.innerHTML = titleSpan + pagesSpan;
+    row.addEventListener('mouseenter', () => row.style.background = found ? '#1f4a1f' : '#333');
+    row.addEventListener('mouseleave', () => row.style.background = found ? '#1a3a1a' : '#2a2a2a');
+    list.appendChild(row);
   }
   </script>
   <script src="/static/enrich.js"></script>
