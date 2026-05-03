@@ -75,7 +75,7 @@
               border-radius:8px;padding:0.65rem 1rem;margin:0.5rem 1rem;font-size:0.9rem;">{{ msg }}</div>
   {% endfor %}
   {% endwith %}
-  <div class="shelf">ð</div>
+  <div class="shelf">Ã°ÂÂÂ</div>
   <script>
     if('serviceWorker' in navigator){
       window.addEventListener('load',function(){
@@ -109,5 +109,12 @@
   });
 })();
 </script>
+
+  <!-- Alcove Logo Footer -->
+  <div style="text-align:center; padding: 2rem 0 1.5rem; opacity: 0.55;">
+    <img src="{{ url_for('static', filename='icons/alcove_logo.jpeg') }}"
+         alt="My Reading Alcove"
+         style="width: 160px; border-radius: 12px; display: inline-block;">
+  </div>
 </body>
 </html>
