@@ -108,4 +108,11 @@
   });
 })();
 </script>
-
+<!-- Alcove logo footer -->
+<div style="text-align:center; padding: 2rem 0 1.5rem; opacity: 0.6;">
+  <picture>
+    <source media="(min-width: 1024px)" srcset="{{ url_for('static', filename='icons/alcove_logo_lg.png') }}">
+    <source media="(min-width: 768px)" srcset="{{ url_for('static', filename='icons/alcove_logo_md.png') }}">
+    <img src="{{ url_for('static', filename='icons/alcove_logo_sm.png') }}" alt="My Reading Alcove" style="height: auto; border-radius: 10px; display: inline-block; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+  </picture>
+</div>
