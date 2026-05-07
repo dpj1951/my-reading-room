@@ -1060,7 +1060,10 @@ def backfill_covers_save():
 @login_required
 def missing_pages():
     """Return list of books with missing or zero page counts."""
-    books = Book.query.all()
+    user = get_current_user()
+    if not user:
+        return jsonify({"error": "Unauthorized"}), 401
+    books = Book.query.filter_by(user_id=user["id"]).all()
     missing = []
     for b in books:
         pages = (b.pages or "").strip()
@@ -1074,6 +1077,9 @@ def missing_pages():
 @login_required
 def missing_pages_save():
     """Accept a list of {id, pages} pairs and update the database."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"error": "Unauthorized"}), 401
     data = request.get_json()
     if not data or not isinstance(data, list):
         return jsonify({"error": "Invalid data"}), 400
@@ -1084,7 +1090,7 @@ def missing_pages_save():
         if not book_id or not pages:
             continue
         book = db.session.get(Book, book_id)
-        if book:
+        if book and str(book.user_id) == str(user["id"]):
             book.pages = pages
             updated += 1
     db.session.commit()
@@ -1095,7 +1101,10 @@ def missing_pages_save():
 @login_required
 def missing_dates():
     """Return list of books with missing or empty read dates."""
-    books = Book.query.all()
+    user = get_current_user()
+    if not user:
+        return jsonify({"error": "Unauthorized"}), 401
+    books = Book.query.filter_by(user_id=user["id"]).all()
     missing = []
     for b in books:
         read_date = (b.read_date or "").strip()
