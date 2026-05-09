@@ -277,7 +277,7 @@ def signup():
                 session['trial_end'] = (datetime.utcnow() + timedelta(days=30)).isoformat()
                 session['user_role'] = 'trial'
                 flash("Welcome to My Reading Alcove! Your 30-day free trial has started.", "success")
-                return redirect(url_for("books"))
+                return redirect(url_for("home"))
             elif data.get("id"):
                 flash("Account created! Check your email to confirm before logging in.", "info")
                 return redirect(url_for("login"))
