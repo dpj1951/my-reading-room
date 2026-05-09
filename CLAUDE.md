@@ -118,6 +118,30 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 
 ---
 
+## What Was Done May 9, 2026
+
+### Stripe Test Mode Integration (full end-to-end)
+- Created Stripe product "My Reading Alcove" — $1.99/month recurring (Price ID: price_1TVHJPRvjXqRXrTp1QXcjLTB)
+- Added Stripe env vars to Render: STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY, STRIPE_PRICE_ID, STRIPE_WEBHOOK_SECRET (placeholder)
+- Added `stripe` to requirements.txt
+- Added Stripe config + stripe.api_key init to app.py
+- Added trial_end + user_role = 'trial' to session on successful signup
+- Added context processor inject_trial_context() — injects trial_banner, trial_days_left, stripe_pub_key to all templates
+- Added trial banner to home.html (3 states: info=green/30days, urgent=orange/<=7days, expired=red)
+- Added routes: /subscribe/checkout, /subscribe/success, /subscribe/cancel, /subscribe/portal
+- Added /stripe/webhook route with signature verification
+- Added _stripe_patch() helper for Supabase profile updates on webhook events
+- Tested full flow: banner shows → Stripe Checkout → test card 4242... → redirect back → "Your subscription is active" flash → banner gone
+- Fixed: timedelta import missing (added to datetime import line)
+- Fixed: redirect to /home after signup (was /books)
+- Fixed: set trial_end at login if not already set
+
+### Known issues to fix next session
+- Owner account (dpjohnson1951@gmail.com) shows expired banner — get_user_role() DB lookup not wiring into session correctly at login
+- trial_end not being set for users who signed up before this deploy (they see expired immediately)
+- Stripe webhook endpoint not yet registered in Stripe dashboard (need STRIPE_WEBHOOK_SECRET)
+- Stripe Customer Portal not yet enabled in Stripe dashboard
+
 ## What Was Done May 7, 2026
 
 ### Updated PWA icons (icon-192 and icon-512) with new crop
