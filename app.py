@@ -9,9 +9,16 @@ from datetime import date, datetime
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 import jwt as pyjwt
+import stripe
 
 app = Flask(__name__)
 app.jinja_env.filters['enumerate'] = enumerate
+
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
+STRIPE_SECRET_KEY      = os.environ.get('STRIPE_SECRET_KEY', '')
+STRIPE_PRICE_ID        = os.environ.get('STRIPE_PRICE_ID', '')
+STRIPE_WEBHOOK_SECRET  = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
+stripe.api_key = STRIPE_SECRET_KEY
 
 # ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Maintenance mode ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
 MAINTENANCE_MODE = os.environ.get("MAINTENANCE_MODE", "false").lower() == "true"
@@ -206,6 +213,27 @@ def ensure_db():
 def inject_user():
     return dict()
 
+
+@app.context_processor
+def inject_trial_context():
+    from flask import g
+    user = getattr(g, 'user', None)
+    if not user:
+        return {}
+    role = session.get('user_role', 'free')
+    if role in ('subscriber', 'beta', 'owner'):
+        return {'trial_banner': None, 'trial_days_left': None, 'stripe_pub_key': STRIPE_PUBLISHABLE_KEY}
+    trial_end = session.get('trial_end')
+    if not trial_end:
+        return {'trial_banner': 'expired', 'trial_days_left': 0, 'stripe_pub_key': STRIPE_PUBLISHABLE_KEY}
+    try:
+        end_date = datetime.fromisoformat(trial_end)
+        days_left = max(0, (end_date - datetime.utcnow()).days)
+    except Exception:
+        days_left = 0
+    banner = 'expired' if days_left == 0 else ('urgent' if days_left <= 7 else 'info')
+    return {'trial_banner': banner, 'trial_days_left': days_left, 'stripe_pub_key': STRIPE_PUBLISHABLE_KEY}
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if get_current_user():
@@ -246,7 +274,9 @@ def signup():
             if "access_token" in data:
                 session["access_token"]  = data["access_token"]
                 session["refresh_token"] = data.get("refresh_token", "")
-                flash("Welcome to My Reading Alcove!", "success")
+                session['trial_end'] = (datetime.utcnow() + timedelta(days=30)).isoformat()
+                session['user_role'] = 'trial'
+                flash("Welcome to My Reading Alcove! Your 30-day free trial has started.", "success")
                 return redirect(url_for("books"))
             elif data.get("id"):
                 flash("Account created! Check your email to confirm before logging in.", "info")
@@ -1265,4 +1295,86 @@ def restore_json():
 
 if __name__ == "__main__":
     app.run(debug=True)
- 
+
+@app.route('/subscribe/checkout')
+@login_required
+def subscribe_checkout():
+    user = g.user
+    try:
+        cs = stripe.checkout.Session.create(
+            payment_method_types=['card'], mode='subscription',
+            customer_email=user.get('email', ''),
+            line_items=[{'price': STRIPE_PRICE_ID, 'quantity': 1}],
+            success_url=url_for('subscribe_success', _external=True) + '?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=url_for('subscribe_cancel', _external=True),
+            metadata={'user_id': user.get('id', '')},
+        )
+        return redirect(cs.url, code=303)
+    except Exception:
+        flash('Unable to start checkout. Please try again.', 'error')
+        return redirect(url_for('home'))
+
+@app.route('/subscribe/success')
+@login_required
+def subscribe_success():
+    try:
+        cs = stripe.checkout.Session.retrieve(request.args.get('session_id'))
+        if cs.payment_status == 'paid' or cs.status == 'complete':
+            session['user_role'] = 'subscriber'
+            flash('Your subscription is active. Welcome!', 'success')
+    except Exception:
+        pass
+    return redirect(url_for('books'))
+
+@app.route('/subscribe/cancel')
+@login_required
+def subscribe_cancel():
+    flash('Checkout cancelled. Your trial is still active.', 'info')
+    return redirect(url_for('home'))
+
+@app.route('/subscribe/portal')
+@login_required
+def subscribe_portal():
+    try:
+        customers = stripe.Customer.list(email=g.user.get('email'), limit=1)
+        if customers.data:
+            portal = stripe.billing_portal.Session.create(
+                customer=customers.data[0].id,
+                return_url=url_for('home', _external=True))
+            return redirect(portal.url, code=303)
+    except Exception:
+        pass
+    flash('Could not find your billing account.', 'error')
+    return redirect(url_for('home'))
+
+@app.route('/stripe/webhook', methods=['POST'])
+def stripe_webhook():
+    payload = request.get_data()
+    sig = request.headers.get('Stripe-Signature', '')
+    try:
+        event = stripe.Webhook.construct_event(payload, sig, STRIPE_WEBHOOK_SECRET)
+    except (ValueError, stripe.error.SignatureVerificationError):
+        return jsonify({'error': 'Invalid signature'}), 400
+    etype = event['type']
+    cid = event['data']['object'].get('customer')
+    if etype == 'checkout.session.completed':
+        uid = event['data']['object'].get('metadata', {}).get('user_id')
+        if uid and cid:
+            _stripe_patch(cid, {'role': 'subscriber'}, uid)
+    elif etype in ('customer.subscription.deleted', 'customer.subscription.paused'):
+        _stripe_patch(cid, {'role': 'free'})
+    elif etype == 'customer.subscription.resumed':
+        _stripe_patch(cid, {'role': 'subscriber'})
+    return jsonify({'status': 'ok'}), 200
+
+def _stripe_patch(customer_id, data, user_id=None):
+    url = os.environ.get('SUPABASE_URL', '')
+    key = os.environ.get('SUPABASE_ANON_KEY', '')
+    hdrs = {'apikey': key, 'Authorization': f'Bearer {key}',
+            'Content-Type': 'application/json', 'Prefer': 'return=minimal'}
+    params = {'user_id': f'eq.{user_id}'} if user_id else {'stripe_customer_id': f'eq.{customer_id}'}
+    try:
+        requests.patch(f"{url}/rest/v1/profiles", headers=hdrs, params=params, json=data)
+    except Exception:
+        pass
+
