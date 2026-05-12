@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ author_name }} — My Reading Alcove</title>
+  <title>{{ author_name }} â My Reading Alcove</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -103,24 +103,24 @@
   </nav>
   <div class="page-header">
     <div class="author-title">{{ author_name }}</div>
-    <div class="author-subtitle" id="subtitle">Loading books…</div>
+    <div class="author-subtitle" id="subtitle">Loading booksâ¦</div>
     <div class="legend">
       <div class="legend-item"><div class="legend-dot" style="background:#3b9eff;box-shadow:0 0 6px rgba(59,158,255,0.5);"></div> Read</div>
       <div class="legend-item"><div class="legend-dot" style="background:#7ec8b5;box-shadow:0 0 6px rgba(126,200,181,0.5);"></div> Reading</div>
       <div class="legend-item"><div class="legend-dot" style="background:#a78bfa;box-shadow:0 0 6px rgba(167,139,250,0.4);"></div> Want to Read</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#2a2a36;border:1px solid #8a8795;"></div> Not in library — click to add</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2a2a36;border:1px solid #8a8795;"></div> Not in library â click to add</div>
     </div>
   </div>
   <div class="shelf-section">
     <div id="loading-state" class="loading-state">
       <div class="spinner"></div>
-      <p>Fetching books by {{ author_name }}…</p>
+      <p>Fetching books by {{ author_name }}â¦</p>
     </div>
     <div id="shelf-label" class="shelf-label" style="display:none"></div>
     <div id="shelf" class="shelf"></div>
     <div id="empty-state" class="empty-state" style="display:none">
       <h3>No books found</h3>
-      <p>Couldn’t find any books by {{ author_name }} in Google Books.</p>
+      <p>Couldnât find any books by {{ author_name }} in Google Books.</p>
     </div>
   </div>
   <div class="modal-overlay" id="addModal">
@@ -152,6 +152,7 @@
       const allBooks = [];
       const seenTitles = new Set();
       const lastName = AUTHOR_NAME.trim().split(' ').pop().toLowerCase();
+      let apiError = false;
       for (const startIndex of [0, 40]) {
         const params = new URLSearchParams({
           q: `inauthor:"${AUTHOR_NAME}"`,
@@ -164,7 +165,8 @@
         try {
           const resp = await fetch(`https://www.googleapis.com/books/v1/volumes?${params}`);
           data = await resp.json();
-        } catch(e) { break; }
+        } catch(e) { apiError = true; break; }
+        if (data.error) { apiError = true; break; }
         const items = data.items || [];
         if (!items.length) break;
         for (const item of items) {
@@ -194,7 +196,7 @@
         if (items.length < 40) break;
       }
       allBooks.sort((a,b) => (a.pubYear||9999)-(b.pubYear||9999) || a.title.localeCompare(b.title));
-      return allBooks;
+      return { books: allBooks, apiError };
     }
 
     function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
@@ -222,24 +224,44 @@
     }
 
     async function init() {
-      const books = await fetchAllBooks();
+      const { books, apiError } = await fetchAllBooks();
       document.getElementById('loading-state').style.display = 'none';
       if (!books.length) {
-        document.getElementById('empty-state').style.display = 'block';
-        document.getElementById('subtitle').textContent = '0 books in your library';
+        if (LIBRARY.length === 0) {
+          document.getElementById('empty-state').style.display = 'block';
+          document.getElementById('subtitle').textContent = '0 books in your library';
+          return;
+        }
+        // Google Books unavailable — show library books with fallback notice
+        const fallback = LIBRARY.map(b => ({
+          title: b.title,
+          isbn: b.isbn || null,
+          coverUrl: b.cover_url || null,
+          pubYear: b.copyright_year ? parseInt(b.copyright_year) : null,
+          status: b.status || 'read',
+          libraryId: b.id,
+        }));
+        fallback.sort((a,b) => (a.pubYear||9999)-(b.pubYear||9999) || a.title.localeCompare(b.title));
+        const fc = fallback.length;
+        document.getElementById('subtitle').textContent =
+          fc + ' book' + (fc!==1?'s':'') + ' in your library' + (apiError ? ' · Google Books unavailable' : '');
+        const lbl2 = document.getElementById('shelf-label');
+        lbl2.textContent = fc + ' book' + (fc!==1?'s':'') + ' by ' + AUTHOR_NAME + ' in your library';
+        lbl2.style.display = 'block';
+        const sh2 = document.getElementById('shelf');
+        fallback.forEach(b => sh2.appendChild(makeCard(b)));
         return;
       }
       const ownedCount = books.filter(b => b.status).length;
       document.getElementById('subtitle').textContent =
-        `${ownedCount} book${ownedCount!==1?'s':''} in your library` +
-        (books.length > ownedCount ? ` · ${books.length-ownedCount} more to discover` : '');
+        ownedCount + ' book' + (ownedCount!==1?'s':'') + ' in your library' +
+        (books.length > ownedCount ? ' · ' + (books.length-ownedCount) + ' more to discover' : '');
       const label = document.getElementById('shelf-label');
-      label.textContent = `${books.length} book${books.length!==1?'s':''} by ${AUTHOR_NAME}, sorted by publish year`;
+      label.textContent = books.length + ' book' + (books.length!==1?'s':'') + ' by ' + AUTHOR_NAME + ', sorted by publish year';
       label.style.display = 'block';
       const shelf = document.getElementById('shelf');
       books.forEach(b => shelf.appendChild(makeCard(b)));
     }
-
     function openAddModal(book) {
       pendingBook = book;
       const img = document.getElementById('modalCover');
@@ -265,7 +287,7 @@
         });
         var data = await res.json();
         if (data.success) {
-          showToast('✓ Added "' + book.title + '" to Want to Read');
+          showToast('â Added "' + book.title + '" to Want to Read');
           var allCards = document.querySelectorAll('.book-card');
           for (var i = 0; i < allCards.length; i++) {
             var card = allCards[i];
