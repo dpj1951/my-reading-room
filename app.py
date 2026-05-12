@@ -341,21 +341,6 @@ def index():
         return render_template("home.html")
     return render_template("landing.html")
 
-@app.route("/debug-role")
-@login_required
-def debug_role():
-    from flask import jsonify
-    uid = g.user["id"]
-    role_from_db = get_user_role(uid)
-    return jsonify({
-        "user_id": uid,
-        "email": g.user.get("email"),
-        "session_user_role": session.get("user_role"),
-        "role_from_db_now": role_from_db,
-        "service_key_prefix": (SUPABASE_SERVICE_ROLE_KEY or "")[:15] + "...",
-        "anon_key_prefix": (SUPABASE_ANON_KEY or "")[:15] + "...",
-    })
-
 @app.route("/home")
 @login_required
 def home():
