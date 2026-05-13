@@ -243,8 +243,8 @@
         }));
         fallback.sort((a,b) => (a.pubYear||9999)-(b.pubYear||9999) || a.title.localeCompare(b.title));
         const fc = fallback.length;
-        document.getElementById('subtitle').textContent =
-          fc + ' book' + (fc!==1?'s':'') + ' in your library' + (apiError ? ' · Google Books unavailable' : '');
+        document.getElementById('subtitle').innerHTML =
+          fc + ' book' + (fc!==1?'s':'') + ' in your library' + (apiError ? ' · <span style="color:#4a9eff;font-weight:600">Google Books unavailable</span>' : '');
         const lbl2 = document.getElementById('shelf-label');
         lbl2.textContent = fc + ' book' + (fc!==1?'s':'') + ' by ' + AUTHOR_NAME + ' in your library';
         lbl2.style.display = 'block';
