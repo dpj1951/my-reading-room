@@ -3,6 +3,7 @@ import json
 import os
 import uuid
 import requests
+import re
 import csv
 import io
 from datetime import date, datetime, timedelta
@@ -515,27 +516,11 @@ def authors():
     author_map = {}
     for book in library:
         a = (book["author"] or "").strip()
-        # Normalize capitalization so e.g. "Peter may" groups with "Peter May"
-        a = " ".join(w.capitalize() for w in a.split()) if a else ""
+        a = " ".join(w.capitalize() for w in re.split(r"\s+", a.strip())) if a else ""
         author_map.setdefault(a, []).append(book)
     authors_sorted = sorted(author_map.items(), key=lambda x: x[0].strip().split()[-1].lower() if x[0].strip() else "")
     return render_template("authors.html", authors=authors_sorted)
 
-# TEMP DEBUG - remove after fixing
-@app.route("/debug/authors")
-@login_required
-def debug_authors():
-    library = [b.to_dict() for b in Book.query.filter_by(user_id=g.user["id"]).all()]
-    result = []
-    for book in library:
-        a = book["author"] or ""
-        result.append({
-            "title": book["title"],
-            "author_raw": a,
-            "author_repr": repr(a),
-            "chars": [ord(ch) for ch in a]
-        })
-    return jsonify(result)
 
 
 # ─────────────────────────────────────────────────────────────────
