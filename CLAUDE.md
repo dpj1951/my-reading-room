@@ -281,3 +281,18 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 - Consider reducing footer logo max-width (currently rendering large on desktop)
 - Consider: date_started column when book moves to reading shelf
 - Consider: stamp date_added on want_to_read ÃÂ¢ÃÂÃÂ reading transition
+## What Was Done May 13, 2026
+
+### Fixed garbled separator on authors page
+- `templates/authors.html`: replaced double-encoded UTF-8 replacement character (`Ã¯Â¿Â½`) with `&middot;` HTML entity between year and page count
+
+### Fixed author name grouping (partial)
+- `app.py`: added `import re`
+- `app.py`: changed author normalization to use `re.split(r'\s+', a.strip())` instead of `a.split()` to handle unicode whitespace
+- Note: normalization still not merging "Peter may" with "Peter May" — root cause unknown, likely a non-standard character in the Supabase field. Manual data fix works as workaround. Revisit next session.
+
+### Set up SSH authentication for git push
+- Generated ed25519 SSH key on MacBook Air
+- Added public key to github.com/settings/keys
+- Switched remote URL to SSH: `git remote set-url origin git@github.com:dpj1951/my-reading-room.git`
+- No more tokens or passwords needed for git push
