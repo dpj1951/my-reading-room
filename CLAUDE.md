@@ -296,3 +296,19 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 - Added public key to github.com/settings/keys
 - Switched remote URL to SSH: `git remote set-url origin git@github.com:dpj1951/my-reading-room.git`
 - No more tokens or passwords needed for git push
+
+## What Was Done May 13, 2026 — Session 2
+
+### Fixed author shelf showing wrong book count (only 2 of 7)
+- Root cause: filter_by(author=author_name) used exact string match
+- Fix: replaced with func.lower(func.trim(Book.author)) == author_name.strip().lower()
+- Added `from sqlalchemy import func` import
+- Now correctly matches all 7 Peter May books
+
+### Styled "Google Books unavailable" notice
+- Changed subtitle element from textContent to innerHTML
+- Wrapped notice in span with color:#4a9eff and font-weight:600 — now bright blue and bold
+
+### Confirmed author name grouping fix working
+- re.split normalization from previous session confirmed fully working
+- Tested by changing "May" to "may" — books still grouped correctly
