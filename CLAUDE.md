@@ -312,3 +312,23 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 ### Confirmed author name grouping fix working
 - re.split normalization from previous session confirmed fully working
 - Tested by changing "May" to "may" — books still grouped correctly
+
+## Updated Workflow (May 13, 2026)
+
+### Session Setup
+1. Open terminal and run `cd ~/my-reading-room && git checkout reading-alcove && git pull` to prime the session
+2. SSH authentication is set up — no tokens or passwords needed for git push
+
+### Making Changes
+3. Edit files via terminal using Python heredoc scripts (`python3 - << 'EOF' ... EOF`)
+4. For CLAUDE.md updates, use `cat >> CLAUDE.md << 'DONE' ... DONE` to append (avoids quote-escaping issues with Python heredocs)
+5. Push with `git add <files> && git commit -m "message" && git push`
+6. Render auto-deploys on push to reading-alcove branch — verify at my-reading-room2.onrender.com
+7. If old page serves after deploy: Render Shell → kill -9 $(pgrep -f gunicorn) → Render restarts automatically
+
+### Chrome Extension
+- Browser 1, macOS, deviceId: faa72e7f-e3e3-4136-a503-62581d7b9376
+- Can read GitHub source files via fetch with Accept: application/vnd.github.v3.raw header
+- Cannot access: myreadingalcove.com, my-reading-room2.onrender.com, raw.githubusercontent.com
+- Extension sometimes blocks responses containing query strings — fall back to terminal in that case
+- Local app.py has UTF-8 encoding corruption in some sections — always read source via GitHub API, not local file
