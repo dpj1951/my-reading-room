@@ -113,7 +113,7 @@
             {% else %}
             <div class="row-rating nr">NR</div>
             {% endif %}
-            <div class="row-meta">{{ book.copyright_year or '' }}{% if book.copyright_year and book.pages %} Ã¯Â¿Â½ {% endif %}{{ book.pages ~ ' pages' if book.pages else '' }}</div>
+            <div class="row-meta">{{ book.copyright_year or '' }}{% if book.copyright_year and book.pages %} &middot; {% endif %}{{ book.pages ~ ' pages' if book.pages else '' }}</div>
           </div>
           <span class="format-pip pip-{{ book.format }}">{{ book.format }}</span>
           {% if book.status == 'reading' %}<span class="status-pip pip-reading">Ã°ÂÂÂ Reading</span>
