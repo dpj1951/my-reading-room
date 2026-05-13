@@ -332,3 +332,9 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 - Cannot access: myreadingalcove.com, my-reading-room2.onrender.com, raw.githubusercontent.com
 - Extension sometimes blocks responses containing query strings — fall back to terminal in that case
 - Local app.py has UTF-8 encoding corruption in some sections — always read source via GitHub API, not local file
+
+## How to Start a New Session
+
+Paste this into the chat to get Claude up to speed:
+
+"I'm working on my book tracking app at github.com/dpj1951/my-reading-room (reading-alcove branch), deployed at my-reading-room2.onrender.com. There is a CLAUDE.md in the repo with full context — please read it before we start. You can access it through the Claude Chrome extension. For making changes, SSH is set up so I can push directly from terminal — just tell me what commands to run. To prime the session I'll run `cd ~/my-reading-room && git checkout reading-alcove && git pull` in the terminal."
