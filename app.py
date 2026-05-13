@@ -8,6 +8,7 @@ import csv
 import io
 from datetime import date, datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from functools import wraps
 import jwt as pyjwt
 import stripe
@@ -532,7 +533,10 @@ def author_shelf(author_name):
     # Pass library books + API key to template.
     # Google Books fetch happens client-side so the HTTP-referrer-restricted
     # API key is sent with the correct Referer header from the browser.
-    library_books = Book.query.filter_by(user_id=g.user["id"], author=author_name).all()
+    library_books = Book.query.filter(
+        Book.user_id == g.user["id"],
+        func.lower(func.trim(Book.author)) == author_name.strip().lower()
+    ).all()
     return render_template(
         "author_shelf.html",
         author_name=author_name,
