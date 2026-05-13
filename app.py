@@ -514,7 +514,9 @@ def authors():
     library = [b.to_dict() for b in Book.query.filter_by(user_id=g.user["id"]).all()]
     author_map = {}
     for book in library:
-        a = book["author"]
+        a = (book["author"] or "").strip()
+        # Normalize capitalization so e.g. "Peter may" groups with "Peter May"
+        a = " ".join(w.capitalize() for w in a.split()) if a else ""
         author_map.setdefault(a, []).append(book)
     authors_sorted = sorted(author_map.items(), key=lambda x: x[0].strip().split()[-1].lower() if x[0].strip() else "")
     return render_template("authors.html", authors=authors_sorted)
