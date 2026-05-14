@@ -418,7 +418,7 @@
       const result = await r.json();
       fill.style.width = '100%';
       label.textContent = '\u2705 Updated ' + result.updated + ' book(s).' + (notFound.length ? ' ' + notFound.length + ' not found:' : ' All done!');
-      count.textContent = notFound.length ? 'These still need manual entry Ã¢ÂÂ click to edit:' : '';
+      count.textContent = notFound.length ? 'These still need manual entry — click to edit:' : '';
       updates.forEach(b => addRow(list, b, true));
       notFound.forEach(b => addRow(list, b, false));
     } catch(e) { label.textContent = 'Save failed: ' + e.message; }
