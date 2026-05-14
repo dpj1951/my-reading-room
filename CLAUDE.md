@@ -338,3 +338,17 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 Paste this into the chat to get Claude up to speed:
 
 "I'm working on my book tracking app at github.com/dpj1951/my-reading-room (reading-alcove branch), deployed at my-reading-room2.onrender.com. There is a CLAUDE.md in the repo with full context — please read it before we start. You can access it through the Claude Chrome extension. For making changes, SSH is set up so I can push directly from terminal — just tell me what commands to run. To prime the session I'll run `cd ~/my-reading-room && git checkout reading-alcove && git pull` in the terminal."
+
+## What Was Done May 14, 2026
+
+### Fixed UTF-8 corruption across all templates
+- Ran Python scan of all templates for non-ASCII characters
+- Fixed garbled placeholder text in add.html (lines 128 and 207) — middle-dot corruption
+- Fixed em-dash corruption in settings.html:6, stats.html:6, tools.html:421
+- Fixed "Searching…" ellipsis corruption in add.html (lines 137 and 292)
+- Intentional unicode (emojis in login.html, maintenance.html) confirmed safe
+
+### Added Open Library unavailable warning to add.html
+- catch(e) block now shows styled blue warning: "Open Library unavailable — fill in details manually below"
+- No-results case now shows clearer message: "No results found — try a different search or fill in manually below"
+- Matches the Google Books unavailable pattern added to author shelf on May 12
