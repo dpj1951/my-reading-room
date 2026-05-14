@@ -151,7 +151,7 @@
             <span class="pmeta">ISBN: <strong id="preview-isbn">ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ</strong></span>
           </div>
         </div>
-        <button class="btn-clear" onclick="clearSelection()">ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Clear</button>
+        <button class="btn-clear" onclick="clearSelection()">→ Clear</button>
       </div>
       <div class="preview-summary" id="preview-summary" style="display:none"></div>
     </div>
@@ -320,7 +320,7 @@
               '<div class="result-author">' + book.author + '</div>' +
               '<div class="result-meta">' + (book.pages ? book.pages + ' pages ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ· ' : '') + (book.copyright_year || '') + '</div>' +
             '</div>' +
-            '<span class="result-select">Select ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ</span>';
+            '<span class="result-select">Select →</span>';
           div.onclick = () => selectBook(book);
           resDiv.appendChild(div);
         });
