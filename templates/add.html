@@ -281,7 +281,7 @@
       const lbl = document.getElementById('rating-label');
       if (lbl) lbl.textContent = val + ' star' + (val !== 1 ? 's' : '');
     }
-    function doSearch() {
+    async function doSearch() {
       const q = document.getElementById('ol-query').value.trim();
       const field = document.getElementById('ol-field').value;
       if (!q) return;
