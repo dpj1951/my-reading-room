@@ -134,7 +134,7 @@
         </select>
         <button class="btn-search" id="btn-search" onclick="doSearch()">Search</button>
       </div>
-      <div id="searching">SearchingÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¦</div>
+      <div id="searching">Searching…</div>
       <div id="no-results">No results found.</div>
       <div id="results"></div>
     </div>
@@ -289,7 +289,7 @@
       const resDiv = document.getElementById('results');
       const noRes = document.getElementById('no-results');
       const searching = document.getElementById('searching');
-      btn.disabled = true; btn.textContent = 'SearchingÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¦';
+      btn.disabled = true; btn.textContent = 'Searching…';
       resDiv.innerHTML = ''; noRes.style.display = 'none'; searching.style.display = 'block';
       try {
         const params = new URLSearchParams({
@@ -300,7 +300,7 @@
         const json = await r.json();
         const docs = (json.docs || []).slice(0, 6);
         searching.style.display = 'none';
-        if (!docs.length) { noRes.style.display = 'block'; return; }
+        if (!docs.length) { noRes.innerHTML = 'No results found — try a different search or fill in manually below.'; noRes.style.display = 'block'; return; }
         docs.forEach(d => {
           const cover = d.cover_i ? 'https://covers.openlibrary.org/b/id/' + d.cover_i + '-M.jpg' : '';
           const book = {
@@ -327,7 +327,7 @@
         });
       } catch(e) {
         searching.style.display = 'none';
-        noRes.textContent = 'Search failed. Fill in manually.';
+        noRes.innerHTML = 'Open Library unavailable — <span style="color:#4a9eff;font-weight:600">fill in details manually below</span>.';
         noRes.style.display = 'block';
       } finally {
         btn.disabled = false; btn.textContent = 'Search';
