@@ -352,3 +352,15 @@ Paste this into the chat to get Claude up to speed:
 - catch(e) block now shows styled blue warning: "Open Library unavailable — fill in details manually below"
 - No-results case now shows clearer message: "No results found — try a different search or fill in manually below"
 - Matches the Google Books unavailable pattern added to author shelf on May 12
+
+## What Was Done May 14, 2026 — Session 2
+
+### Fixed Open Library search not returning results
+- Root cause 1: invalid `fields` parameter in URLSearchParams — Open Library doesn't support this param, causing empty results
+- Root cause 2: `async` keyword accidentally removed from `doSearch()` during the fields fix, causing SyntaxError that broke all JS on the page
+- Fix: removed `fields` param, restored `async function doSearch()`
+
+### Fixed remaining UTF-8 corruption in add.html
+- "Select →" span (line 323): garbled arrow replaced with proper →
+- "→ Clear" button (line 154): garbled arrow replaced with proper →
+- result-meta middle dot (line 321): garbled · replaced with proper ·
