@@ -293,8 +293,7 @@
       resDiv.innerHTML = ''; noRes.style.display = 'none'; searching.style.display = 'block';
       try {
         const params = new URLSearchParams({
-          [field]: q, limit: 8,
-          fields: 'key,title,author_name,isbn,first_publish_year,number_of_pages_median,cover_i'
+          [field]: q, limit: 8
         });
         const r = await fetch('https://openlibrary.org/search.json?' + params);
         const json = await r.json();
