@@ -318,7 +318,7 @@
             '<div class="result-text">' +
               '<div class="result-title">' + book.title + '</div>' +
               '<div class="result-author">' + book.author + '</div>' +
-              '<div class="result-meta">' + (book.pages ? book.pages + ' pages ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ· ' : '') + (book.copyright_year || '') + '</div>' +
+            '<div class="result-meta">' + (book.pages ? book.pages + ' pages · ' : '') + (book.copyright_year || '') + '</div>'
             '</div>' +
             '<span class="result-select">Select →</span>';
           div.onclick = () => selectBook(book);
