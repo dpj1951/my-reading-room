@@ -377,3 +377,12 @@ Paste this into the chat to get Claude up to speed:
 - Was rendering at full natural width (~270px) on desktop — no max-width set
 - Added width: 120px to img style in templates/home.html
 - Now renders as a subtle footer signature rather than dominating the page
+
+### PWA icon improvements (May 18, 2026 continued)
+- Recolored icon-192.png and icon-512.png to IKB #002FA7 (was #082888)
+- Regenerated icons from full alcove illustration source (alcove logo partial.png in ~/Desktop/logos/)
+- Used Pillow on Mac to generate icons directly into repo (pip3 install Pillow)
+- make_icons.py script saved at /tmp/make_icons.py for future use
+- Icons now show full alcove scene with bookshelves, lanterns, plants, reader, arched window
+- 6% cream padding on all sides so illustration fits cleanly within square
+- App re-added to iPhone home screen and Mac Dock
