@@ -364,3 +364,16 @@ Paste this into the chat to get Claude up to speed:
 - "Select →" span (line 323): garbled arrow replaced with proper →
 - "→ Clear" button (line 154): garbled arrow replaced with proper →
 - result-meta middle dot (line 321): garbled · replaced with proper ·
+
+## What Was Done May 18, 2026
+
+### Recolored alcove logo images to International Klein Blue #002FA7
+- Analyzed existing blue in alcove_logo_sm/md/lg.png — was #082888 (dark navy)
+- Used Chrome extension JS canvas to recolor all 3 images: blend-based replacement preserving anti-aliasing
+- Downloaded recolored PNGs and pushed to static/icons/
+- New blue: #002FA7 (International Klein Blue)
+
+### Reduced footer logo size to 120px
+- Was rendering at full natural width (~270px) on desktop — no max-width set
+- Added width: 120px to img style in templates/home.html
+- Now renders as a subtle footer signature rather than dominating the page
