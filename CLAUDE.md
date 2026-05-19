@@ -396,3 +396,16 @@ Paste this into the chat to get Claude up to speed:
 - books.html: garbled em-dash in book title attributes, garbled book emoji in no-cover divs
 - edit.html: garbled em-dashes in page title
 - Fix method: Python re.sub with Unicode variables (EM = '\u2014', BOOK = '\U0001f4d6') to avoid regex escape issues
+
+## What Was Done May 19, 2026 — Session 2
+
+### Fixed www.myreadingalcove.com SSL error
+- Root cause: www CNAME in Namecheap was pointing to apex-loadbalancer.netlify.com (leftover from old Netlify deploy)
+- Fix: updated www CNAME target to my-reading-room2.onrender.com
+- Render will auto-issue SSL cert once DNS propagates (5-30 min)
+
+### Beta user onboarding flow established
+- app.py already handles beta role correctly: no trial banner, full access
+- To invite a beta user: Supabase Auth > Users > Invite, set redirect URL to https://myreadingalcove.com/?preview=alcove2026
+- After they accept, insert row in user_roles table: user_id = their UUID, role = beta
+- Maintenance mode bypass works via session cookie set by ?preview=alcove2026 param
