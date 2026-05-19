@@ -146,9 +146,9 @@
           <h3 id="preview-title"></h3>
           <p id="preview-author"></p>
           <div class="preview-meta">
-            <span class="pmeta">Pages: <strong id="preview-pages">ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ</strong></span>
-            <span class="pmeta">Year: <strong id="preview-year">ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ</strong></span>
-            <span class="pmeta">ISBN: <strong id="preview-isbn">ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ</strong></span>
+            <span class="pmeta">Pages: <strong id="preview-pages">—</strong></span>
+            <span class="pmeta">Year: <strong id="preview-year">—</strong></span>
+            <span class="pmeta">ISBN: <strong id="preview-isbn">—</strong></span>
           </div>
         </div>
         <button class="btn-clear" onclick="clearSelection()">→ Clear</button>
@@ -318,7 +318,7 @@
             '<div class="result-text">' +
               '<div class="result-title">' + book.title + '</div>' +
               '<div class="result-author">' + book.author + '</div>' +
-            '<div class="result-meta">' + (book.pages ? book.pages + ' pages · ' : '') + (book.copyright_year || '') + '</div>'
+            '<div class="result-meta">' + (book.pages ? book.pages + ' pages · ' : '') + (book.copyright_year || '—') + '</div>'
             '</div>' +
             '<span class="result-select">Select →</span>';
           div.onclick = () => selectBook(book);
@@ -344,9 +344,9 @@
       document.getElementById('preview-cover').src = book.cover_url || '';
       document.getElementById('preview-title').textContent = book.title;
       document.getElementById('preview-author').textContent = book.author;
-      document.getElementById('preview-pages').textContent = book.pages || 'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ';
-      document.getElementById('preview-year').textContent = book.copyright_year || 'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ';
-      document.getElementById('preview-isbn').textContent = book.isbn || 'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ';
+      document.getElementById('preview-pages').textContent = book.pages || '—';
+      document.getElementById('preview-year').textContent = book.copyright_year || '—';
+      document.getElementById('preview-isbn').textContent = book.isbn || '—';
       preview.classList.add('show');
       document.getElementById('results').innerHTML = '';
       document.getElementById('ol-query').value = book.title;
