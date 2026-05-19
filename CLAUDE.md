@@ -386,3 +386,13 @@ Paste this into the chat to get Claude up to speed:
 - Icons now show full alcove scene with bookshelves, lanterns, plants, reader, arched window
 - 6% cream padding on all sides so illustration fits cleanly within square
 - App re-added to iPhone home screen and Mac Dock
+
+## What Was Done May 19, 2026
+
+### Fixed UTF-8 corruption in status badges and templates
+- authors.html line 119: garbled emoji before "Reading" status pip — removed corrupted bytes, left clean text
+- authors.html line 120: "Want to Read" pip — confirmed clean
+- add.html: garbled em-dash in title, preview span placeholders (Pages/Year/ISBN), and JS fallback strings
+- books.html: garbled em-dash in book title attributes, garbled book emoji in no-cover divs
+- edit.html: garbled em-dashes in page title
+- Fix method: Python re.sub with Unicode variables (EM = '\u2014', BOOK = '\U0001f4d6') to avoid regex escape issues
