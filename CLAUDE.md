@@ -409,3 +409,23 @@ Paste this into the chat to get Claude up to speed:
 - To invite a beta user: Supabase Auth > Users > Invite, set redirect URL to https://myreadingalcove.com/?preview=alcove2026
 - After they accept, insert row in user_roles table: user_id = their UUID, role = beta
 - Maintenance mode bypass works via session cookie set by ?preview=alcove2026 param
+
+## What Was Done May 20, 2026
+
+### Beta user onboarding — fixed invite flow
+- Supabase dashboard invite dialog has no redirect URL field — used Admin API curl instead
+- curl command: `curl -X POST "https://ijrepkmhqdiezvbxxzke.supabase.co/auth/v1/admin/users" -H "apikey: SERVICE_ROLE_KEY" -H "Authorization: Bearer SERVICE_ROLE_KEY" -H "Content-Type: application/json" -d '{"email":"EMAIL","invite":true,"redirect_to":"https://myreadingalcove.com/?preview=alcove2026"}'`
+- Added beta user ggdpjohnson@gmail.com (UUID: 858a76bc-d566-4f24-98f1-cbc57eef4f65) to user_roles table with role=beta
+- check_maintenance() already had get_current_user() bypass (was added in a prior session)
+
+### Fixed Sign In link hidden on mobile
+- landing.html mobile CSS had `.nav-links .nav-link { display: none; }` hiding all nav links including Sign In
+- Removed that line — Sign In now visible in nav on mobile
+- Note: local landing.html is an older version than what is deployed; live version is the canonical one
+- Remote URL had reverted to HTTPS — fixed back to SSH: `git remote set-url origin git@github.com:dpj1951/my-reading-room.git`
+
+### Discovered local/live file sync issue
+- templates/landing.html in local repo is an older version (title: "Your Personal Book Sanctuary")
+- Live site serves newer version (title: "Track Every Book You've Finished") — unclear when/how diverged
+- Both versions have same nav structure; targeted line deletion fix worked on local file and deployed correctly
+- Future sessions: always verify live site behavior vs local file assumptions
