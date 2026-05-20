@@ -429,3 +429,19 @@ Paste this into the chat to get Claude up to speed:
 - Live site serves newer version (title: "Track Every Book You've Finished") — unclear when/how diverged
 - Both versions have same nav structure; targeted line deletion fix worked on local file and deployed correctly
 - Future sessions: always verify live site behavior vs local file assumptions
+
+## What Was Done May 20, 2026 — Session 2
+
+### Beta user invite — blocked by Supabase email outage
+- Supabase dashboard invite dialog does not support redirect_to — must use curl Admin API
+- Correct curl command (key already known, see Render env SUPABASE_SERVICE_ROLE_KEY):
+  curl -X POST "https://ijrepkmhqdiezvbxxzke.supabase.co/auth/v1/admin/users" -H "apikey: KEY" -H "Authorization: Bearer KEY" -H "Content-Type: application/json" -d '{"email":"ggdpjohnson@gmail.com","invite":true,"redirect_to":"https://myreadingalcove.com/?preview=alcove2026"}'
+- User ddbda748-eb5a-4414-8ffd-6887571cedd3 exists in Supabase Auth but unconfirmed — invite email never delivered due to Supabase technical issue
+- Supabase status page showing active incident at time of session end
+- Next session: check status.supabase.com, re-send invite, then add to user_roles (role=beta)
+- user_roles row auto-deleted when Auth user deleted (foreign key cascade) — expected behavior
+
+### Discovered git remote URL reverts to HTTPS
+- Remote URL keeps reverting to HTTPS after certain operations
+- Always check with: git remote -v
+- Fix with: git remote set-url origin git@github.com:dpj1951/my-reading-room.git
