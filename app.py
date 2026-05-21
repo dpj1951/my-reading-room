@@ -1023,7 +1023,11 @@ def backfill_isbn_save():
         return jsonify({"error": "Invalid data"}), 400
     updated = 0
     for item in data:
-        book_id = item.get("id", "").strip()
+        book_id = str(item.get("id", "")).strip()
+        try:
+            book_id_int = int(book_id)
+        except (ValueError, TypeError):
+            continue
         new_isbn = item.get("isbn", "").strip()
         if not book_id or not new_isbn:
             continue
@@ -1221,7 +1225,7 @@ def missing_summaries_save():
             except Exception:
                 pass
         if summary:
-            book = db.session.get(Book, book_id)
+            book = db.session.get(Book, book_id_int)
             if book and str(book.user_id) == str(user["id"]):
                 book.summary = summary
                 updated += 1
