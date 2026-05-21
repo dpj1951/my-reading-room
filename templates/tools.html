@@ -541,8 +541,26 @@
                         let desc = wd.description || "";
                         if (typeof desc === "object") desc = desc.value || "";
                         if (desc) { updates.push({id: b.id, summary: desc}); found++; }
-                        else notFound++;
-                    } else notFound++;
+                            else {
+                                try {
+                                    const gbq = b.isbn ? "isbn:" + b.isbn : encodeURIComponent(b.title + " " + b.author);
+                                    const gbr = await fetch("https://www.googleapis.com/books/v1/volumes?q=" + gbq + "&maxResults=1&key={{ google_books_api_key }}");
+                                    const gbd = await gbr.json();
+                                    const gbDesc = gbd.items && gbd.items[0] && gbd.items[0].volumeInfo && gbd.items[0].volumeInfo.description;
+                                    if (gbDesc) { updates.push({id: b.id, summary: gbDesc}); found++; }
+                                    else notFound++;
+                                } catch(e2) { notFound++; }
+                            }
+                        } else {
+                            try {
+                                const gbq = b.isbn ? "isbn:" + b.isbn : encodeURIComponent(b.title + " " + b.author);
+                                const gbr = await fetch("https://www.googleapis.com/books/v1/volumes?q=" + gbq + "&maxResults=1&key={{ google_books_api_key }}");
+                                const gbd = await gbr.json();
+                                const gbDesc = gbd.items && gbd.items[0] && gbd.items[0].volumeInfo && gbd.items[0].volumeInfo.description;
+                                if (gbDesc) { updates.push({id: b.id, summary: gbDesc}); found++; }
+                                else notFound++;
+                            } catch(e2) { notFound++; }
+                        }
                 } catch(e) { notFound++; }
             }
             fill.style.width = "90%";
@@ -557,11 +575,11 @@
                     const result = await r.json();
                     fill.style.width = "100%";
                     label.textContent = "Done! " + result.updated + " book(s) updated.";
-                    count.textContent = notFound + " not found on Open Library.";
+                    count.textContent = notFound + " not found on Open Library or Google Books.";
                 } catch(e) { label.textContent = "Save failed: " + e.message; }
             } else {
                 fill.style.width = "100%";
-                label.textContent = "Done! 0 updated. " + notFound + " not found on Open Library.";
+                label.textContent = "Done! 0 updated. " + notFound + " not found on Open Library or Google Books.";
                 count.textContent = "";
             }
             btn.disabled = false;
