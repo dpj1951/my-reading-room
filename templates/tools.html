@@ -476,6 +476,63 @@
     btn.disabled = false;
   }
   </script>
-  <script src="/static/enrich.js"></script>
+  
+    async function startMissingSummaries() {
+        const btn = document.getElementById('missingSummariesBtn');
+        const box = document.getElementById('missingSummariesBox');
+        const label = document.getElementById('missingSummariesLabel');
+        const fill = document.getElementById('missingSummariesFill');
+        const count = document.getElementById('missingSummariesCount');
+        const list = document.getElementById('missingSummariesList');
+        btn.disabled = true; box.style.display = 'block'; fill.style.width = '10%';
+        label.textContent = 'Scanning library...'; count.textContent = ''; list.innerHTML = '';
+
+        let books = [];
+        try {
+            const r = await fetch('/utilities/missing-summaries');
+            const data = await r.json();
+            if (data.error) { label.textContent = 'Error: ' + data.error; btn.disabled = false; return; }
+            books = data.books || [];
+        } catch(e) { label.textContent = 'Error: ' + e.message; btn.disabled = false; return; }
+
+        if (books.length === 0) {
+            fill.style.width = '100%';
+            label.textContent = '\u2705 All books have summaries!';
+            btn.disabled = false;
+            return;
+        }
+
+        const total = books.length;
+        fill.style.width = '30%';
+        label.textContent = total + ' book(s) missing summaries.';
+        count.textContent = 'Click Fill Summaries to auto-fill from Google Books / Open Library.';
+
+        const confirmBtn = document.createElement('button');
+        confirmBtn.textContent = 'Fill Summaries';
+        confirmBtn.className = 'menu-btn';
+        confirmBtn.style.cssText = 'margin-top:8px;padding:8px 16px;font-size:0.9rem;';
+        list.appendChild(confirmBtn);
+
+        confirmBtn.addEventListener('click', async () => {
+            confirmBtn.remove();
+            count.textContent = '';
+            fill.style.width = '50%';
+            label.textContent = 'Filling summaries...';
+            try {
+                const r = await fetch('/utilities/missing-summaries-save', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(books)
+                });
+                const result = await r.json();
+                fill.style.width = '100%';
+                label.textContent = 'Done! ' + result.updated + ' book(s) updated.';
+                count.textContent = result.not_found + ' not found.';
+            } catch(e) { label.textContent = 'Save failed: ' + e.message; }
+            btn.disabled = false;
+        });
+    }
+    </script>
+    <script src="/static/enrich.js"></script>
 </body>
 </html>

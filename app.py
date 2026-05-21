@@ -1153,6 +1153,85 @@ def missing_dates():
     missing.sort(key=lambda x: x.get("title", "").lower())
     return jsonify({"books": missing})
 
+@app.route("/utilities/missing-summaries")
+@login_required
+def missing_summaries():
+    """Return list of books with missing or empty summaries."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"error": "Unauthorized"}), 401
+    books = Book.query.filter_by(user_id=user["id"]).all()
+    missing = []
+    for b in books:
+        if not b.summary or not b.summary.strip():
+            missing.append({"id": b.id, "title": b.title, "author": b.author, "isbn": b.isbn or ""})
+    missing.sort(key=lambda x: x.get("title", "").lower())
+    return jsonify({"books": missing})
+
+@app.route("/utilities/missing-summaries-save", methods=["POST"])
+@login_required
+def missing_summaries_save():
+    """Look up and save summaries for books missing them."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"error": "Unauthorized"}), 401
+    data = request.get_json()
+    if not data or not isinstance(data, list):
+        return jsonify({"error": "Invalid data"}), 400
+    updated = 0
+    not_found = 0
+    for item in data:
+        book_id = item.get("id", "").strip()
+        title = item.get("title", "").strip()
+        author = item.get("author", "").strip()
+        isbn = item.get("isbn", "").strip()
+        if not book_id:
+            continue
+        summary = None
+        # Try Google Books first
+        try:
+            import requests as req
+            api_key = GOOGLE_BOOKS_API_KEY
+            params = {"q": f"isbn:{isbn}" if isbn else f"intitle:{title}+inauthor:{author}", "maxResults": 1}
+            if api_key:
+                params["key"] = api_key
+            r = req.get("https://www.googleapis.com/books/v1/volumes", params=params, timeout=8)
+            items = r.json().get("items", [])
+            if items:
+                desc = items[0].get("volumeInfo", {}).get("description", "")
+                if desc:
+                    summary = desc
+        except Exception:
+            pass
+        # Fall back to Open Library
+        if not summary:
+            try:
+                import requests as req
+                search_url = "https://openlibrary.org/search.json"
+                params = {"q": f"{title} {author}", "limit": 1, "fields": "key,title"}
+                r = req.get(search_url, params=params, timeout=8)
+                docs = r.json().get("docs", [])
+                if docs:
+                    ol_key = docs[0].get("key", "")
+                    if ol_key:
+                        work_r = req.get(f"https://openlibrary.org{ol_key}.json", timeout=8)
+                        desc = work_r.json().get("description", "")
+                        if isinstance(desc, dict):
+                            desc = desc.get("value", "")
+                        if desc:
+                            summary = desc
+            except Exception:
+                pass
+        if summary:
+            book = db.session.get(Book, book_id)
+            if book and str(book.user_id) == str(user["id"]):
+                book.summary = summary
+                updated += 1
+        else:
+            not_found += 1
+    db.session.commit()
+    return jsonify({"updated": updated, "not_found": not_found})
+
 
 @app.route("/utilities/cover-lookup")
 def cover_lookup():
