@@ -1184,6 +1184,7 @@ def missing_summaries_save():
         return jsonify({"error": "Invalid data"}), 400
     updated = 0
     not_found = 0
+    data = data[:20]  # cap at 20 per run to avoid timeout
     for item in data:
         book_id = item.get("id", "").strip()
         title = item.get("title", "").strip()
@@ -1198,7 +1199,7 @@ def missing_summaries_save():
             params = {"q": f"isbn:{isbn}" if isbn else f"intitle:{title}+inauthor:{author}", "maxResults": 1}
             if api_key:
                 params["key"] = api_key
-            r = requests.get("https://www.googleapis.com/books/v1/volumes", params=params, timeout=8)
+            r = requests.get("https://www.googleapis.com/books/v1/volumes", params=params, timeout=5)
             items = r.json().get("items", [])
             if items:
                 desc = items[0].get("volumeInfo", {}).get("description", "")
@@ -1211,12 +1212,12 @@ def missing_summaries_save():
             try:
                 search_url = "https://openlibrary.org/search.json"
                 params = {"q": f"{title} {author}", "limit": 1}
-                r = requests.get(search_url, params=params, timeout=8)
+                r = requests.get(search_url, params=params, timeout=5)
                 docs = r.json().get("docs", [])
                 if docs:
                     ol_key = docs[0].get("key", "")
                     if ol_key:
-                        work_r = requests.get(f"https://openlibrary.org{ol_key}.json", timeout=8)
+                        work_r = requests.get(f"https://openlibrary.org{ol_key}.json", timeout=5)
                         desc = work_r.json().get("description", "")
                         if isinstance(desc, dict):
                             desc = desc.get("value", "")
