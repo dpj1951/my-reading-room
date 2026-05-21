@@ -226,17 +226,17 @@ def inject_trial_context():
         return {}
     role = session.get('user_role', 'free')
     if role in ('subscriber', 'beta', 'owner'):
-        return {'trial_banner': None, 'trial_days_left': None, 'stripe_pub_key': STRIPE_PUBLISHABLE_KEY}
+        return {'trial_banner': None, 'trial_days_left': None, 'stripe_pub_key': STRIPE_PUBLISHABLE_KEY, 'google_books_api_key': GOOGLE_BOOKS_API_KEY}
     trial_end = session.get('trial_end')
     if not trial_end:
-        return {'trial_banner': 'expired', 'trial_days_left': 0, 'stripe_pub_key': STRIPE_PUBLISHABLE_KEY}
+        return {'trial_banner': 'expired', 'trial_days_left': 0, 'stripe_pub_key': STRIPE_PUBLISHABLE_KEY, 'google_books_api_key': GOOGLE_BOOKS_API_KEY}
     try:
         end_date = datetime.fromisoformat(trial_end)
         days_left = max(0, (end_date - datetime.utcnow()).days)
     except Exception:
         days_left = 0
     banner = 'expired' if days_left == 0 else ('urgent' if days_left <= 7 else 'info')
-    return {'trial_banner': banner, 'trial_days_left': days_left, 'stripe_pub_key': STRIPE_PUBLISHABLE_KEY}
+    return {'trial_banner': banner, 'trial_days_left': days_left, 'stripe_pub_key': STRIPE_PUBLISHABLE_KEY, 'google_books_api_key': GOOGLE_BOOKS_API_KEY}
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -1350,7 +1350,6 @@ def restore_json():
     return redirect(url_for("utilities"))
 
 
-if __name__ == "__main__":
     app.run(debug=True)
 
 @app.route('/subscribe/checkout')
