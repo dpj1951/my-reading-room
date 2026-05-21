@@ -1186,7 +1186,12 @@ def missing_summaries_save():
     not_found = 0
     data = data[:20]  # cap at 20 per run to avoid timeout
     for item in data:
-        book_id = item.get("id", "").strip()
+        book_id = str(item.get("id", "")).strip()
+        try:
+            book_id_int = int(book_id)
+        except (ValueError, TypeError):
+            not_found += 1
+            continue
         title = item.get("title", "").strip()
         author = item.get("author", "").strip()
         isbn = item.get("isbn", "").strip()
