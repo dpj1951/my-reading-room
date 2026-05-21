@@ -1190,12 +1190,11 @@ def missing_summaries_save():
         summary = None
         # Try Google Books first
         try:
-            import requests as req
             api_key = GOOGLE_BOOKS_API_KEY
             params = {"q": f"isbn:{isbn}" if isbn else f"intitle:{title}+inauthor:{author}", "maxResults": 1}
             if api_key:
                 params["key"] = api_key
-            r = req.get("https://www.googleapis.com/books/v1/volumes", params=params, timeout=8)
+            r = requests.get("https://www.googleapis.com/books/v1/volumes", params=params, timeout=8)
             items = r.json().get("items", [])
             if items:
                 desc = items[0].get("volumeInfo", {}).get("description", "")
@@ -1206,15 +1205,14 @@ def missing_summaries_save():
         # Fall back to Open Library
         if not summary:
             try:
-                import requests as req
                 search_url = "https://openlibrary.org/search.json"
-                params = {"q": f"{title} {author}", "limit": 1, "fields": "key,title"}
-                r = req.get(search_url, params=params, timeout=8)
+                params = {"q": f"{title} {author}", "limit": 1}
+                r = requests.get(search_url, params=params, timeout=8)
                 docs = r.json().get("docs", [])
                 if docs:
                     ol_key = docs[0].get("key", "")
                     if ol_key:
-                        work_r = req.get(f"https://openlibrary.org{ol_key}.json", timeout=8)
+                        work_r = requests.get(f"https://openlibrary.org{ol_key}.json", timeout=8)
                         desc = work_r.json().get("description", "")
                         if isinstance(desc, dict):
                             desc = desc.get("value", "")
