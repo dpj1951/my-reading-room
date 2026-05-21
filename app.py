@@ -1198,38 +1198,24 @@ def missing_summaries_save():
         if not book_id:
             continue
         summary = None
-        # Try Google Books first
+        # Use Open Library for server-side lookups (no rate limits, no API key)
         try:
-            api_key = GOOGLE_BOOKS_API_KEY
-            params = {"q": f"isbn:{isbn}" if isbn else f"intitle:{title}+inauthor:{author}", "maxResults": 1}
-            if api_key:
-                params["key"] = api_key
-            r = requests.get("https://www.googleapis.com/books/v1/volumes", params=params, timeout=5)
-            items = r.json().get("items", [])
-            if items:
-                desc = items[0].get("volumeInfo", {}).get("description", "")
-                if desc:
-                    summary = desc
+            search_url = "https://openlibrary.org/search.json"
+            q = f"isbn:{isbn}" if isbn else f"{title} {author}"
+            params = {"q": q, "limit": 1}
+            r = requests.get(search_url, params=params, timeout=5)
+            docs = r.json().get("docs", [])
+            if docs:
+                ol_key = docs[0].get("key", "")
+                if ol_key:
+                    work_r = requests.get(f"https://openlibrary.org{ol_key}.json", timeout=5)
+                    desc = work_r.json().get("description", "")
+                    if isinstance(desc, dict):
+                        desc = desc.get("value", "")
+                    if desc:
+                        summary = desc
         except Exception:
             pass
-        # Fall back to Open Library
-        if not summary:
-            try:
-                search_url = "https://openlibrary.org/search.json"
-                params = {"q": f"{title} {author}", "limit": 1}
-                r = requests.get(search_url, params=params, timeout=5)
-                docs = r.json().get("docs", [])
-                if docs:
-                    ol_key = docs[0].get("key", "")
-                    if ol_key:
-                        work_r = requests.get(f"https://openlibrary.org{ol_key}.json", timeout=5)
-                        desc = work_r.json().get("description", "")
-                        if isinstance(desc, dict):
-                            desc = desc.get("value", "")
-                        if desc:
-                            summary = desc
-            except Exception:
-                pass
         if summary:
             book = db.session.get(Book, book_id_int)
             if book and str(book.user_id) == str(user["id"]):
