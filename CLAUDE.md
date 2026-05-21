@@ -445,3 +445,13 @@ Paste this into the chat to get Claude up to speed:
 - Remote URL keeps reverting to HTTPS after certain operations
 - Always check with: git remote -v
 - Fix with: git remote set-url origin git@github.com:dpj1951/my-reading-room.git
+
+## What Was Done May 21, 2026
+
+### Added Find Missing Summaries feature
+- Added google_books_api_key to all 3 return dicts in inject_trial_context() (app.py lines 229, 232, 239)
+- Added 2 new routes to app.py: GET /utilities/missing-summaries (returns books with no summary) and POST /utilities/missing-summaries-save (saves fetched summaries)
+- HTML/JS scaffold was already in tools.html (button, progress box, list divs, startMissingSummaries() function)
+- JS uses Open Library as primary source, Google Books as fallback ({{ google_books_api_key }} injected via Jinja)
+- Updated count label to say "not found on Open Library or Google Books"
+- Note: duplicate routes were accidentally inserted then cleaned up with sed -i '' '1353,1388d'
