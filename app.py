@@ -1175,7 +1175,7 @@ def missing_summaries():
 @app.route("/utilities/missing-summaries-save", methods=["POST"])
 @login_required
 def missing_summaries_save():
-    """Look up and save summaries for books missing them."""
+    """Accept {id, summary} pairs from client and save to DB."""
     user = get_current_user()
     if not user:
         return jsonify({"error": "Unauthorized"}), 401
@@ -1183,54 +1183,25 @@ def missing_summaries_save():
     if not data or not isinstance(data, list):
         return jsonify({"error": "Invalid data"}), 400
     updated = 0
-    not_found = 0
-    data = data[:20]  # cap at 20 per run to avoid timeout
     for item in data:
         book_id = str(item.get("id", "")).strip()
+        summary = str(item.get("summary", "")).strip()
+        if not book_id or not summary:
+            continue
         try:
             book_id_int = int(book_id)
         except (ValueError, TypeError):
-            not_found += 1
             continue
-        title = item.get("title", "").strip()
-        author = item.get("author", "").strip()
-        isbn = item.get("isbn", "").strip()
-        if not book_id:
-            continue
-        summary = None
-        # Use Open Library for server-side lookups (no rate limits, no API key)
-        try:
-            search_url = "https://openlibrary.org/search.json"
-            q = f"isbn:{isbn}" if isbn else f"{title} {author}"
-            params = {"q": q, "limit": 1}
-            r = requests.get(search_url, params=params, timeout=5)
-            docs = r.json().get("docs", [])
-            if docs:
-                ol_key = docs[0].get("key", "")
-                if ol_key:
-                    work_r = requests.get(f"https://openlibrary.org{ol_key}.json", timeout=5)
-                    desc = work_r.json().get("description", "")
-                    if isinstance(desc, dict):
-                        desc = desc.get("value", "")
-                    if desc:
-                        summary = desc
-        except Exception:
-            pass
-        if summary:
-            book = db.session.get(Book, book_id_int)
-            if book and str(book.user_id) == str(user["id"]):
-                book.summary = summary
-                updated += 1
-        else:
-            not_found += 1
+        book = db.session.get(Book, book_id_int)
+        if book and str(book.user_id) == str(user["id"]):
+            book.summary = summary
+            updated += 1
     try:
         db.session.commit()
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"DB commit failed: {str(e)}"}), 500
-    return jsonify({"updated": updated, "not_found": not_found})
-
-
+    return jsonify({"updated": updated})
 @app.route("/utilities/cover-lookup")
 def cover_lookup():
     """Server-side Google Books cover lookup ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ tries ISBN first, then title+author."""
