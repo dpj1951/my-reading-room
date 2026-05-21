@@ -455,3 +455,24 @@ Paste this into the chat to get Claude up to speed:
 - JS uses Open Library as primary source, Google Books as fallback ({{ google_books_api_key }} injected via Jinja)
 - Updated count label to say "not found on Open Library or Google Books"
 - Note: duplicate routes were accidentally inserted then cleaned up with sed -i '' '1353,1388d'
+
+## What Was Done May 21, 2026 — Session 2
+
+### Beta user onboarding completed (ggdpjohnson@gmail.com)
+- Fixed /signup not being exempt from maintenance mode — added '/signup' to exempt paths tuple in check_maintenance()
+- Beta user signed up via https://my-reading-room2.onrender.com/signup (custom domain had DNS issue returning "page not found" for /login)
+- Inserted beta role via SQL: INSERT INTO user_roles SELECT id, 'beta' FROM auth.users WHERE email = '...'
+- Beta user UUID: 69d9eb57-4dc8-47ac-988d-89fb9e24557a
+- App working correctly: no trial banner, empty library, full access
+
+### Fixed empty library message
+- books.html line 174: replaced "Add books using the + button above" with link back to Home and "Add a Book"
+
+### Beta user onboarding workflow (for future users)
+- Send them: https://my-reading-room2.onrender.com/signup (use Render URL, not custom domain while in maintenance mode)
+- After signup, run in Supabase SQL Editor: INSERT INTO user_roles (user_id, role) SELECT id, 'beta' FROM auth.users WHERE email = 'their@email.com';
+- Have them log out and back in to pick up beta role (no trial banner)
+
+### Known issue: custom domain DNS
+- myreadingalcove.com returning "page not found" for /login on some devices
+- Render URL works fine — investigate before public launch
