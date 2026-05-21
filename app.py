@@ -1232,7 +1232,11 @@ def missing_summaries_save():
                 updated += 1
         else:
             not_found += 1
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"DB commit failed: {str(e)}"}), 500
     return jsonify({"updated": updated, "not_found": not_found})
 
 
