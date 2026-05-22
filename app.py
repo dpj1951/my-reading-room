@@ -1072,7 +1072,8 @@ def isbn_lookup():
 @login_required
 def backfill_covers_data():
     """Return books missing a cover URL."""
-    books = Book.query.all()
+    user = get_current_user()
+    books = Book.query.filter_by(user_id=user["id"]).all()
     needs_cover = []
     for b in books:
         if not (b.cover_url or "").strip():
