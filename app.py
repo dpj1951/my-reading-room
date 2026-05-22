@@ -1006,7 +1006,8 @@ def service_worker():
 @login_required
 def backfill_isbn_data():
     """Return books missing ISBN-13 so the client can look them up."""
-    books = Book.query.all()
+    user = get_current_user()
+    books = Book.query.filter_by(user_id=user["id"]).all()
     needs_update = []
     for b in books:
         isbn = (b.isbn or "").strip()
