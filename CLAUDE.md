@@ -476,3 +476,21 @@ Paste this into the chat to get Claude up to speed:
 ### Known issue: custom domain DNS
 - myreadingalcove.com returning "page not found" for /login on some devices
 - Render URL works fine — investigate before public launch
+
+## What Was Done May 23, 2026
+
+### Got beta user ggdpjohnson@gmail.com logged in
+- Password reset link kept failing (expired token, Outlook in-app browser mangling it)
+- Fix: set password directly via Supabase Admin API curl with service role key
+- Key lesson: SUPABASE_SERVICE_ROLE_KEY is not set in shell environment — must export manually each session
+- export SUPABASE_SERVICE_ROLE_KEY="eyJ..." then curl -X PUT .../admin/users/{uuid} -d '{"password":"..."}'
+- Had her open Safari directly (not from email link) and log in via my-reading-room2.onrender.com/login
+
+### Added Change Password feature
+- New route: POST /settings/change-password in app.py
+- Uses session["access_token"] to call PUT /auth/v1/user (same Supabase endpoint as reset-password)
+- Validates: min 8 chars, passwords match (server-side + client-side)
+- Flash messages for success/error, redirects back to /settings
+- settings.html: added Change Password button under new "Account" section label
+- Opens modal with new password + confirm fields, client-side mismatch check before submit
+- Styled to match existing restore modal (pw-input, btn-save CSS classes)
