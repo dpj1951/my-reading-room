@@ -332,6 +332,37 @@ def reset_password():
 
 
 
+
+@app.route("/settings/change-password", methods=["POST"])
+def change_password():
+    if "access_token" not in session:
+        return {"error": "Not authenticated"}, 401
+    new_password = request.form.get("password", "").strip()
+    confirm = request.form.get("confirm", "").strip()
+    if not new_password or len(new_password) < 8:
+        flash("Password must be at least 8 characters.", "error")
+        return redirect(url_for("settings"))
+    if new_password != confirm:
+        flash("Passwords do not match.", "error")
+        return redirect(url_for("settings"))
+    r = requests.put(
+        SUPABASE_URL + "/auth/v1/user",
+        headers={
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": "Bearer " + session["access_token"],
+            "Content-Type": "application/json"
+        },
+        json={"password": new_password},
+        timeout=10
+    )
+    if r.status_code == 200:
+        flash("Password updated successfully.", "success")
+    else:
+        err = r.json().get("message") or r.json().get("error_description") or "Update failed."
+        flash(err, "error")
+    return redirect(url_for("settings"))
+
+
 @app.route("/logout")
 def logout():
     session.clear()

@@ -47,6 +47,11 @@
     .btn-cancel:hover { background: #444; }
     .btn-restore { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--accent); background: #1a2f4a; color: #7dc8ff; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
     .btn-restore:hover { background: #1a3a60; color: #fff; }
+
+    .pw-input { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #555; background: #1e1e1e; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; margin-bottom: 12px; outline: none; transition: border-color 0.15s; }
+    .pw-input:focus { border-color: var(--accent); }
+    .btn-save { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--accent); background: #1a2f4a; color: #7dc8ff; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .btn-save:hover { background: #1a3a60; color: #fff; }
   </style>
 </head>
 <body>
@@ -109,6 +114,15 @@
         </div>
       </div>
     </form>
+
+    <hr class="divider">
+
+    <p class="section-label">Account</p>
+    <button class="menu-btn" type="button" onclick="document.getElementById('changePasswordModal').classList.add('active')">
+      <span class="icon">&#x1F511;</span>
+      Change Password
+      <span class="sub">Update your account password</span>
+    </button>
   </nav>
 
   <a class="back-link" href="/">&#8592; Back to Home</a>
@@ -135,6 +149,24 @@
     </div>
   </div>
 
+
+  <div class="modal-overlay" id="changePasswordModal">
+    <div class="modal">
+      <div class="modal-icon">&#x1F511;</div>
+      <h2>Change Password</h2>
+      <p>Enter and confirm your new password.</p>
+      <form method="POST" action="/settings/change-password" id="changePwForm">
+        <input class="pw-input" type="password" name="password" id="newPw" placeholder="New password (min 8 characters)" required minlength="8" autocomplete="new-password">
+        <input class="pw-input" type="password" name="confirm" id="confirmPw" placeholder="Confirm new password" required minlength="8" autocomplete="new-password">
+        <div id="pwMismatch" style="color:#cc7d7d;font-size:0.82rem;margin:-6px 0 10px;display:none;">Passwords do not match.</div>
+        <div class="modal-actions">
+          <button class="btn-cancel" type="button" onclick="closeChangePwModal()">Cancel</button>
+          <button class="btn-save" type="submit" onclick="return validatePw()">Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     function handleFileChosen(input) {
       if (input.files && input.files.length > 0) {
@@ -151,6 +183,23 @@
       document.getElementById('restoreMode').value = choice;
       document.getElementById('restoreModal').classList.remove('active');
       document.getElementById('restoreForm').submit();
+    }
+
+    function closeChangePwModal() {
+      document.getElementById('changePasswordModal').classList.remove('active');
+      document.getElementById('newPw').value = '';
+      document.getElementById('confirmPw').value = '';
+      document.getElementById('pwMismatch').style.display = 'none';
+    }
+    function validatePw() {
+      const p1 = document.getElementById('newPw').value;
+      const p2 = document.getElementById('confirmPw').value;
+      if (p1 !== p2) {
+        document.getElementById('pwMismatch').style.display = 'block';
+        return false;
+      }
+      document.getElementById('pwMismatch').style.display = 'none';
+      return true;
     }
   </script>
 </body>
