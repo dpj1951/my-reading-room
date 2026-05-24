@@ -494,3 +494,22 @@ Paste this into the chat to get Claude up to speed:
 - settings.html: added Change Password button under new "Account" section label
 - Opens modal with new password + confirm fields, client-side mismatch check before submit
 - Styled to match existing restore modal (pw-input, btn-save CSS classes)
+
+
+## What Was Done May 24, 2026
+
+### Fixed beta user blocked from Import CSV
+- Root cause: utilities() route in app.py called render_template("utilities.html") without passing current_user
+- Template uses Jinja if current_user and current_user.role in ('subscriber', 'beta', 'owner') to show/hide Import CSV
+- Fix: added current_user = get_current_user() and passed it to the template
+- Lesson: any route rendering a template with role-based UI must pass current_user
+- TODO: audit other routes/templates for same issue (tools.html confirmed next to check)
+
+### Fixed price display: $0.99 -> $1.99
+- Found in templates/utilities.html (line 83) and templates/settings.html (line 65)
+- Fixed with sed replace
+
+### Debugging notes
+- Render shell is the fastest way to test Supabase queries directly
+- Render log search filters stdout -- search for specific keywords like "looking up"
+- get_user_role() was confirmed working correctly; issue was upstream in template rendering
