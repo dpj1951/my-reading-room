@@ -627,7 +627,8 @@ def add_want_to_read():
 @app.route("/utilities")
 @login_required
 def utilities():
-    return render_template("utilities.html")
+    current_user = get_current_user()
+    return render_template("utilities.html", current_user=current_user)
  
 
 @app.route("/utilities/tools")
