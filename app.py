@@ -56,6 +56,7 @@ SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 #  ¢ ¢  Role helpers  ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ 
 def get_user_role(user_id):
     """Fetch role from user_roles table. Returns 'free' if not found."""
+    print(f"[get_user_role] looking up user_id={user_id}", flush=True)
     try:
         url = SUPABASE_URL + "/rest/v1/user_roles?user_id=eq." + user_id + "&select=role"
         _key = SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY
