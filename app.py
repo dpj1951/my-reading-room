@@ -67,8 +67,8 @@ def get_user_role(user_id):
         rows = resp.json()
         if rows and isinstance(rows, list) and len(rows) > 0:
             return rows[0].get("role", "free")
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[get_user_role] ERROR: {e}", flush=True)
     return "free"
 
 FREE_BOOK_LIMIT = 20
