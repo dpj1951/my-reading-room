@@ -56,7 +56,6 @@ SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 #  ¢ ¢  Role helpers  ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ 
 def get_user_role(user_id):
     """Fetch role from user_roles table. Returns 'free' if not found."""
-    print(f"[get_user_role] looking up user_id={user_id}", flush=True)
     try:
         url = SUPABASE_URL + "/rest/v1/user_roles?user_id=eq." + user_id + "&select=role"
         _key = SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY
@@ -65,12 +64,11 @@ def get_user_role(user_id):
             "Authorization": "Bearer " + _key,
         }
         resp = requests.get(url, headers=headers, timeout=5)
-        print(f"[get_user_role] status={resp.status_code} body={resp.text[:200]}", flush=True)
         rows = resp.json()
         if rows and isinstance(rows, list) and len(rows) > 0:
             return rows[0].get("role", "free")
-    except Exception as e:
-        print(f"[get_user_role] ERROR: {e}", flush=True)
+    except Exception:
+        pass
     return "free"
 
 FREE_BOOK_LIMIT = 20
