@@ -65,6 +65,7 @@ def get_user_role(user_id):
             "Authorization": "Bearer " + _key,
         }
         resp = requests.get(url, headers=headers, timeout=5)
+        print(f"[get_user_role] status={resp.status_code} body={resp.text[:200]}", flush=True)
         rows = resp.json()
         if rows and isinstance(rows, list) and len(rows) > 0:
             return rows[0].get("role", "free")
