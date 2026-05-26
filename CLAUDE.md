@@ -537,3 +537,10 @@ Paste this into the chat to get Claude up to speed:
 - Render dashboard has no Remove or Reissue option for www (paired with apex)
 - Next step: contact Render support to reissue cert for www
 - Low priority — apex works fine, www redirects to apex when cert is fixed
+
+### Fixed data isolation bugs (May 26, 2026)
+- /settings/backup was exporting ALL users' books — fixed to filter by current user
+- /utilities/all-books-covers had no @login_required and queried all books — fixed both
+- /utilities/remove-duplicates was operating on ALL users' books — fixed to filter by current user
+- Root cause: these routes used Book.query.all() instead of Book.query.filter_by(user_id=user["id"])
+- Triggered by beta user running cover update feature and seeing all 215 books instead of her library
