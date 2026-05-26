@@ -521,3 +521,11 @@ Paste this into the chat to get Claude up to speed:
 - /utilities/tools route was calling render_template("tools.html") without current_user
 - Fix: added current_user = get_current_user() and passed it to the template
 - Beta user can now see role-gated UI in Tools page
+
+### Custom domain DNS — www SSL issue (May 26, 2026)
+- myreadingalcove.com: Verified + Certificate Issued ✅
+- www.myreadingalcove.com: Verified DNS but Certificate Error ⚠️
+- DNS is correct (www CNAME → my-reading-room2.onrender.com)
+- Render dashboard has no Remove or Reissue option for www (paired with apex)
+- Next step: contact Render support to reissue cert for www
+- Low priority — apex works fine, www redirects to apex when cert is fixed
