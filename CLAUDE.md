@@ -544,3 +544,7 @@ Paste this into the chat to get Claude up to speed:
 - /utilities/remove-duplicates was operating on ALL users' books — fixed to filter by current user
 - Root cause: these routes used Book.query.all() instead of Book.query.filter_by(user_id=user["id"])
 - Triggered by beta user running cover update feature and seeing all 215 books instead of her library
+
+### Full data isolation audit (May 26, 2026)
+- Scanned all app.py routes for Book.query without @login_required or user_id scoping
+- Result: clean — no remaining issues after the 3 fixes applied earlier today
