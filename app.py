@@ -632,7 +632,8 @@ def utilities():
 @app.route("/utilities/tools")
 @login_required
 def tools():
-    return render_template("tools.html")
+    current_user = get_current_user()
+    return render_template("tools.html", current_user=current_user)
 
 @app.route("/utilities/export")
 @login_required
