@@ -513,3 +513,11 @@ Paste this into the chat to get Claude up to speed:
 - Render shell is the fastest way to test Supabase queries directly
 - Render log search filters stdout -- search for specific keywords like "looking up"
 - get_user_role() was confirmed working correctly; issue was upstream in template rendering
+
+## What Was Done May 26, 2026
+
+### Fixed tools route: pass current_user to tools.html
+- Same issue as utilities.html fix on May 24
+- /utilities/tools route was calling render_template("tools.html") without current_user
+- Fix: added current_user = get_current_user() and passed it to the template
+- Beta user can now see role-gated UI in Tools page
