@@ -800,7 +800,8 @@ def settings():
 @login_required
 def settings_backup():
     from datetime import date
-    books = [b.to_dict() for b in Book.query.all()]
+    user = get_current_user()
+    books = [b.to_dict() for b in Book.query.filter_by(user_id=user["id"]).all()]
     payload = json.dumps({"version": 1, "exported": str(date.today()), "books": books}, indent=2)
     return send_file(
         io.BytesIO(payload.encode("utf-8")),
@@ -1274,9 +1275,11 @@ def cover_lookup():
 
 
 @app.route("/utilities/all-books-covers")
+@login_required
 def all_books_covers():
-    """Return ALL books with their cover_url so the client can test which are broken."""
-    books = Book.query.all()
+    """Return books with their cover_url so the client can test which are broken."""
+    user = get_current_user()
+    books = Book.query.filter_by(user_id=user["id"]).all()
     return jsonify([{
         "id": b.id, "title": b.title, "author": b.author,
         "isbn": b.isbn or "", "cover_url": b.cover_url or ""
@@ -1292,7 +1295,8 @@ def remove_duplicates():
         t = re.sub(r'^(the|a|an)\s+', '', t.strip().lower())
         return t.strip()
 
-    books = Book.query.all()
+    user = get_current_user()
+    books = Book.query.filter_by(user_id=user["id"]).all()
     groups = {}
     for book in books:
         key = (normalize_title(book.title), book.author.strip().lower())
