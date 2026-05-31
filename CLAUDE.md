@@ -548,3 +548,16 @@ Paste this into the chat to get Claude up to speed:
 ### Full data isolation audit (May 26, 2026)
 - Scanned all app.py routes for Book.query without @login_required or user_id scoping
 - Result: clean — no remaining issues after the 3 fixes applied earlier today
+
+## What Was Done May 31, 2026
+
+### Fixed author shelf subtitle showing wrong library count
+- Root cause: `const ownedCount = books.filter(b => b.status).length` counted Google Books results with a truthy status field, not actual library matches — ISBN/title matching only found 3 of 8 Peter May books
+- Fix: replaced client-side count with server-side Jinja value `{{ library_books|length }}` (line 255 of author_shelf.html)
+- Server already queries and passes `library_books` to the template — count is always correct
+- "More to discover" count adjusts correctly since it's `books.length - ownedCount`
+
+### Fixed garbled page title on author shelf
+- author_shelf.html line 6: corrupted em-dash bytes in `<title>{{ author_name }} â My Reading Alcove</title>`
+- Fix: replaced with `&mdash;` HTML entity
+- Browser tab now shows "Peter May — My Reading Alcove" cleanly
