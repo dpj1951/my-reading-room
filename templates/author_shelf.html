@@ -252,7 +252,7 @@
         fallback.forEach(b => sh2.appendChild(makeCard(b)));
         return;
       }
-      const ownedCount = books.filter(b => b.status).length;
+        const ownedCount = {{ library_books|length }};
       document.getElementById('subtitle').textContent =
         ownedCount + ' book' + (ownedCount!==1?'s':'') + ' in your library' +
         (books.length > ownedCount ? ' · ' + (books.length-ownedCount) + ' more to discover' : '');
