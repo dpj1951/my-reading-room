@@ -267,7 +267,17 @@
       label.textContent = books.length + ' book' + (books.length!==1?'s':'') + ' by ' + AUTHOR_NAME + ', sorted by publish year';
       label.style.display = 'block';
       const shelf = document.getElementById('shelf');
-      books.forEach(b => shelf.appendChild(makeCard(b)));
+	    books.forEach(b => shelf.appendChild(makeCard(b)));
+	    LIBRARY.forEach(l => {
+	      const already = books.find(b =>
+	        (b.isbn && l.isbn && normIsbn(b.isbn) === normIsbn(l.isbn)) ||
+	        (b.title && l.title && normTitle(b.title) === normTitle(l.title))
+	      );
+	      if (!already) {
+	        const lb = {title: l.title, isbn: l.isbn, coverUrl: l.cover_url, pubYear: '', status: l.status || 'read', libraryId: l.id};
+	        shelf.appendChild(makeCard(lb));
+	      }
+	    });
     }
     function openAddModal(book) {
       pendingBook = book;
