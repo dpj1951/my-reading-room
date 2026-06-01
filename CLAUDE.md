@@ -561,3 +561,13 @@ Paste this into the chat to get Claude up to speed:
 - author_shelf.html line 6: corrupted em-dash bytes in `<title>{{ author_name }} â My Reading Alcove</title>`
 - Fix: replaced with `&mdash;` HTML entity
 - Browser tab now shows "Peter May — My Reading Alcove" cleanly
+
+## What Was Done June 1, 2026
+
+### Fixed author shelf book highlighting (only 3 of 8 showing READ badge)
+- Root cause: `makeCard()` used `book.status` directly from Google Books API result, which has no status field — so all cards got state='none'
+- Fix 1: added library lookup in `makeCard` — match each Google Books result against LIBRARY array by ISBN (normalized) or title (normalized, strip "The ", remove non-alphanumeric)
+- Fix 2: after rendering Google Books results, append any LIBRARY books not found in Google Books results as extra cards at end of shelf — ensures all library books always appear highlighted regardless of Google Books coverage
+- Fix 3: moved `normTitle()` and `normIsbn()` helper functions to module scope (were inside `makeCard`, so LIBRARY.forEach couldn't access them)
+- Result: all 9 Peter May books highlighted correctly (8 READ + 1 WANT)
+- Files changed: templates/author_shelf.html
