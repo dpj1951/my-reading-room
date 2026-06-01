@@ -202,7 +202,12 @@
     function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
     function makeCard(book) {
-      const state = book.status || 'none';
+        const libMatch = LIBRARY.find(l =>
+          (book.isbn && l.isbn && book.isbn === l.isbn) ||
+          (book.title && l.title && book.title.toLowerCase().trim() === l.title.toLowerCase().trim())
+        );
+        const state = libMatch ? (libMatch.status || 'read') : 'none';
+        if (libMatch) book.libraryId = libMatch.id;
       const card = document.createElement('div');
       card.className = `book-card state-${state}`;
       let coverHtml = book.coverUrl
