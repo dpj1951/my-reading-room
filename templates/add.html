@@ -389,7 +389,7 @@
       const key = 'ISBN:' + isbn;
       if (olData[key]) {
         const d = olData[key];
-        populateFromIsbn({
+        const olBook = {
           title: d.title || '',
           author: (d.authors && d.authors[0]) ? d.authors[0].name : '',
           isbn: isbn,
@@ -397,9 +397,15 @@
           copyright_year: String((d.publish_date || '').replace(/.*(\d{4}).*/, '$1') || ''),
           cover_url: (d.cover && (d.cover.large || d.cover.medium || d.cover.small)) ? (d.cover.large || d.cover.medium || d.cover.small) : '',
           summary: d.description ? (typeof d.description === 'string' ? d.description : (d.description.value || '')) : ''
-        });
-        if (resultsDiv) resultsDiv.innerHTML = '';
-        return;
+        };
+        // If OL has all fields, use it and return; otherwise fall through to Google Books for missing fields
+        if (olBook.pages && olBook.cover_url && olBook.summary) {
+          populateFromIsbn(olBook);
+          if (resultsDiv) resultsDiv.innerHTML = '';
+          return;
+        }
+        // Store partial OL data, fall through to Google Books to fill gaps
+        window._olPartial = olBook;
       }
     } catch(e) {}
     try {
@@ -408,15 +414,17 @@
       const gbData = await gbResp.json();
       if (gbData.items && gbData.items.length > 0) {
         const v = gbData.items[0].volumeInfo;
+        const ol = window._olPartial || {};
         populateFromIsbn({
-          title: v.title || '',
-          author: (v.authors && v.authors[0]) ? v.authors[0] : '',
+          title: ol.title || v.title || '',
+          author: ol.author || ((v.authors && v.authors[0]) ? v.authors[0] : ''),
           isbn: isbn,
-          pages: String(v.pageCount || ''),
-          copyright_year: String((v.publishedDate || '').substring(0, 4)),
-          cover_url: (v.imageLinks && v.imageLinks.thumbnail) ? v.imageLinks.thumbnail.replace('http:', 'https:') : '',
-          summary: v.description || ''
+          pages: ol.pages || String(v.pageCount || ''),
+          copyright_year: ol.copyright_year || String((v.publishedDate || '').substring(0, 4)),
+          cover_url: ol.cover_url || ((v.imageLinks && v.imageLinks.thumbnail) ? v.imageLinks.thumbnail.replace('http:', 'https:') : ''),
+          summary: ol.summary || v.description || ''
         });
+        window._olPartial = null;
         if (resultsDiv) resultsDiv.innerHTML = '';
         return;
       }
