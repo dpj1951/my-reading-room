@@ -378,16 +378,83 @@
     document.getElementById('ol-query').addEventListener('keydown', e => {
       if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
     });
-  </script>
+  
+  async function doIsbnPrefill(isbn) {
+    const resultsDiv = document.getElementById('results');
+    const noRes = document.getElementById('no-results');
+    if (resultsDiv) resultsDiv.innerHTML = '<p style="color:var(--muted);font-size:0.9rem">Looking up ISBN...</p>';
+    try {
+      const olResp = await fetch('https://openlibrary.org/api/books?bibkeys=ISBN:' + isbn + '&format=json&jscmd=data');
+      const olData = await olResp.json();
+      const key = 'ISBN:' + isbn;
+      if (olData[key]) {
+        const d = olData[key];
+        populateFromIsbn({
+          title: d.title || '',
+          author: (d.authors && d.authors[0]) ? d.authors[0].name : '',
+          isbn: isbn,
+          pages: String(d.number_of_pages || ''),
+          copyright_year: String((d.publish_date || '').replace(/.*(\d{4}).*/, '$1') || ''),
+          cover_url: (d.cover && d.cover.medium) ? d.cover.medium : '',
+          summary: (d.excerpts && d.excerpts[0]) ? d.excerpts[0].text : ''
+        });
+        if (resultsDiv) resultsDiv.innerHTML = '';
+        return;
+      }
+    } catch(e) {}
+    try {
+      const gbKey = '{{ google_books_api_key }}';
+      const gbResp = await fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:' + isbn + (gbKey ? '&key=' + gbKey : ''));
+      const gbData = await gbResp.json();
+      if (gbData.items && gbData.items.length > 0) {
+        const v = gbData.items[0].volumeInfo;
+        populateFromIsbn({
+          title: v.title || '',
+          author: (v.authors && v.authors[0]) ? v.authors[0] : '',
+          isbn: isbn,
+          pages: String(v.pageCount || ''),
+          copyright_year: String((v.publishedDate || '').substring(0, 4)),
+          cover_url: (v.imageLinks && v.imageLinks.thumbnail) ? v.imageLinks.thumbnail.replace('http:', 'https:') : '',
+          summary: v.description || ''
+        });
+        if (resultsDiv) resultsDiv.innerHTML = '';
+        return;
+      }
+    } catch(e) {}
+    if (resultsDiv) resultsDiv.innerHTML = '';
+    if (noRes) { noRes.innerHTML = 'ISBN not found &mdash; fill in details manually below.'; noRes.style.display = 'block'; }
+  }
+
+  function populateFromIsbn(book) {
+    document.getElementById('f-title').value = book.title;
+    document.getElementById('f-author').value = book.author;
+    document.getElementById('f-isbn').value = book.isbn;
+    if (book.pages) document.getElementById('f-pages').value = book.pages;
+    if (book.copyright_year) document.getElementById('f-year').value = book.copyright_year;
+    if (book.cover_url) document.getElementById('f-cover').value = book.cover_url;
+    if (book.summary) document.getElementById('f-summary').value = book.summary;
+    const pt = document.getElementById('preview-title'); if (pt) pt.textContent = book.title;
+    const pa = document.getElementById('preview-author'); if (pa) pa.textContent = book.author;
+    const pi = document.getElementById('preview-isbn'); if (pi) pi.textContent = book.isbn || '-';
+    const pc = document.getElementById('preview-cover');
+    if (pc && book.cover_url) { pc.src = book.cover_url; pc.style.opacity = 1; }
+  }
+
+</script>
   <script>
     // Auto-trigger search if ISBN was passed from barcode scanner
     document.addEventListener('DOMContentLoaded', function() {
       const prefill = "{{ isbn_prefill }}";
-      if (!prefill) return;
-      const searchInput = document.getElementById('ol-query');
-      if (!searchInput) return;
-      searchInput.value = prefill;
-      setTimeout(() => doSearch(), 300);
+        if (!prefill) return;
+        const isIsbn = /^[0-9]{10,13}$/.test(prefill);
+        if (isIsbn) {
+          setTimeout(() => doIsbnPrefill(prefill), 300);
+        } else {
+          const searchInput = document.getElementById('ol-query');
+          if (!searchInput) return;
+          searchInput.value = prefill;
+          setTimeout(() => doSearch(), 300);
+        }
       const paperBtn = document.getElementById('btn-paper');
       if (paperBtn) paperBtn.click();
       setTimeout(() => {
