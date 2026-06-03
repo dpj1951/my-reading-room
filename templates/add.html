@@ -395,8 +395,8 @@
           isbn: isbn,
           pages: String(d.number_of_pages || ''),
           copyright_year: String((d.publish_date || '').replace(/.*(\d{4}).*/, '$1') || ''),
-          cover_url: (d.cover && d.cover.medium) ? d.cover.medium : '',
-          summary: (d.excerpts && d.excerpts[0]) ? d.excerpts[0].text : ''
+          cover_url: (d.cover && (d.cover.large || d.cover.medium || d.cover.small)) ? (d.cover.large || d.cover.medium || d.cover.small) : '',
+          summary: d.description ? (typeof d.description === 'string' ? d.description : (d.description.value || '')) : ''
         });
         if (resultsDiv) resultsDiv.innerHTML = '';
         return;
