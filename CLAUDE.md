@@ -571,3 +571,15 @@ Paste this into the chat to get Claude up to speed:
 - Fix 3: moved `normTitle()` and `normIsbn()` helper functions to module scope (were inside `makeCard`, so LIBRARY.forEach couldn't access them)
 - Result: all 9 Peter May books highlighted correctly (8 READ + 1 WANT)
 - Files changed: templates/author_shelf.html
+
+## What Was Done June 3, 2026
+
+### Fixed barcode scanner not auto-populating book details
+- Root cause: scan.html correctly redirected to /add/manual?isbn=XXXXX, but the DOMContentLoaded handler put the ISBN into the Open Library text search box and called doSearch() — which returns no results for raw ISBNs
+- Fix 1: added ISBN detection in prefill handler — if prefill matches /^[0-9]{10,13}$/, call new doIsbnPrefill() instead of doSearch()
+- Fix 2: doIsbnPrefill() calls Open Library ISBN API (openlibrary.org/api/books?bibkeys=ISBN:...) first
+- Fix 3: OL description field mapped correctly — handles both plain string and {type, value} object formats
+- Fix 4: cover_url tries large then medium then small in order
+- Fix 5: if OL is missing pages/cover/summary, falls through to Google Books to fill gaps (merge logic)
+- Fix 6: Google Books merge populates any fields OL left empty
+- Result: scanning a barcode now auto-populates title, author, pages, cover, year, and summary
