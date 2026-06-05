@@ -1,28 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Help &amp; Getting Started &mdash; My Reading Alcove</title>
-  <link rel="stylesheet" href="/static/style.css" />
-  <link rel="manifest" href="/static/manifest.json" />
-  <meta name="theme-color" content="#002FA7" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #d8d8d8; --surface: #16161c; --card: #3a3a3a; --border: #4a4a4a;
+      --accent: #3b9eff; --text: #f0ede8; --muted: #8a8795;
+      --radius: 16px; --shadow: 0 6px 20px rgba(0,0,0,0.6);
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 24px;
+    }
+    .brand { text-align: center; margin-bottom: 48px; }
+    .brand h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 8vw, 3.2rem);
+      color: var(--accent); letter-spacing: 0.04em; margin-bottom: 8px;
+    }
+    .brand p { color: var(--muted); font-size: 0.95rem; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; }
+    .menu { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 360px; }
+    .menu-btn {
+      display: block; background: var(--card);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 20px;
+      text-align: center; text-decoration: none; color: var(--text);
+      font-family: 'DM Serif Display', serif; font-size: 1.3rem; letter-spacing: 0.02em;
+      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, background 0.15s;
+    }
+    .menu-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.7); border-color: var(--accent); background: #22222e; }
+    .menu-btn:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+    .shelf { margin-top: 56px; font-size: 3rem; letter-spacing: -4px; }
+  </style>
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#0e0e12">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Reading Alcove">
 </head>
 <body>
-  <nav class="top-nav">
-    <div class="nav-left">
-      <a href="/home" class="nav-brand">My Reading Alcove</a>
-    </div>
-    <div class="nav-links">
-      <a href="/books" class="nav-link">Books</a>
-      <a href="/authors" class="nav-link">Authors</a>
-      <a href="/add" class="nav-link">Add a Book</a>
-      <a href="/utilities/tools" class="nav-link">Utilities</a>
-      <a href="/stats" class="nav-link">Stats</a>
-    </div>
+  <div class="brand">
+    <h1>My Reading Alcove</h1>
+    <p>Know what you read</p>
+  </div>
+  <nav class="menu">
+    <a class="menu-btn" href="/books">Books</a>
+    <a class="menu-btn" href="/authors">Authors</a>
+    <a class="menu-btn" href="/add">Add a Book</a>
+    <a class="menu-btn" href="/utilities">Utilities</a>
+    <a class="menu-btn" href="/stats">Stats</a>
+    <a class="menu-btn active" href="/help">Help</a>
   </nav>
 
-  <div class="help-page">
+<div class="help-page">
     <div class="help-header">
       <h1>Help &amp; Getting Started</h1>
       <p class="help-intro">My Reading Alcove is your personal library &mdash; a quiet place to track every book you&rsquo;ve read. Your library is always with you, cached on your device so you can check it anywhere, even offline.</p>
@@ -126,5 +165,6 @@
     .help-footer { text-align: center; color: var(--muted, #888); font-size: 0.95rem; padding-top: 1rem; }
     .help-footer a { color: var(--accent, #002FA7); }
   </style>
+
 </body>
 </html>
