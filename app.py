@@ -404,6 +404,11 @@ def books():
     read    = sorted(read, key=parse_date, reverse=True)
     return render_template("books.html", reading=reading, want=want, dnf=dnf, books=read)
 
+
+@app.route('/help')
+def help_page():
+    return render_template('help.html')
+
 @app.route('/stats')
 @login_required
 def stats():

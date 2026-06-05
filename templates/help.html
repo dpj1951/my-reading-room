@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Help &amp; Getting Started &mdash; My Reading Alcove</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="manifest" href="/static/manifest.json" />
+  <meta name="theme-color" content="#002FA7" />
+</head>
+<body>
+  <nav class="top-nav">
+    <div class="nav-left">
+      <a href="/home" class="nav-brand">My Reading Alcove</a>
+    </div>
+    <div class="nav-links">
+      <a href="/books" class="nav-link">Books</a>
+      <a href="/authors" class="nav-link">Authors</a>
+      <a href="/add" class="nav-link">Add a Book</a>
+      <a href="/utilities/tools" class="nav-link">Utilities</a>
+      <a href="/stats" class="nav-link">Stats</a>
+    </div>
+  </nav>
+
+  <div class="help-page">
+    <div class="help-header">
+      <h1>Help &amp; Getting Started</h1>
+      <p class="help-intro">My Reading Alcove is your personal library &mdash; a quiet place to track every book you&rsquo;ve read. Your library is always with you, cached on your device so you can check it anywhere, even offline.</p>
+    </div>
+
+    <div class="help-section">
+      <h2>Getting Started</h2>
+      <h3>Add your first book</h3>
+      <p>Three ways to add a book:</p>
+      <ol>
+        <li><strong>Scan the barcode</strong> &mdash; Open the scanner from the Add a Book page, point your camera at the back of any book, and the details fill in automatically: title, author, pages, cover art, and summary.</li>
+        <li><strong>Search by title or author</strong> &mdash; Type into the search box and select from the results. Details auto-populate from Open Library and Google Books.</li>
+        <li><strong>Import a CSV</strong> &mdash; If you&rsquo;re coming from Goodreads or StoryGraph, you can import your reading history in one go (see Migration below).</li>
+      </ol>
+      <h3>Book status</h3>
+      <p>When you add a book, choose a status:</p>
+      <ul>
+        <li><strong>Read</strong> &mdash; Goes into your main library, sorted by the date you finished it</li>
+        <li><strong>Currently Reading</strong> &mdash; Shows in a shelf at the top of your library</li>
+        <li><strong>Want to Read</strong> &mdash; Saved for later in a shelf at the bottom</li>
+        <li><strong>Did Not Finish</strong> &mdash; Kept but dimmed, separate from your main collection</li>
+      </ul>
+      <p>Status is always editable. Start a book and abandon it? Change it to Did Not Finish. Pick it back up later and finish it? Change it to Read. Life happens &mdash; your library keeps up.</p>
+      <h3>Format and rating</h3>
+      <p>Log whether you read a physical book, ebook, or audiobook, and rate it from 0.5 to 5 stars.</p>
+    </div>
+
+    <div class="help-section">
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq-item">
+        <h3>Can I edit or delete a book after adding it?</h3>
+        <p>Yes. Every book has an edit page where you can update any field &mdash; title, author, pages, rating, dates, cover art, summary, status, and format. You can also delete a book entirely if you added it by mistake.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Can I access my library without an internet connection?</h3>
+        <p>Yes. Because My Reading Alcove installs as a PWA, your library is cached locally on your device. You can browse your full collection offline &mdash; no wifi needed. Handy at a yard sale when you spot a book and want to check if you&rsquo;ve already read it.</p>
+      </div>
+      <div class="faq-item">
+        <h3>What does the free trial include?</h3>
+        <p>Everything &mdash; full access to all features including adding books, importing a CSV, cover art lookup, stats, and export. No credit card required to start.</p>
+      </div>
+      <div class="faq-item">
+        <h3>What happens when my trial expires?</h3>
+        <p>Your library stays intact and you can still browse it, but the app switches to read-only mode. You won&rsquo;t be able to add new books or make changes until you subscribe.</p>
+      </div>
+      <div class="faq-item">
+        <h3>How much does it cost?</h3>
+        <p>$1.99/month after your 30-day free trial. No credit card required to start.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Is there a mobile app?</h3>
+        <p>My Reading Alcove is a Progressive Web App (PWA). On iPhone, open the site in Safari and tap &ldquo;Add to Home Screen&rdquo; &mdash; it installs like a native app. On Android, tap &ldquo;Add to Home Screen&rdquo; in Chrome.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Can I export my library?</h3>
+        <p>Yes. Go to Utilities and use the CSV export to download your full library at any time.</p>
+      </div>
+    </div>
+
+    <div class="help-section">
+      <h2>Migrating from Goodreads or StoryGraph</h2>
+      <p>You can bring your reading history with you.</p>
+      <h3>From Goodreads <span class="help-note">(desktop browser only &mdash; export not available on mobile)</span></h3>
+      <ol>
+        <li>Log in to Goodreads</li>
+        <li>Click <strong>My Books</strong> in the top nav</li>
+        <li>In the left sidebar, scroll to <strong>Tools</strong> &rarr; click <strong>Import and export</strong></li>
+        <li>Click <strong>Export Library</strong> and wait for the download link to appear (large libraries may take a few minutes)</li>
+        <li>In My Reading Alcove &rarr; Utilities &rarr; Import CSV, upload the file</li>
+      </ol>
+      <h3>From StoryGraph</h3>
+      <ol>
+        <li>Log in to StoryGraph</li>
+        <li>Click your profile &rarr; <strong>Manage Account</strong></li>
+        <li>Scroll to <strong>Manage Your Data</strong> &rarr; click <strong>Export StoryGraph Library</strong></li>
+        <li>In My Reading Alcove &rarr; Utilities &rarr; Import CSV, upload the file</li>
+      </ol>
+      <p>Most fields map over cleanly. Cover art and summaries are fetched automatically during import where possible.</p>
+      <p class="help-tip">CSV import is available during your free trial &mdash; a good time to bring your library over before deciding if the app is right for you.</p>
+    </div>
+
+    <div class="help-footer">
+      <p>Questions? Email <a href="mailto:support@myreadingalcove.com">support@myreadingalcove.com</a></p>
+    </div>
+  </div>
+
+  <style>
+    .help-page { max-width: 760px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+    .help-header { margin-bottom: 2.5rem; border-bottom: 1px solid var(--border, #e0e0e0); padding-bottom: 1.5rem; }
+    .help-header h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .help-intro { font-size: 1.05rem; color: var(--muted, #666); line-height: 1.6; }
+    .help-section { margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border, #e0e0e0); }
+    .help-section h2 { font-size: 1.35rem; margin-bottom: 1.2rem; color: var(--accent, #002FA7); }
+    .help-section h3 { font-size: 1.05rem; margin: 1.4rem 0 0.5rem; }
+    .help-section p, .help-section li { line-height: 1.7; margin-bottom: 0.5rem; color: var(--muted, #444); }
+    .help-section ol, .help-section ul { padding-left: 1.4rem; margin-bottom: 1rem; }
+    .faq-item { margin-bottom: 1.4rem; }
+    .faq-item h3 { margin-top: 0; margin-bottom: 0.3rem; }
+    .help-note { font-size: 0.85rem; font-weight: normal; color: var(--muted, #888); }
+    .help-tip { background: var(--bg-subtle, #f5f5f5); border-left: 3px solid var(--accent, #002FA7); padding: 0.75rem 1rem; border-radius: 0 4px 4px 0; font-size: 0.95rem; }
+    .help-footer { text-align: center; color: var(--muted, #888); font-size: 0.95rem; padding-top: 1rem; }
+    .help-footer a { color: var(--accent, #002FA7); }
+  </style>
+</body>
+</html>
