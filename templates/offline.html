@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline &mdash; My Reading Alcove</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0e0e12;
+      color: #e8e0d0;
+      font-family: Georgia, serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      text-align: center;
+    }
+    h1 { font-size: 1.6rem; margin-bottom: 1rem; color: #c8b89a; }
+    p  { font-size: 1rem; line-height: 1.6; color: #9e9080; max-width: 360px; margin-bottom: 1.5rem; }
+    a  { color: #002FA7; text-decoration: none; font-weight: 600; }
+    .icon { font-size: 3rem; margin-bottom: 1.5rem; }
+    #cached-notice { display: none; color: #6ab04c; margin-top: 1rem; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="icon">&#128218;</div>
+  <h1>You&rsquo;re Offline</h1>
+  <p>No internet connection detected. If you&rsquo;ve visited your library recently, it should load automatically.</p>
+  <p><a href="/books">Try loading your library &rarr;</a></p>
+  <div id="cached-notice">Your cached library is available &mdash; tap above to view it.</div>
+  <script>
+    // Check if we have cached library data and show a hint
+    if ('caches' in window) {
+      caches.match('/books/data').then(r => {
+        if (r) document.getElementById('cached-notice').style.display = 'block';
+      });
+    }
+  </script>
+</body>
+</html>

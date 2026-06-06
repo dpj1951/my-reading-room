@@ -405,6 +405,24 @@ def books():
     return render_template("books.html", reading=reading, want=want, dnf=dnf, books=read)
 
 
+
+@app.route('/offline')
+def offline_page():
+    return render_template('offline.html')
+
+@app.route('/books/data')
+@login_required
+def books_data():
+    """JSON endpoint for offline-capable library cache."""
+    import json
+    from datetime import datetime
+    all_books = [b.to_dict() for b in Book.query.filter_by(user_id=g.user["id"]).all()]
+    return app.response_class(
+        response=json.dumps(all_books),
+        status=200,
+        mimetype='application/json'
+    )
+
 @app.route('/help')
 def help_page():
     return render_template('help.html')

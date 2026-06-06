@@ -1,13 +1,89 @@
-// Service worker v2 - clears cache on auth update
-const CACHE_NAME = 'reading-alcove-v2';
-self.addEventListener('install', e => { self.skipWaiting(); });
-self.addEventListener('activate', e => {
+// Service Worker v3 — offline-capable
+// Caches app shell + static assets; stores library in Cache API for offline browsing
+
+const CACHE_VERSION = 'v3';
+const SHELL_CACHE = 'alcove-shell-' + CACHE_VERSION;
+const DATA_CACHE  = 'alcove-data-'  + CACHE_VERSION;
+
+const SHELL_ASSETS = [
+  '/offline',
+  '/static/icons/icon-192.png',
+  '/static/icons/icon-512.png',
+  '/static/icons/alcove_logo.png',
+];
+
+// Install — cache shell assets
+self.addEventListener('install', e => {
   e.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
-    .then(() => self.clients.claim())
+    caches.open(SHELL_CACHE).then(c => c.addAll(SHELL_ASSETS))
+    .then(() => self.skipWaiting())
   );
 });
+
+// Activate — delete old caches
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== SHELL_CACHE && k !== DATA_CACHE).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+// Fetch strategy
 self.addEventListener('fetch', e => {
-  // Pass all requests through to network - no caching
-  e.respondWith(fetch(e.request));
+  const url = new URL(e.request.url);
+
+  // Only handle same-origin GET requests
+  if (e.request.method !== 'GET' || url.origin !== self.location.origin) return;
+
+  // /books/data — network first, cache on success for offline fallback
+  if (url.pathname === '/books/data') {
+    e.respondWith(
+      fetch(e.request).then(res => {
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(DATA_CACHE).then(c => c.put(e.request, clone));
+        }
+        return res;
+      }).catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  // /books page — network first, fall back to cached version, then /offline
+  if (url.pathname === '/books') {
+    e.respondWith(
+      fetch(e.request).then(res => {
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(SHELL_CACHE).then(c => c.put(e.request, clone));
+        }
+        return res;
+      }).catch(() =>
+        caches.match(e.request).then(cached =>
+          cached || caches.match('/offline')
+        )
+      )
+    );
+    return;
+  }
+
+  // Static assets — cache first, network fallback
+  if (url.pathname.startsWith('/static/')) {
+    e.respondWith(
+      caches.match(e.request).then(cached =>
+        cached || fetch(e.request).then(res => {
+          if (res.ok) {
+            const clone = res.clone();
+            caches.open(SHELL_CACHE).then(c => c.put(e.request, clone));
+          }
+          return res;
+        })
+      )
+    );
+    return;
+  }
+
+  // Everything else — network only (auth pages, API calls, etc.)
+  // Do NOT cache: /login, /signup, /settings, POST requests
 });
