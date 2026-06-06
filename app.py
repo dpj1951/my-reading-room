@@ -22,7 +22,7 @@ STRIPE_PRICE_ID        = os.environ.get('STRIPE_PRICE_ID', '')
 STRIPE_WEBHOOK_SECRET  = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
 stripe.api_key = STRIPE_SECRET_KEY
 
-#  ¢ ¢  Maintenance mode  ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ 
+#  Â¢ Â¢  Maintenance mode  Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ 
 MAINTENANCE_MODE = os.environ.get("MAINTENANCE_MODE", "false").lower() == "true"
 
 @app.before_request
@@ -47,13 +47,13 @@ def check_maintenance():
 
 LIBRARY_FILE = "library.json"
 
-#  ¢ ¢  Supabase config  ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ 
+#  Â¢ Â¢  Supabase config  Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ 
 SUPABASE_URL        = os.environ.get("SUPABASE_URL", "https://ijrepkmhqdiezvbxxzke.supabase.co")
 SUPABASE_ANON_KEY   = os.environ.get("SUPABASE_ANON_KEY", "")
 SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET", "")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 
-#  ¢ ¢  Role helpers  ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ 
+#  Â¢ Â¢  Role helpers  Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ 
 def get_user_role(user_id):
     """Fetch role from user_roles table. Returns 'free' if not found."""
     try:
@@ -78,7 +78,7 @@ def is_subscriber():
     role = session.get("user_role", "free")
     return role in ("subscriber", "beta", "owner")
 
-#  ¢ ¢  Database  ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ 
+#  Â¢ Â¢  Database  Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///library.db")
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
@@ -95,7 +95,7 @@ GOOGLE_BOOKS_API_KEY = os.environ.get("GOOGLE_BOOKS_API_KEY", "")
 
 db = SQLAlchemy(app)
 
-#  ¢ ¢  Book model  ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ 
+#  Â¢ Â¢  Book model  Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ 
 class Book(db.Model):
     __tablename__ = "books"
     id             = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -120,7 +120,7 @@ class Book(db.Model):
                 "read_date": self.read_date, "rating": self.rating, "cover_url": self.cover_url,
                 "summary": self.summary, "read_time_hrs": self.read_time_hrs, "user_id": self.user_id, "status": self.status or "read"}
 
-#  ¢ ¢  Auth helpers  ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ 
+#  Â¢ Â¢  Auth helpers  Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ 
 def get_current_user():
     token = session.get("access_token")
     if not token:
@@ -170,7 +170,7 @@ def supabase_reset_password(email, redirect_to=None):
         headers={"apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json"},
         json=payload, timeout=10)
 
-#  ¢ ¢  DB init  ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ 
+#  Â¢ Â¢  DB init  Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ 
 def load_library():
     if os.path.exists(LIBRARY_FILE):
         with open(LIBRARY_FILE, "r") as f:
@@ -214,7 +214,7 @@ def ensure_db():
         init_db()
         app._db_initialized = True
 
-#  ¢ ¢  Auth routes  ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ ¢ 
+#  Â¢ Â¢  Auth routes  Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ 
 
 @app.context_processor
 def inject_user():
@@ -321,32 +321,47 @@ def forgot_password():
 
 @app.route("/reset-password", methods=["GET", "POST"])
 def reset_password():
-    # Supabase sends access_token + refresh_token as URL fragments (#)
-    # The browser can't send fragments to the server, so we use a JS page
-    # that reads the fragment and posts it here
     if request.method == "POST":
-        access_token = request.form.get("access_token", "").strip()
+        email = request.form.get("email", "").strip().lower()
         new_password = request.form.get("password", "").strip()
-        if not access_token or not new_password:
-            return render_template("reset_password.html", error="Missing token or password.", done=False, supabase_url=SUPABASE_URL, supabase_anon_key=SUPABASE_ANON_KEY)
-        # Call Supabase to update the password using the access token
-        r = requests.put(
-            SUPABASE_URL + "/auth/v1/user",
+        confirm = request.form.get("password2", "").strip()
+        if not email or not new_password:
+            return render_template("reset_password.html", error="Email and password are required.", done=False)
+        if new_password != confirm:
+            return render_template("reset_password.html", error="Passwords do not match.", done=False)
+        if len(new_password) < 8:
+            return render_template("reset_password.html", error="Password must be at least 8 characters.", done=False)
+        # Look up user by email using service role key
+        lookup = requests.get(
+            SUPABASE_URL + "/auth/v1/admin/users",
             headers={
-                "apikey": SUPABASE_ANON_KEY,
-                "Authorization": "Bearer " + access_token,
+                "apikey": SUPABASE_SERVICE_ROLE_KEY,
+                "Authorization": "Bearer " + SUPABASE_SERVICE_ROLE_KEY,
+            },
+            params={"email": email},
+            timeout=10
+        )
+        users = lookup.json().get("users", [])
+        if not users:
+            return render_template("reset_password.html", error="No account found with that email address.", done=False)
+        user_id = users[0]["id"]
+        # Update password via Admin API
+        upd = requests.put(
+            SUPABASE_URL + "/auth/v1/admin/users/" + user_id,
+            headers={
+                "apikey": SUPABASE_SERVICE_ROLE_KEY,
+                "Authorization": "Bearer " + SUPABASE_SERVICE_ROLE_KEY,
                 "Content-Type": "application/json"
             },
             json={"password": new_password},
             timeout=10
         )
-        if r.status_code == 200:
-            return render_template("reset_password.html", done=True, error=None, supabase_url=SUPABASE_URL, supabase_anon_key=SUPABASE_ANON_KEY)
+        if upd.status_code == 200:
+            return render_template("reset_password.html", done=True, error=None)
         else:
-            err = r.json().get("error_description") or r.json().get("message") or "Reset failed."
-            return render_template("reset_password.html", error=err, done=False, supabase_url=SUPABASE_URL, supabase_anon_key=SUPABASE_ANON_KEY)
-    # GET: show the form  ¢  JS will read the token from the URL fragment
-    return render_template("reset_password.html", done=False, error=None, supabase_url=SUPABASE_URL, supabase_anon_key=SUPABASE_ANON_KEY)
+            err = upd.json().get("message") or "Password update failed. Please try again."
+            return render_template("reset_password.html", error=err, done=False)
+    return render_template("reset_password.html", done=False, error=None)
 
 
 
@@ -539,25 +554,25 @@ def stats():
     )
 
  
-#  ¢ ¢  ADD BOOK (page)  ¢ ¢ 
+#  Â¢ Â¢  ADD BOOK (page)  Â¢ Â¢ 
 @app.route("/add")
 @login_required
 def add_choice():
     return render_template("add_choice.html")
  
-#  ¢ ¢  ADD: SCANNER  ¢ ¢ 
+#  Â¢ Â¢  ADD: SCANNER  Â¢ Â¢ 
 @app.route("/add/scan")
 @login_required
 def add_scan():
     return render_template("scan.html")
  
-#  ¢ ¢  ADD: MANUAL FORM  ¢ ¢ 
+#  Â¢ Â¢  ADD: MANUAL FORM  Â¢ Â¢ 
 @app.route("/add/manual")
 @login_required
 def add_manual():
     return render_template("add.html", isbn_prefill=request.args.get("isbn", ""))
  
-#  ¢ ¢  ADD: SAVE  ¢ ¢ 
+#  Â¢ Â¢  ADD: SAVE  Â¢ Â¢ 
 @app.route("/add/manual/save", methods=["POST"])
 @login_required
 def add_manual_save():
@@ -585,7 +600,7 @@ def add_manual_save():
     db.session.commit()
     return redirect(url_for("books"))
  
-#  ¢ ¢  AUTHORS  ¢ ¢ 
+#  Â¢ Â¢  AUTHORS  Â¢ Â¢ 
 @app.route("/authors")
 @login_required
 def authors():
@@ -600,9 +615,9 @@ def authors():
 
 
 
-# ─────────────────────────────────────────────────────────────────
-# AUTHOR SHELF  /author/<name>  — client-side Google Books fetch
-# ─────────────────────────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# AUTHOR SHELF  /author/<name>  â client-side Google Books fetch
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 @app.route("/author/<path:author_name>")
 @login_required
 def author_shelf(author_name):
@@ -663,7 +678,7 @@ def add_want_to_read():
     return jsonify({"success": True, "id": new_book.id})
 
  
-#  ¢ ¢  UTILITIES  ¢ ¢ 
+#  Â¢ Â¢  UTILITIES  Â¢ Â¢ 
 @app.route("/utilities")
 @login_required
 def utilities():
@@ -971,7 +986,7 @@ def enrich_csv():
         return redirect(url_for("utilities"))
  
  
-#  ¢ ¢  BOOK DETAIL  ¢ ¢ 
+#  Â¢ Â¢  BOOK DETAIL  Â¢ Â¢ 
 @app.route("/utilities/test-google-books")
 def test_google_books():
     import requests as req
@@ -1000,7 +1015,7 @@ def book_detail(book_id):
     if not book: abort(404)
     return render_template("detail.html", book=book.to_dict())
  
-#  ¢ ¢  BOOK EDIT  ¢ ¢ 
+#  Â¢ Â¢  BOOK EDIT  Â¢ Â¢ 
 @app.route("/book/<book_id>/edit", methods=["GET", "POST"])
 def book_edit(book_id):
     book = db.session.get(Book, book_id)
@@ -1029,7 +1044,7 @@ def book_edit(book_id):
     from datetime import date
     return render_template("edit.html", book=book.to_dict(), today=str(date.today()), save_error=save_error)
  
-#  ¢ ¢  BOOK DELETE  ¢ ¢ 
+#  Â¢ Â¢  BOOK DELETE  Â¢ Â¢ 
 @app.route("/book/<book_id>/delete", methods=["POST"])
 def book_delete(book_id):
     book = db.session.get(Book, book_id)
@@ -1038,7 +1053,7 @@ def book_delete(book_id):
     db.session.commit()
     return redirect(url_for("books"))
  
-#  ¢ ¢  API SEARCH (Open Library)  ¢ ¢ 
+#  Â¢ Â¢  API SEARCH (Open Library)  Â¢ Â¢ 
 @app.route("/api/search")
 @login_required
 def api_search():
@@ -1059,7 +1074,7 @@ def api_search():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
  
-#  ¢ ¢  API SUMMARY  ¢ ¢ 
+#  Â¢ Â¢  API SUMMARY  Â¢ Â¢ 
 @app.route("/api/summary")
 @login_required
 def api_summary():
@@ -1285,7 +1300,7 @@ def missing_summaries_save():
     return jsonify({"updated": updated})
 @app.route("/utilities/cover-lookup")
 def cover_lookup():
-    """Server-side Google Books cover lookup  ¢  tries ISBN first, then title+author."""
+    """Server-side Google Books cover lookup  Â¢  tries ISBN first, then title+author."""
     title = request.args.get("title", "").strip()
     author = request.args.get("author", "").strip()
     isbn = request.args.get("isbn", "").strip()
