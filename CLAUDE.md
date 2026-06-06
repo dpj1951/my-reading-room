@@ -611,3 +611,13 @@ Paste this into the chat to get Claude up to speed:
 - books.html: primes /books/data cache on every online load
 - Fixed offline cover fallback: no-cover-offline div always in DOM; when cover image fails to load offline, shows book title and author in dark card instead of blank
 - Result: full library browsable offline including from cold start (closed app, wifi off, reopen)
+
+## What Was Done June 6, 2026
+
+### Fixed reset password flow (fully self-service, works from any email client)
+- Root cause: Supabase switched to PKCE flow by default — reset links send ?code= param which requires a code_verifier stored in localStorage from the same browser session. Outlook in-app browser and cross-browser flows broke this.
+- Fix: rewrote /reset-password POST route to use Supabase Admin API (service role key) — user enters their email + new password, server looks up UUID by email and calls PUT /auth/v1/admin/users/{uuid} directly
+- Rewrote templates/reset_password.html — simple form with email, new password, confirm password fields
+- No PKCE, no tokens, no localStorage dependency — works from any browser, any email client, forever
+- Forgot password link already present on login page (line 56)
+- Also added /reset-password/exchange route (unused now but harmless) and Supabase JS CDN to template (also unused now — can be cleaned up later)
