@@ -423,6 +423,22 @@ def books_data():
         mimetype='application/json'
     )
 
+
+@app.route('/offline')
+def offline_page():
+    return render_template('offline.html')
+
+@app.route('/books/data')
+@login_required
+def books_data():
+    import json
+    all_books = [b.to_dict() for b in Book.query.filter_by(user_id=g.user["id"]).all()]
+    return app.response_class(
+        response=json.dumps(all_books),
+        status=200,
+        mimetype='application/json'
+    )
+
 @app.route('/help')
 def help_page():
     return render_template('help.html')

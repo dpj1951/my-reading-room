@@ -247,4 +247,14 @@
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 200);
   }
+</script><script>
+// Prime the offline cache every time the library loads while online
+(function() {
+  if (!('serviceWorker' in navigator) || !navigator.onLine) return;
+  function prime() {
+    fetch('/books/data').catch(function() {});
+  }
+  prime();
+  window.addEventListener('online', prime);
+})();
 </script>
