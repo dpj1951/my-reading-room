@@ -600,3 +600,14 @@ Paste this into the chat to get Claude up to speed:
 - 3 feature cards: "Add books three ways", "Track your reading life", "Always with you, even offline"
 - Includes yard sale offline use case as a highlight
 - "Full guide & FAQ" button links to /help page
+
+## What Was Done June 6, 2026
+
+### Implemented proper offline support (PWA)
+- Root cause of missing offline: SW v2 was a pass-through with no caching — added April 9 to fix stale-login bug, but killed offline capability
+- SW v3: caches /books HTML and static assets on first online visit; session-cookie-aware fallback (only serves cached page if session cookie present, preventing stale-login bug)
+- New /books/data JSON endpoint: returns user's full library as JSON; SW caches it on every visit
+- New /offline route and templates/offline.html: shown when truly offline with no cache
+- books.html: primes /books/data cache on every online load
+- Fixed offline cover fallback: no-cover-offline div always in DOM; when cover image fails to load offline, shows book title and author in dark card instead of blank
+- Result: full library browsable offline including from cold start (closed app, wifi off, reopen)
