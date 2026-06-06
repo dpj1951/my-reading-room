@@ -1,66 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Help &amp; Getting Started &mdash; My Reading Alcove</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Help &amp; Getting Started — My Reading Alcove</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #d8d8d8; --surface: #16161c; --card: #3a3a3a; --border: #4a4a4a;
-      --accent: #3b9eff; --text: #f0ede8; --muted: #8a8795;
-      --radius: 16px; --shadow: 0 6px 20px rgba(0,0,0,0.6);
+      --accent:  #c9a84c;
+      --muted:   #888;
+      --border:  rgba(255,255,255,0.08);
+      --text:    #e8e0d0;
+      --bg:      #0e0e12;
+      --surface: #16161c;
+      --card:    #1c1c24;
+      --radius:  10px;
+      --teal:    #4ecdc4;
+      --purple:  #a78bfa;
     }
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg); color: var(--text);
-      min-height: 100vh;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 40px 24px;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+    nav {
+      position: sticky; top: 0; z-index: 100; height: 64px;
+      background: rgba(14,14,18,0.85); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 28px; gap: 28px;
     }
-    .brand { text-align: center; margin-bottom: 48px; }
-    .brand h1 {
-      font-family: 'DM Serif Display', serif;
-      font-size: clamp(2rem, 8vw, 3.2rem);
-      color: var(--accent); letter-spacing: 0.04em; margin-bottom: 8px;
-    }
-    .brand p { color: var(--muted); font-size: 0.95rem; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; }
-    .menu { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 360px; }
-    .menu-btn {
-      display: block; background: var(--card);
-      border: 1px solid var(--border); border-radius: var(--radius);
-      box-shadow: var(--shadow); padding: 20px;
-      text-align: center; text-decoration: none; color: var(--text);
-      font-family: 'DM Serif Display', serif; font-size: 1.3rem; letter-spacing: 0.02em;
-      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, background 0.15s;
-    }
-    .menu-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.7); border-color: var(--accent); background: #22222e; }
-    .menu-btn:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
-    .shelf { margin-top: 56px; font-size: 3rem; letter-spacing: -4px; }
+    nav .brand { font-family: 'DM Serif Display', serif; font-size: 1.35rem; color: var(--accent); text-decoration: none; }
+    nav a:not(.brand) { color: var(--muted); text-decoration: none; font-size: .88rem; font-weight: 500; transition: color .15s; }
+    nav a:not(.brand):hover { color: var(--text); }
+    nav a.active { color: var(--accent); }
+    nav .spacer { flex: 1; }
+    .page { max-width: 960px; margin: 0 auto; padding: 48px 24px 80px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: 2.2rem; color: var(--accent); margin-bottom: 6px; }
+    .subtitle { color: var(--muted); font-size: .9rem; margin-bottom: 40px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-bottom: 48px; }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 18px; display: flex; flex-direction: column; gap: 6px; }
+    .stat-card .label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+    .stat-card .value { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--text); line-height: 1; }
+    .stat-card .value.accent { color: var(--accent); }
+    .stat-card .sub { font-size: .78rem; color: var(--muted); }
+    .section { margin-bottom: 48px; }
+    .section-title { font-family: 'DM Serif Display', serif; font-size: 1.25rem; color: var(--text); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .chart-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px 16px; }
+    .chart-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .chart-tab { padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: .8rem; font-weight: 500; cursor: pointer; transition: all .15s; }
+    .chart-tab.active { background: var(--accent); border-color: var(--accent); color: #0e0e12; }
+    .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 140px; padding-bottom: 28px; position: relative; }
+    .bar-chart::after { content: ''; position: absolute; bottom: 28px; left: 0; right: 0; height: 1px; background: var(--border); }
+    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; position: relative; }
+    .bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 2px; transition: height .4s cubic-bezier(.4,0,.2,1); cursor: pointer; position: relative; }
+    .bar.books-bar { background: var(--accent); }
+    .bar.pages-bar { background: var(--teal); }
+    .bar:hover { filter: brightness(1.25); }
+    .bar-tip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #2a2a38; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: .75rem; color: var(--text); white-space: nowrap; z-index: 10; pointer-events: none; }
+    .bar:hover .bar-tip { display: block; }
+    .bar-label { position: absolute; bottom: 0; font-size: .62rem; color: var(--muted); white-space: nowrap; transform: translateX(-50%); left: 50%; }
+    .years-table { width: 100%; border-collapse: collapse; }
+    .years-table th { text-align: left; font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; padding: 0 12px 10px; font-weight: 600; }
+    .years-table td { padding: 10px 12px; border-top: 1px solid var(--border); font-size: .9rem; }
+    .years-table tr:last-child td { border-bottom: 1px solid var(--border); }
+    .year-num { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--accent); }
+    .progress-bar-wrap { height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; width: 100%; max-width: 220px; }
+    .progress-bar-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+    .progress-bar-fill.teal { background: var(--teal); }
+    .nudge { background: rgba(201,168,76,0.07); border: 1px solid rgba(201,168,76,0.25); border-radius: var(--radius); padding: 14px 18px; font-size: .85rem; color: var(--muted); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+    .nudge a { color: var(--accent); text-decoration: none; }
+    .nudge a:hover { text-decoration: underline; }
+    @media (max-width: 600px) { .summary-grid { grid-template-columns: repeat(2, 1fr); } h1 { font-size: 1.7rem; } }
   </style>
-  <link rel="manifest" href="/static/manifest.json">
-  <meta name="theme-color" content="#0e0e12">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Reading Alcove">
 </head>
 <body>
-  <div class="brand">
-    <h1>My Reading Alcove</h1>
-    <p>Know what you read</p>
-  </div>
-  <nav class="menu">
-    <a class="menu-btn" href="/books">Books</a>
-    <a class="menu-btn" href="/authors">Authors</a>
-    <a class="menu-btn" href="/add">Add a Book</a>
-    <a class="menu-btn" href="/utilities">Utilities</a>
-    <a class="menu-btn" href="/stats">Stats</a>
-    <a class="menu-btn active" href="/help">Help</a>
-  </nav>
+<nav>
+  <a href="/" class="brand">My Reading Alcove</a>
+  <a href="/books">Library</a>
+  <a href="/authors">Authors</a>
+  <a href="/add">Add</a>
+  <a href="/utilities">Utilities</a>
+  <a href="/stats">Stats</a>
+  <span class="spacer"></span>
+  <a href="/help" class="active">Help</a>
+  <a href="/">Home</a>
+</nav>
 
+<div class="page">
 <div class="help-page">
     <div class="help-header">
       <h1>Help &amp; Getting Started</h1>
@@ -166,5 +192,7 @@
     .help-footer a { color: var(--accent, #002FA7); }
   </style>
 
+
+</div>
 </body>
 </html>
