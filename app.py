@@ -423,7 +423,6 @@ def books_data():
 @app.route('/offline')
 def offline_page():
     return render_template('offline.html')
-    )
 
 @app.route('/help')
 def help_page():
