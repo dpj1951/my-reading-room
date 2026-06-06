@@ -328,7 +328,7 @@ def reset_password():
         access_token = request.form.get("access_token", "").strip()
         new_password = request.form.get("password", "").strip()
         if not access_token or not new_password:
-            return render_template("reset_password.html", error="Missing token or password.", done=False)
+            return render_template("reset_password.html", error="Missing token or password.", done=False, supabase_url=SUPABASE_URL, supabase_anon_key=SUPABASE_ANON_KEY)
         # Call Supabase to update the password using the access token
         r = requests.put(
             SUPABASE_URL + "/auth/v1/user",
@@ -341,12 +341,12 @@ def reset_password():
             timeout=10
         )
         if r.status_code == 200:
-            return render_template("reset_password.html", done=True, error=None)
+            return render_template("reset_password.html", done=True, error=None, supabase_url=SUPABASE_URL, supabase_anon_key=SUPABASE_ANON_KEY)
         else:
             err = r.json().get("error_description") or r.json().get("message") or "Reset failed."
-            return render_template("reset_password.html", error=err, done=False)
+            return render_template("reset_password.html", error=err, done=False, supabase_url=SUPABASE_URL, supabase_anon_key=SUPABASE_ANON_KEY)
     # GET: show the form  ¢  JS will read the token from the URL fragment
-    return render_template("reset_password.html", done=False, error=None)
+    return render_template("reset_password.html", done=False, error=None, supabase_url=SUPABASE_URL, supabase_anon_key=SUPABASE_ANON_KEY)
 
 
 
