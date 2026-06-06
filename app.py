@@ -406,10 +406,6 @@ def books():
 
 
 
-@app.route('/offline')
-def offline_page():
-    return render_template('offline.html')
-
 @app.route('/books/data')
 @login_required
 def books_data():
