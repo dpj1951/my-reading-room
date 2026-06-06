@@ -130,7 +130,7 @@
           <div class="shelf-book">
             <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
               {% if book.cover_url %}
-                <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
+                <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none';this.parentElement.querySelector('.no-cover-offline')&&(this.parentElement.querySelector('.no-cover-offline').style.display='flex')">
               {% else %}
                 <div class="no-cover">📖</div>
               {% endif %}
@@ -155,7 +155,7 @@
           <div style="position:relative">
             <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
               {% if book.cover_url %}
-                <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
+                <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none';this.parentElement.querySelector('.no-cover-offline')&&(this.parentElement.querySelector('.no-cover-offline').style.display='flex')">
               {% else %}
                 <div class="no-cover">📖</div>
               {% endif %}
@@ -188,7 +188,7 @@
           <div class="shelf-book">
             <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
               {% if book.cover_url %}
-                <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
+                <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none';this.parentElement.querySelector('.no-cover-offline')&&(this.parentElement.querySelector('.no-cover-offline').style.display='flex')">
               {% else %}
                 <div class="no-cover">📖</div>
               {% endif %}
@@ -213,7 +213,7 @@
           <div class="shelf-book">
             <a href="/book/{{ book.id }}" title="{{ book.title }} — {{ book.author }}">
               {% if book.cover_url %}
-                <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none'">
+                <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none';this.parentElement.querySelector('.no-cover-offline')&&(this.parentElement.querySelector('.no-cover-offline').style.display='flex')">
               {% else %}
                 <div class="no-cover">📖</div>
               {% endif %}
