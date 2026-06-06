@@ -583,3 +583,14 @@ Paste this into the chat to get Claude up to speed:
 - Fix 5: if OL is missing pages/cover/summary, falls through to Google Books to fill gaps (merge logic)
 - Fix 6: Google Books merge populates any fields OL left empty
 - Result: scanning a barcode now auto-populates title, author, pages, cover, year, and summary
+
+## What Was Done June 5, 2026
+
+### Added Help & Getting Started page
+- New route: GET /help in app.py (no login required)
+- New template: templates/help.html
+- Content: Getting Started (3 ways to add a book, status system, format/rating), FAQ (7 questions including offline access), Migration guide (Goodreads and StoryGraph with verified export steps)
+- Nav: uses stats.html nav pattern (horizontal bar with active highlight)
+- Added Help link to home.html nav (line 76)
+- Goodreads export steps verified current: My Books > Tools > Import and export > Export Library
+- StoryGraph export steps verified: profile > Manage Account > Manage Your Data > Export StoryGraph Library
