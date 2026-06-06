@@ -594,3 +594,9 @@ Paste this into the chat to get Claude up to speed:
 - Added Help link to home.html nav (line 76)
 - Goodreads export steps verified current: My Books > Tools > Import and export > Export Library
 - StoryGraph export steps verified: profile > Manage Account > Manage Your Data > Export StoryGraph Library
+
+### Added How It Works section to landing page
+- New section inserted between Pricing and Final CTA in templates/landing.html
+- 3 feature cards: "Add books three ways", "Track your reading life", "Always with you, even offline"
+- Includes yard sale offline use case as a highlight
+- "Full guide & FAQ" button links to /help page
