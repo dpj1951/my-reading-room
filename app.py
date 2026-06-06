@@ -291,6 +291,24 @@ def signup():
             error = data.get("error_description") or data.get("msg") or data.get("message") or "Signup failed."
     return render_template("signup.html", error=error)
 
+
+@app.route("/reset-password/exchange", methods=["POST"])
+def reset_password_exchange():
+    data = request.get_json(silent=True, force=True) or {}
+    code = data.get("code", "")
+    if not code:
+        return {"error": "missing code"}, 400
+    r = requests.post(
+        SUPABASE_URL + "/auth/v1/token?grant_type=pkce",
+        headers={"apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json"},
+        json={"auth_code": code, "code_verifier": ""},
+        timeout=10
+    )
+    d = r.json()
+    if r.status_code == 200 and d.get("access_token"):
+        return {"access_token": d["access_token"]}
+    return {"error": d.get("error_description") or d.get("message") or "Exchange failed"}, 400
+
 @app.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
     sent = False
