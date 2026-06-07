@@ -702,9 +702,11 @@ def export_csv():
     writer.writeheader()
     for book in books:
         writer.writerow(book.to_dict())
-    output.seek(0)
-    return send_file(io.BytesIO(output.getvalue().encode("utf-8")), mimetype="text/csv",
-                     as_attachment=True, download_name="my_reading_alcove.csv")
+    csv_bytes = output.getvalue().encode("utf-8")
+    response = make_response(csv_bytes)
+    response.headers["Content-Type"] = "text/csv; charset=utf-8"
+    response.headers["Content-Disposition"] = "attachment; filename=my_reading_alcove.csv"
+    return response
  
 @app.route("/utilities/import", methods=["POST"])
 @login_required
