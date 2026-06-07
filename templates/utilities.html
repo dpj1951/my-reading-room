@@ -69,7 +69,7 @@
       <span class="sub">Download your library as a spreadsheet</span>
     </a>
 
-    {% if current_user and current_user.role in ('subscriber', 'beta', 'owner') %}
+    {% if current_user and current_user.role in ('subscriber', 'beta', 'owner', 'trial') %}
     <form class="import-form" action="/utilities/import" method="POST" enctype="multipart/form-data">
       <label class="menu-btn import-btn" for="importFile">
         <span class="icon">&#x1F4E5;</span> Import CSV
