@@ -696,9 +696,9 @@ def tools():
 @login_required
 def export_csv():
     books = Book.query.filter_by(user_id=g.user["id"]).all()
-    fields = ["id","title","author","isbn","format","pages","copyright_year","read_date","rating","cover_url","summary","read_time_hrs"]
+    fields = ["id","title","author","isbn","format","pages","copyright_year","read_date","rating","cover_url","summary","read_time_hrs","status"]
     output = io.StringIO()
-    writer = csv.DictWriter(output, fieldnames=fields)
+    writer = csv.DictWriter(output, fieldnames=fields, extrasaction="ignore")
     writer.writeheader()
     for book in books:
         writer.writerow(book.to_dict())
