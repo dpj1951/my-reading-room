@@ -621,3 +621,17 @@ Paste this into the chat to get Claude up to speed:
 - No PKCE, no tokens, no localStorage dependency — works from any browser, any email client, forever
 - Forgot password link already present on login page (line 56)
 - Also added /reset-password/exchange route (unused now but harmless) and Supabase JS CDN to template (also unused now — can be cleaned up later)
+
+## What Was Done June 7, 2026
+
+### Fixed Export CSV (500 error)
+- Root cause: `to_dict()` returns `user_id` and `status` fields but `fieldnames` list in `export_csv()` only had 12 columns — `DictWriter` threw `ValueError: dict contains fields not in fieldnames`
+- Fix 1: added `status` to the `fields` list (useful for users to see read/want_to_read/etc in export)
+- Fix 2: added `extrasaction="ignore"` to `DictWriter` so future `to_dict()` additions won't break export
+- Fix 3: added `make_response` to Flask imports (was used in route but never imported — second 500)
+- Diagnosis method: Render logs → search "ValueError" → confirmed `user_id`, `status` not in fieldnames
+
+### Fixed ISBN displaying in scientific notation in Excel
+- Root cause: Excel ignores CSV quoting for numeric-looking strings and converts 13-digit ISBNs to scientific notation
+- Fix: prefix each ISBN value with `\t` (tab character) before writing to CSV — forces Excel/Numbers/Google Sheets to treat cell as text
+- Tab is invisible in spreadsheet apps and doesn't break CSV re-import
