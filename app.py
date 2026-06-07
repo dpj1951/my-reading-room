@@ -461,6 +461,14 @@ def offline_page():
 def help_page():
     return render_template('help.html')
 
+@app.route('/terms')
+def terms_page():
+    return render_template('terms.html')
+
+@app.route('/privacy')
+def privacy_page():
+    return render_template('privacy.html')
+
 @app.route('/stats')
 @login_required
 def stats():
