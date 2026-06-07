@@ -701,7 +701,10 @@ def export_csv():
     writer = csv.DictWriter(output, fieldnames=fields, extrasaction="ignore")
     writer.writeheader()
     for book in books:
-        writer.writerow(book.to_dict())
+        row = book.to_dict()
+        if row.get('isbn'):
+            row['isbn'] = '\t' + str(row['isbn'])
+        writer.writerow(row)
     csv_bytes = output.getvalue().encode("utf-8")
     response = make_response(csv_bytes)
     response.headers["Content-Type"] = "text/csv; charset=utf-8"
