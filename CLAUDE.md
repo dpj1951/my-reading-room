@@ -656,3 +656,7 @@ Paste this into the chat to get Claude up to speed:
 
 ### Landing page copy tweak
 - Removed word from headline: "Everything a serious reader needs" to "Everything a reader needs"
+
+### Landing page additional copy updates (June 7, 2026)
+- PWA bullet in pricing list updated to: "PWA — installs on your phone, tablet, or desktop (iOS & Android)"
+- Works on Every Device feature card updated to mention iPhone, iPad, Android phone or tablet, Mac and Windows desktop
