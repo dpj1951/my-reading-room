@@ -76,7 +76,7 @@ FREE_BOOK_LIMIT = 20
 def is_subscriber():
     """Return True if current user has full access (subscriber, beta, or owner)."""
     role = session.get("user_role", "free")
-    return role in ("subscriber", "beta", "owner")
+    return role in ("subscriber", "beta", "owner", "trial")
 
 #  Â¢ Â¢  Database  Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///library.db")
