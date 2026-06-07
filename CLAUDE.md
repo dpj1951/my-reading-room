@@ -641,3 +641,18 @@ Paste this into the chat to get Claude up to speed:
 - Consider a single "How did you hear about us?" question right after signup — no friction, immediately actionable for marketing
 - Longer term: optional profile fields (reading goals, favorite genres) that double as personalization hooks
 - Build based on what survey data shows, not assumptions
+
+## What Was Done June 7, 2026 — Session 2
+
+### Added Terms of Use and Privacy Policy pages
+- New routes: GET /terms and GET /privacy in app.py (no login required)
+- New templates: templates/terms.html and templates/privacy.html
+- Terms covers: service description, accounts, billing ($1.99/mo via Stripe), data ownership, acceptable use, termination, disclaimers, governing law (State of New Hampshire)
+- Privacy covers: data collected (email, library, payments via Stripe), third-party providers table (Supabase, Render, Stripe), data retention, user rights, childrens privacy
+- Legal entity: Digbe eSolutions LLC; contact: support@myreadingalcove.com
+- Nav: Help, Terms of Use, Privacy Policy links on all three pages with Home link on right
+- Landing page footer: added Terms of Use, Privacy Policy, Help links (subtle gray, inline)
+- help.html nav updated to include Terms and Privacy links
+
+### Landing page copy tweak
+- Removed word from headline: "Everything a serious reader needs" to "Everything a reader needs"
