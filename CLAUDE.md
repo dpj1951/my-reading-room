@@ -635,3 +635,9 @@ Paste this into the chat to get Claude up to speed:
 - Root cause: Excel ignores CSV quoting for numeric-looking strings and converts 13-digit ISBNs to scientific notation
 - Fix: prefix each ISBN value with `\t` (tab character) before writing to CSV — forces Excel/Numbers/Google Sheets to treat cell as text
 - Tab is invisible in spreadsheet apps and doesn't break CSV re-import
+
+## Future Consideration: User Demographics / Growth
+- Post-launch (20-30 real users): send a 3-question Tally/Typeform survey to learn referral source, signup hook, and friction points
+- Consider a single "How did you hear about us?" question right after signup — no friction, immediately actionable for marketing
+- Longer term: optional profile fields (reading goals, favorite genres) that double as personalization hooks
+- Build based on what survey data shows, not assumptions
