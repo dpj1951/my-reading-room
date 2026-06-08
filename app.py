@@ -1301,8 +1301,8 @@ def missing_summaries_save():
             book_id_int = int(book_id)
         except (ValueError, TypeError):
             continue
-        book = db.session.get(Book, book_id_int)
-        if book and str(book.user_id) == str(user["id"]):
+            book = Book.query.filter_by(id=book_id_int, user_id=user["id"]).first()
+            if book:
             book.summary = summary
             updated += 1
     try:
