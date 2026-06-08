@@ -660,3 +660,32 @@ Paste this into the chat to get Claude up to speed:
 ### Landing page additional copy updates (June 7, 2026)
 - PWA bullet in pricing list updated to: "PWA — installs on your phone, tablet, or desktop (iOS & Android)"
 - Works on Every Device feature card updated to mention iPhone, iPad, Android phone or tablet, Mac and Windows desktop
+
+## What Was Done June 8, 2026
+
+### Fixed Find Missing Summaries tool (multiple bugs)
+
+**Bug 1: OL ISBN search format wrong**
+- Was using `search.json?q=isbn:XXXXXXXXX` — OL doesn't support `isbn:` prefix in `q` param
+- Fix: changed to `search.json?isbn=XXXXXXXXX` for ISBN lookups, `search.json?q=` for title/author
+
+**Bug 2: Book ID treated as integer**
+- Save route did `book_id_int = int(book_id)` but Book.id is a UUID string (String(36))
+- Every lookup silently failed in the `except (ValueError, TypeError): continue` block
+- Fix: removed int conversion, use book_id string directly
+
+**Bug 3: user_id filter matching nothing**
+- Books in DB have `user_id = None` (inserted before user_id column was populated)
+- `filter_by(user_id=user["id"])` matched nothing
+- Fix: removed user_id from filter (GET route already scopes to current user)
+
+**Bug 4: SQLAlchemy ORM not saving changes**
+- Even with correct book lookup, `book.summary = summary` + `db.session.commit()` wasn't persisting
+- Root cause unclear (likely session state issue)
+- Fix: replaced ORM update with raw SQL: `db.session.execute(db.text("UPDATE books SET summary = :s WHERE id = :i"), ...)`
+- Commit per item to avoid transaction issues
+
+**Result:** 33 summaries saved, 5 genuinely not found on OL or Google Books
+
+### Debug prints to clean up
+- app.py: `print(f"DEBUG summaries-save: ...")` and `print(f"DEBUG first item: ...")` lines still in code — remove next session
