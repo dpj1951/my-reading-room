@@ -1303,8 +1303,8 @@ def missing_summaries_save():
             continue
             book = Book.query.filter_by(id=book_id_int, user_id=user["id"]).first()
             if book:
-            book.summary = summary
-            updated += 1
+                book.summary = summary
+                updated += 1
     try:
         db.session.commit()
     except Exception as e:
