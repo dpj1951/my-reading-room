@@ -531,8 +531,8 @@
                 fill.style.width = Math.round(30 + (i / books.length) * 60) + "%";
                 label.textContent = "Looking up " + (i+1) + " of " + books.length + ": " + b.title;
                 try {
-                    const q = b.isbn ? "isbn:" + b.isbn : encodeURIComponent(b.title + " " + b.author);
-                    const sr = await fetch("https://openlibrary.org/search.json?q=" + q + "&limit=1");
+                        const olUrl = b.isbn ? "https://openlibrary.org/search.json?isbn=" + b.isbn + "&limit=1" : "https://openlibrary.org/search.json?q=" + encodeURIComponent(b.title + " " + b.author) + "&limit=1";
+                        const sr = await fetch(olUrl);
                     const sd = await sr.json();
                     const docs = sd.docs || [];
                     if (docs.length > 0 && docs[0].key) {
