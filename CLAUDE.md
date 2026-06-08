@@ -700,3 +700,13 @@ Paste this into the chat to get Claude up to speed:
 - backfill_covers_data: was filtering by user_id which is null on old books — changed to Book.query.all()
 - backfill_covers_save: replaced ORM db.session.get + commit with raw SQL per-item UPDATE + commit
 - Same pattern as missing summaries fix from earlier today
+
+## What Was Done June 8, 2026 — Session 3 (continued)
+
+### Backfill Book Covers — still broken (investigate next session)
+- Server-side fix deployed (raw SQL, removed user_id filter)
+- BUT covers tool still shows "No covers found for any of 18 missing book(s). 0/18 updated"
+- Image 2 shows lookup IS working (Desert Star cover found, 4/18 progress)
+- Root cause: JS `updates` array is empty when save is called — covers being looked up but not pushed to updates array
+- Next session: look at tools.html lines 190-240 to find why covers aren't being added to updates array
+- Same pattern: `label.textContent = 'No covers found...'` fires when total > 0 but updates.length === 0
