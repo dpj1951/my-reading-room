@@ -689,3 +689,14 @@ Paste this into the chat to get Claude up to speed:
 
 ### Debug prints to clean up
 - app.py: `print(f"DEBUG summaries-save: ...")` and `print(f"DEBUG first item: ...")` lines still in code — remove next session
+
+## What Was Done June 8, 2026 — Session 3
+
+### Added beta user dpggjohnson@gmail.com
+- Inserted via Supabase SQL Editor: INSERT INTO user_roles (user_id, role) VALUES ('dd409fe2-6a1a-49f5-aeef-c375bf049f81', 'beta')
+- User logged out via /logout URL to pick up new role
+
+### Fixed Backfill Book Covers tool (same root cause as missing summaries)
+- backfill_covers_data: was filtering by user_id which is null on old books — changed to Book.query.all()
+- backfill_covers_save: replaced ORM db.session.get + commit with raw SQL per-item UPDATE + commit
+- Same pattern as missing summaries fix from earlier today
