@@ -1297,7 +1297,7 @@ def missing_summaries_save():
         summary = str(item.get("summary", "")).strip()
         if not book_id or not summary:
             continue
-            book = Book.query.filter_by(id=book_id, user_id=user["id"]).first()
+            book = Book.query.filter_by(id=book_id).first()
             if book:
                 book.summary = summary
                 updated += 1
