@@ -1284,13 +1284,10 @@ def missing_summaries():
 @app.route("/utilities/missing-summaries-save", methods=["POST"])
 @login_required
 def missing_summaries_save():
-    """Accept {id, summary} pairs from client and save to DB."""
     user = get_current_user()
     if not user:
         return jsonify({"error": "Unauthorized"}), 401
     data = request.get_json()
-    print(f"DEBUG summaries-save: got {len(data) if data else 0} items", flush=True)
-    if data: print(f"DEBUG first item: {repr(data[0])}", flush=True)
     if not data or not isinstance(data, list):
         return jsonify({"error": "Invalid data"}), 400
     updated = 0
@@ -1299,16 +1296,15 @@ def missing_summaries_save():
         summary = str(item.get("summary", "")).strip()
         if not book_id or not summary:
             continue
-            book = Book.query.filter_by(id=book_id).first()
-            if book:
-                book.summary = summary
-                updated += 1
-    try:
-        db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": f"DB commit failed: {str(e)}"}), 500
+        try:
+            db.session.execute(db.text("UPDATE books SET summary = :s WHERE id = :i"), {"s": summary, "i": book_id})
+            db.session.commit()
+            updated += 1
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error updating book {book_id}: {e}", flush=True)
     return jsonify({"updated": updated})
+
 @app.route("/utilities/cover-lookup")
 def cover_lookup():
     """Server-side Google Books cover lookup  Â¢  tries ISBN first, then title+author."""
