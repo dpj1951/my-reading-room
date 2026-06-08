@@ -1181,7 +1181,7 @@ def isbn_lookup():
 def backfill_covers_data():
     """Return books missing a cover URL."""
     user = get_current_user()
-    books = Book.query.filter_by(user_id=user["id"]).all()
+    books = Book.query.all()
     needs_cover = []
     for b in books:
         if not (b.cover_url or "").strip():
@@ -1191,21 +1191,24 @@ def backfill_covers_data():
 @app.route("/utilities/backfill-covers-save", methods=["POST"])
 @login_required
 def backfill_covers_save():
-    """Accept a list of {id, cover_url} pairs and update the database."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"error": "Unauthorized"}), 401
     data = request.get_json()
     if not data or not isinstance(data, list):
         return jsonify({"error": "Invalid data"}), 400
     updated = 0
     for item in data:
-        book_id = item.get("id", "").strip()
-        cover_url = item.get("cover_url", "").strip()
+        book_id = str(item.get("id", "")).strip()
+        cover_url = str(item.get("cover_url", "")).strip()
         if not book_id or not cover_url:
             continue
-        book = db.session.get(Book, book_id)
-        if book:
-            book.cover_url = cover_url
+        try:
+            db.session.execute(db.text("UPDATE books SET cover_url = :c WHERE id = :i"), {"c": cover_url, "i": book_id})
+            db.session.commit()
             updated += 1
-    db.session.commit()
+        except Exception as e:
+            db.session.rollback()
     return jsonify({"updated": updated})
 
 @app.route("/utilities/missing-pages")
