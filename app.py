@@ -1289,6 +1289,7 @@ def missing_summaries_save():
     if not user:
         return jsonify({"error": "Unauthorized"}), 401
     data = request.get_json()
+    print(f"DEBUG summaries-save: got {len(data) if data else 0} items", flush=True)
     if not data or not isinstance(data, list):
         return jsonify({"error": "Invalid data"}), 400
     updated = 0
