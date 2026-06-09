@@ -1058,6 +1058,28 @@ def book_edit(book_id):
     return render_template("edit.html", book=book.to_dict(), today=str(date.today()), save_error=save_error)
  
 #  Â¢ Â¢  BOOK DELETE  Â¢ Â¢ 
+
+@app.route("/book/<book_id>/enrich", methods=["POST"])
+@login_required
+def enrich_book(book_id):
+    user = get_current_user()
+    data = request.get_json()
+    allowed = {"cover_url", "isbn", "pages", "summary", "copyright_year"}
+    updates = {k: v for k, v in data.items() if k in allowed and v}
+    if not updates:
+        return jsonify({"ok": False, "error": "No valid fields to update"})
+    try:
+        set_clause = ", ".join(f"{k} = :{k}" for k in updates)
+        updates["book_id"] = book_id
+        db.session.execute(
+            db.text(f"UPDATE books SET {set_clause} WHERE id = :book_id"),
+            updates
+        )
+        db.session.commit()
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
 @app.route("/book/<book_id>/delete", methods=["POST"])
 def book_delete(book_id):
     book = db.session.get(Book, book_id)

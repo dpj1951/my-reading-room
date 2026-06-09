@@ -46,6 +46,20 @@
       transition: border-color 0.2s, background 0.2s;
     }
     .btn-delete:hover { border-color: #e07070; background: rgba(224,112,112,0.1); }
+    .btn-enrich {
+      background: none; border: 1px solid #3a6a3a;
+      color: #6dbf6d; padding: 7px 14px; border-radius: 8px;
+      font-size: 0.875rem; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .btn-enrich:hover { border-color: #6dbf6d; background: rgba(109,191,109,0.1); }
+    .enrich-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+    .enrich-table th, .enrich-table td { padding: 8px 10px; text-align: left; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
+    .enrich-table th { color: var(--text-muted); font-weight: 500; }
+    .enrich-found { color: #6dbf6d; }
+    .enrich-missing { color: #888; font-style: italic; }
+    .enrich-already { color: #888; }
 
     .hero {
       max-width: 900px; margin: 0 auto;
@@ -237,6 +251,170 @@
     </div>
   </div>
 </div>
+
+
+  <!-- Enrich Modal -->
+  <div class="modal-backdrop" id="enrich-modal">
+    <div class="modal" style="max-width:520px">
+      <h3>Enrich Book Data</h3>
+      <div id="enrich-status" style="color:var(--text-muted);font-size:0.9rem;margin-bottom:12px;">Looking up book data...</div>
+      <table class="enrich-table" id="enrich-table" style="display:none">
+        <thead><tr><th>Field</th><th>Current</th><th>Found</th></tr></thead>
+        <tbody id="enrich-tbody"></tbody>
+      </table>
+      <div class="modal-btns" id="enrich-btns" style="display:none">
+        <button class="btn-cancel" onclick="document.getElementById('enrich-modal').classList.remove('show')">Cancel</button>
+        <button class="btn-edit" id="enrich-save-btn" onclick="saveEnrich()">Save Changes</button>
+      </div>
+      <div class="modal-btns" id="enrich-close-btns" style="display:none">
+        <button class="btn-cancel" onclick="document.getElementById('enrich-modal').classList.remove('show')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  const BOOK_ID = "{{ book.id }}";
+  const BOOK_ISBN = "{{ book.isbn or '' }}";
+  const BOOK_TITLE = "{{ book.title | replace('"', '\\"') }}";
+  const BOOK_AUTHOR = "{{ book.author or '' }}";
+  const GB_KEY = "{{ google_books_api_key }}";
+  const CURRENT = {
+    cover_url: "{{ book.cover_url or '' }}",
+    isbn: "{{ book.isbn or '' }}",
+    pages: "{{ book.pages or '' }}",
+    summary: {{ 'true' if book.summary else 'false' }},
+    copyright_year: "{{ book.copyright_year or '' }}"
+  };
+
+  let enrichData = {};
+
+  async function startEnrich() {
+    enrichData = {};
+    document.getElementById('enrich-status').textContent = 'Looking up book data...';
+    document.getElementById('enrich-table').style.display = 'none';
+    document.getElementById('enrich-btns').style.display = 'none';
+    document.getElementById('enrich-close-btns').style.display = 'none';
+    document.getElementById('enrich-modal').classList.add('show');
+
+    // Try Google Books first
+    let gb = null;
+    try {
+      let gbUrl;
+      if (BOOK_ISBN) {
+        gbUrl = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' + encodeURIComponent(BOOK_ISBN) + '&key=' + GB_KEY;
+      } else {
+        gbUrl = 'https://www.googleapis.com/books/v1/volumes?q=' + encodeURIComponent(BOOK_TITLE + ' ' + BOOK_AUTHOR) + '&key=' + GB_KEY;
+      }
+      const r = await fetch(gbUrl);
+      const j = await r.json();
+      if (j.items && j.items.length > 0) {
+        const vol = j.items[0].volumeInfo;
+        gb = {
+          cover_url: vol.imageLinks ? (vol.imageLinks.thumbnail || vol.imageLinks.smallThumbnail || '') : '',
+          isbn: (() => { const ids = vol.industryIdentifiers || []; const i13 = ids.find(x=>x.type==='ISBN_13'); const i10 = ids.find(x=>x.type==='ISBN_10'); return i13 ? i13.identifier : (i10 ? i10.identifier : ''); })(),
+          pages: vol.pageCount ? String(vol.pageCount) : '',
+          summary: vol.description ? vol.description.slice(0, 800) : '',
+          copyright_year: vol.publishedDate ? vol.publishedDate.slice(0,4) : ''
+        };
+        if (gb.cover_url) gb.cover_url = gb.cover_url.replace('http://', 'https://').replace('&edge=curl','').replace('zoom=1','zoom=2');
+      }
+    } catch(e) {}
+
+    // Try Open Library for anything still missing
+    let ol = null;
+    try {
+      let olUrl;
+      if (BOOK_ISBN) {
+        olUrl = 'https://openlibrary.org/api/books?bibkeys=ISBN:' + encodeURIComponent(BOOK_ISBN) + '&format=json&jscmd=data';
+        const r = await fetch(olUrl);
+        const j = await r.json();
+        const key = 'ISBN:' + BOOK_ISBN;
+        if (j[key]) {
+          const d = j[key];
+          const coverId = d.cover ? (d.cover.large || d.cover.medium || d.cover.small || '') : '';
+          const desc = d.description ? (typeof d.description === 'string' ? d.description : d.description.value || '') : '';
+          ol = {
+            cover_url: coverId,
+            isbn: '',
+            pages: d.number_of_pages ? String(d.number_of_pages) : '',
+            summary: desc.slice(0, 800),
+            copyright_year: d.publish_date ? d.publish_date.slice(-4) : ''
+          };
+        }
+      }
+      if (!ol) {
+        const q = encodeURIComponent(BOOK_TITLE + ' ' + BOOK_AUTHOR);
+        const r = await fetch('https://openlibrary.org/search.json?q=' + q + '&limit=1');
+        const j = await r.json();
+        if (j.docs && j.docs.length > 0) {
+          const doc = j.docs[0];
+          ol = {
+            cover_url: doc.cover_i ? 'https://covers.openlibrary.org/b/id/' + doc.cover_i + '-L.jpg' : '',
+            isbn: '',
+            pages: doc.number_of_pages_median ? String(doc.number_of_pages_median) : '',
+            summary: '',
+            copyright_year: doc.first_publish_year ? String(doc.first_publish_year) : ''
+          };
+        }
+      }
+    } catch(e) {}
+
+    // Merge: GB first, OL fills gaps
+    const fields = ['cover_url','isbn','pages','summary','copyright_year'];
+    const labels = {'cover_url':'Cover','isbn':'ISBN','pages':'Pages','summary':'Summary','copyright_year':'Pub Year'};
+    const found = {};
+    for (const f of fields) {
+      found[f] = (gb && gb[f]) ? gb[f] : (ol && ol[f] ? ol[f] : '');
+    }
+
+    // Build preview table — only show fields that are missing and were found
+    const tbody = document.getElementById('enrich-tbody');
+    tbody.innerHTML = '';
+    let anyNew = false;
+    for (const f of fields) {
+      const alreadyHas = f === 'summary' ? CURRENT.summary : !!CURRENT[f];
+      if (alreadyHas) continue; // skip fields already populated
+      const val = found[f];
+      const tr = document.createElement('tr');
+      if (val) {
+        const display = f === 'cover_url' ? '<img src="'+val+'" style="height:60px;border-radius:4px">' : (f === 'summary' ? val.slice(0,120)+'…' : val);
+        tr.innerHTML = '<td>'+labels[f]+'</td><td class="enrich-missing">empty</td><td class="enrich-found">'+display+'</td>';
+        enrichData[f] = val;
+        anyNew = true;
+      } else {
+        tr.innerHTML = '<td>'+labels[f]+'</td><td class="enrich-missing">empty</td><td class="enrich-missing">not found</td>';
+      }
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById('enrich-table').style.display = 'table';
+    if (anyNew) {
+      document.getElementById('enrich-status').textContent = 'Found ' + Object.keys(enrichData).length + ' field(s) to update:';
+      document.getElementById('enrich-btns').style.display = 'flex';
+    } else {
+      document.getElementById('enrich-status').textContent = tbody.children.length === 0 ? 'All fields already populated — nothing to enrich.' : 'No new data found for missing fields.';
+      document.getElementById('enrich-close-btns').style.display = 'flex';
+    }
+  }
+
+  async function saveEnrich() {
+    const btn = document.getElementById('enrich-save-btn');
+    btn.textContent = 'Saving...'; btn.disabled = true;
+    try {
+      const r = await fetch('/book/' + BOOK_ID + '/enrich', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(enrichData)
+      });
+      const j = await r.json();
+      if (j.ok) { window.location.reload(); }
+      else { document.getElementById('enrich-status').textContent = 'Error: ' + (j.error || 'unknown'); btn.textContent = 'Save Changes'; btn.disabled = false; }
+    } catch(e) {
+      document.getElementById('enrich-status').textContent = 'Save failed: ' + e.message;
+      btn.textContent = 'Save Changes'; btn.disabled = false;
+    }
+  }
+  </script>
 
 </body>
 </html>
