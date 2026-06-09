@@ -266,7 +266,7 @@
       fill.style.width = ((i + 1) / total * 100) + '%';
       label.textContent = book.title;
       try {
-        const params = new URLSearchParams({ title: book.title, author: book.author, limit: 3, fields: 'isbn' });
+        const params = new URLSearchParams({ title: book.title, author: book.author, limit: 3 });
         const r = await fetch('https://openlibrary.org/search.json?' + params);
         const json = await r.json();
         let isbn13 = '';
