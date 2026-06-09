@@ -717,3 +717,15 @@ Paste this into the chat to get Claude up to speed:
 - Root cause: OL title/author search used `new URLSearchParams({ ..., fields: 'isbn' })` — invalid `fields` param caused OL to return no results, so `coverUrl` was never set and `updates` array stayed empty
 - Fix: removed `fields: 'isbn'` from URLSearchParams in tools.html line 269
 - Result: tool now runs correctly — found and saved 1 cover on first run after fix; 18 genuinely not found on OL or Google Books
+
+## What Was Done June 9, 2026 — Session 2
+
+### Added Enrich button to book detail page
+- New "Enrich" button in nav-actions bar (between Edit and Delete), styled green
+- Opens modal that looks up missing fields via Google Books (ISBN first, title+author fallback), then Open Library for any remaining gaps
+- Fields in scope: cover, ISBN, pages, summary, copyright year
+- Shows preview table (Field / Current / Found) before saving — only shows fields that are empty and were found
+- "Save Changes" calls new POST /book/<id>/enrich route in app.py
+- Route uses raw SQL UPDATE (same pattern as summaries/covers fixes) with allowlist of safe fields
+- If all fields already populated, shows "nothing to enrich" message
+- Tested: Night and Day (Jesse Stone) — found cover, ISBN, pages, summary in one click
