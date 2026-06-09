@@ -710,3 +710,10 @@ Paste this into the chat to get Claude up to speed:
 - Root cause: JS `updates` array is empty when save is called — covers being looked up but not pushed to updates array
 - Next session: look at tools.html lines 190-240 to find why covers aren't being added to updates array
 - Same pattern: `label.textContent = 'No covers found...'` fires when total > 0 but updates.length === 0
+
+## What Was Done June 9, 2026
+
+### Fixed Backfill Book Covers tool (JS bug)
+- Root cause: OL title/author search used `new URLSearchParams({ ..., fields: 'isbn' })` — invalid `fields` param caused OL to return no results, so `coverUrl` was never set and `updates` array stayed empty
+- Fix: removed `fields: 'isbn'` from URLSearchParams in tools.html line 269
+- Result: tool now runs correctly — found and saved 1 cover on first run after fix; 18 genuinely not found on OL or Google Books
