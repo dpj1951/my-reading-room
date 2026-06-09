@@ -189,7 +189,7 @@
       let coverUrl = '';
       if (!coverUrl && book.isbn) {
         try {
-          const r = await fetch('https://openlibrary.org/search.json?isbn=' + encodeURIComponent(book.isbn) + '&fields=cover_i&limit=1');
+          const r = await fetch('https://openlibrary.org/search.json?isbn=' + encodeURIComponent(book.isbn) + '&limit=1');
           const json = await r.json();
           const doc = (json.docs || [])[0];
           if (doc && doc.cover_i) coverUrl = 'https://covers.openlibrary.org/b/id/' + doc.cover_i + '-M.jpg';
@@ -197,7 +197,7 @@
       }
       if (!coverUrl) {
         try {
-          const p = new URLSearchParams({ title: book.title, author: book.author, limit: 3, fields: 'cover_i' });
+          const p = new URLSearchParams({ title: book.title, author: book.author, limit: 3 });
           const r = await fetch('https://openlibrary.org/search.json?' + p);
           const json = await r.json();
           for (const doc of (json.docs || [])) {
