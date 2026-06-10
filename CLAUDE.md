@@ -729,3 +729,44 @@ Paste this into the chat to get Claude up to speed:
 - Route uses raw SQL UPDATE (same pattern as summaries/covers fixes) with allowlist of safe fields
 - If all fields already populated, shows "nothing to enrich" message
 - Tested: Night and Day (Jesse Stone) — found cover, ISBN, pages, summary in one click
+
+## What Was Done June 10, 2026
+
+### Fixed Supabase RLS security alert
+- Supabase emailed a CRITICAL alert: `books` table had RLS disabled (rowsecurity = false)
+- `user_roles` table already had RLS enabled
+- Fix: enabled RLS on `books` table and added 4 policies (SELECT, INSERT, UPDATE, DELETE) scoped to `auth.uid()::text = user_id`
+- App unaffected — Flask uses service role key which bypasses RLS
+- All 219 books confirmed loading correctly after fix
+
+### Removed debug print statements
+- Checked app.py for DEBUG prints from June 8 — already gone, no action needed
+
+### Contacted Render support re: www SSL cert
+- www.myreadingalcove.com has correct DNS (CNAME verified) but cert never issued
+- Sent support email; Render AI bot
+cd ~/my-reading-room && git checkout reading-alcove && git pull
+
+cat >> CLAUDE.md << 'DONE'
+
+## What Was Done June 10, 2026
+
+### Fixed Supabase RLS security alert
+- Supabase emailed a CRITICAL alert: `books` table had RLS disabled (rowsecurity = false)
+- `user_roles` table already had RLS enabled
+- Fix: enabled RLS on `books` table and added 4 policies (SELECT, INSERT, UPDATE, DELETE) scoped to `auth.uid()::text = user_id`
+- App unaffected — Flask uses service role key which bypasses RLS
+- All 219 books confirmed loading correctly after fix
+
+### Removed debug print statements
+- Checked app.py for DEBUG prints from June 8 — already gone, no action needed
+
+### Contacted Render support re: www SSL cert
+- www.myreadingalcove.com has correct DNS (CNAME verified) but cert never issued
+- Sent support email; Render AI bot responded — replied asking for human agent escalation
+
+## Pre-Launch Checklist (as of June 10, 2026)
+1. Stripe webhook — register endpoint in Stripe dashboard, add real STRIPE_WEBHOOK_SECRET to Render
+2. Backfill trial_end for users who signed up before May 9 (they see expired immediately)
+3. Turn off maintenance mode — remove MAINTENANCE_MODE=true from Render env vars
+4. www SSL cert — awaiting Render human support response
