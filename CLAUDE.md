@@ -770,3 +770,32 @@ cat >> CLAUDE.md << 'DONE'
 2. Backfill trial_end for users who signed up before May 9 (they see expired immediately)
 3. Turn off maintenance mode — remove MAINTENANCE_MODE=true from Render env vars
 4. www SSL cert — awaiting Render human support response
+
+## What Was Done June 11, 2026 — Session 2
+
+### Verified trial_end backfill not needed
+- Checked all 3 pre-May-9 users (alcovetest2026@gmail.com, dpjohnson1951@gmail.com, test@test.com)
+- All already have trial_end set in raw_app_meta_data — no backfill needed
+- Item removed from pre-launch checklist
+
+## Pre-Launch Checklist (updated June 11, 2026 — Session 2)
+1. ~~www SSL cert~~ DONE
+2. ~~Stripe webhook registered + secret in Render (test mode)~~ DONE
+3. ~~Backfill trial_end for pre-May-9 users~~ DONE (already set)
+4. Resolve Stripe bank connection → register webhook in Live mode + swap STRIPE_WEBHOOK_SECRET to live key in Render
+5. Turn off maintenance mode — remove MA
+done
+
+## What Was Done June 11, 2026 — Session 2
+
+### Verified trial_end backfill not needed
+- Checked all 3 pre-May-9 users (alcovetest2026@gmail.com, dpjohnson1951@gmail.com, test@test.com)
+- All already have trial_end set in raw_app_meta_data — no backfill needed
+- Item removed from pre-launch checklist
+
+## Pre-Launch Checklist (updated June 11, 2026 — Session 2)
+1. ~~www SSL cert~~ DONE
+2. ~~Stripe webhook registered + secret in Render (test mode)~~ DONE
+3. ~~Backfill trial_end for pre-May-9 users~~ DONE (already set)
+4. Resolve Stripe bank connection -> register webhook in Live mode + swap STRIPE_WEBHOOK_SECRET to live key in Render
+5. Turn off maintenance mode — remove MAINTENANCE_MODE=true from Render env vars
