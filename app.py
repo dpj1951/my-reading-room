@@ -31,7 +31,7 @@ def check_maintenance():
         # Always allow static files, login, and logout through
         if request.path.startswith('/static'):
             return None
-        if request.path in ('/login', '/logout', '/forgot-password', '/reset-password', '/signup'):
+        if request.path in ('/login', '/logout', '/forgot-password', '/reset-password', '/signup', '/stripe/webhook'):
             return None
         # Set session flag when preview token is present
         if request.args.get('preview') == 'alcove2026':
