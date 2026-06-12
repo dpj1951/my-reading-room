@@ -799,3 +799,16 @@ done
 3. ~~Backfill trial_end for pre-May-9 users~~ DONE (already set)
 4. Resolve Stripe bank connection -> register webhook in Live mode + swap STRIPE_WEBHOOK_SECRET to live key in Render
 5. Turn off maintenance mode — remove MAINTENANCE_MODE=true from Render env vars
+
+## What Was Done June 12, 2026
+
+### Stripe Live mode setup completed
+- Live mode Stripe configuration completed by user (live keys, price, and webhook set up)
+- STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY, STRIPE_PRICE_ID, STRIPE_WEBHOOK_SECRET updated to live values in Render
+
+## Pre-Launch Checklist (updated June 12, 2026)
+1. ~~www SSL cert~~ DONE
+2. ~~Stripe webhook registered + secret in Render (test mode)~~ DONE
+3. ~~Backfill trial_end for pre-May-9 users~~ DONE (already set)
+4. ~~Resolve Stripe bank connection -> register webhook in Live mode + swap STRIPE_WEBHOOK_SECRET to live key in Render~~ DONE
+5. Turn off maintenance mode — remove MAINTENANCE_MODE=true from Render env vars
