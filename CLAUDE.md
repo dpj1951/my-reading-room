@@ -812,3 +812,11 @@ done
 3. ~~Backfill trial_end for pre-May-9 users~~ DONE (already set)
 4. ~~Resolve Stripe bank connection -> register webhook in Live mode + swap STRIPE_WEBHOOK_SECRET to live key in Render~~ DONE
 5. Turn off maintenance mode — remove MAINTENANCE_MODE=true from Render env vars
+
+## What Was Done June 12, 2026 — Session 2
+
+### Added PWA install instructions to Help page
+- New "Install on Your Phone or Desktop" section added to templates/help.html, placed before the FAQ section
+- Covers iPhone/iPad (Safari Add to Home Screen), Android (Chrome Add to Home Screen/Install app), and Mac/Windows (Chrome/Edge install icon)
+- Inserted via line-index Python script (lines[:119] + new_lines + lines[119:]) — confirmed correct insertion point before pushing
+- Verified live on my-reading-room2.onrender.com/help
