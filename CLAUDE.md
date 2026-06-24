@@ -836,3 +836,16 @@ done
 ### Fixed subscriber role not persisting after logout/login
 - Root cause: `_stripe_patch()` wrote `role='subscriber'` to `profiles` table, but `get_user_role()` reads from `user_roles` table — role reverted to 'free' after logout/login
 - Fix: `_stripe_patch()` now also upserts into `user_roles` when role is 'subscriber' (POST with
+
+### Added subscription ending and expired banners
+- New banner states: `sub_ending` (orange) and `sub_expired` (red)
+- `sub_ending`: shown when Stripe schedules cancellation at period end — "Your subscription ends in X days — Resubscribe to keep access"
+- `sub_expired`: shown when former subscriber role set to 'free' — "Your subscription has ended — Resubscribe for $1.99/month"
+- Webhook now handles `customer.subscription.updated`: detects `cancel_at_period_end=true`, saves `subscription_end` ISO date to profiles; clears it on reactivation
+- `customer.subscription.deleted/paused` now also sets `was_subscriber=True` and clears `subscription_end` in profiles
+- `inject_trial_context()` refactored: subscribers with `subscription_end` in session get `sub_ending`; free users with `was_subscriber` get `sub_expired`; beta/owner never see any banner
+
+### Added load_profile_into_session helper
+- New helper `load_profile_into_session(user_id)` called at login after `get_user_role()`
+- Reads `trial_end`, `subscription_end`, `was_subscriber` from profiles table into Flask session
+- Ensures correct banner shows on any device/browser after login, not just the session where subscription changed
