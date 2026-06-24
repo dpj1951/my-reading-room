@@ -1564,4 +1564,32 @@ def _stripe_patch(customer_id, data, user_id=None):
         requests.patch(f"{url}/rest/v1/profiles", headers=hdrs, params=params, json=data)
     except Exception:
         pass
+    # Also upsert into user_roles so get_user_role() returns correct role on next login
+    role = data.get('role')
+    if user_id and role in ('subscriber', 'free'):
+        _key = SUPABASE_SERVICE_ROLE_KEY or key
+        svc_hdrs = {'apikey': _key, 'Authorization': f'Bearer {_key}',
+                    'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates'}
+        try:
+            if role == 'subscriber':
+                requests.post(f"{url}/rest/v1/user_roles", headers=svc_hdrs,
+                              json={'user_id': user_id, 'role': 'subscriber'})
+            elif role == 'free':
+                requests.delete(f"{url}/rest/v1/user_roles?user_id=eq.{user_id}", headers=svc_hdrs)
+        except Exception:
+            pass
+    # Also upsert into user_roles so get_user_role() returns the correct role on next login
+    role = data.get('role')
+    if user_id and role in ('subscriber', 'free'):
+        _key = SUPABASE_SERVICE_ROLE_KEY or key
+        svc_hdrs = {'apikey': _key, 'Authorization': f'Bearer {_key}',
+                    'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates'}
+        try:
+            if role == 'subscriber':
+                requests.post(f"{url}/rest/v1/user_roles", headers=svc_hdrs,
+                              json={'user_id': user_id, 'role': 'subscriber'})
+            elif role == 'free':
+                requests.delete(f"{url}/rest/v1/user_roles?user_id=eq.{user_id}", headers=svc_hdrs)
+        except Exception:
+            pass
 
