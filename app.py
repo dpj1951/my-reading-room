@@ -154,6 +154,25 @@ def supabase_sign_in(email, password):
         json={"email": email, "password": password}, timeout=10)
     return r.json()
 
+def load_profile_into_session(user_id):
+    """Load trial_end, subscription_end, was_subscriber from profiles table into session."""
+    try:
+        _key = SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY
+        url = SUPABASE_URL + f"/rest/v1/profiles?user_id=eq.{user_id}&select=trial_end,subscription_end,was_subscriber"
+        hdrs = {"apikey": _key, "Authorization": f"Bearer {_key}"}
+        resp = requests.get(url, headers=hdrs, timeout=5)
+        rows = resp.json()
+        if rows and isinstance(rows, list) and len(rows) > 0:
+            row = rows[0]
+            if row.get('trial_end') and not session.get('trial_end'):
+                session['trial_end'] = row['trial_end']
+            if row.get('subscription_end'):
+                session['subscription_end'] = row['subscription_end']
+            if row.get('was_subscriber'):
+                session['was_subscriber'] = True
+    except Exception:
+        pass
+
 def supabase_sign_up(email, password):
     r = requests.post(
         SUPABASE_URL + "/auth/v1/signup",
@@ -273,6 +292,7 @@ def login():
             user_info = get_current_user()
             if user_info:
                 session["user_role"] = get_user_role(user_info["id"])
+                load_profile_into_session(user_info["id"])
             next_page = request.args.get("next")
             return redirect(next_page or url_for("home"))
         error = data.get("error_description") or data.get("msg") or "Invalid email or password."
