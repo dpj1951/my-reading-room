@@ -830,3 +830,9 @@ done
   - On cancel/pause: DELETE from `user_roles` so `get_user_role()` falls back to 'free'
   - On resume: re-inserts `role='subscriber'`
 - Uses service role key to bypass RLS
+
+## What Was Done June 24, 2026
+
+### Fixed subscriber role not persisting after logout/login
+- Root cause: `_stripe_patch()` wrote `role='subscriber'` to `profiles` table, but `get_user_role()` reads from `user_roles` table — role reverted to 'free' after logout/login
+- Fix: `_stripe_patch()` now also upserts into `user_roles` when role is 'subscriber' (POST with
