@@ -228,18 +228,35 @@ def inject_trial_context():
     if not user:
         return {}
     role = session.get('user_role', 'free')
-    if role in ('subscriber', 'beta', 'owner'):
-        return {'trial_banner': None, 'trial_days_left': None, 'stripe_pub_key': STRIPE_PUBLISHABLE_KEY, 'google_books_api_key': GOOGLE_BOOKS_API_KEY}
+    pub = STRIPE_PUBLISHABLE_KEY
+    gbk = GOOGLE_BOOKS_API_KEY
+    if role in ('beta', 'owner'):
+        return {'trial_banner': None, 'trial_days_left': None, 'stripe_pub_key': pub, 'google_books_api_key': gbk}
+    if role == 'subscriber':
+        # Check if subscription is scheduled to cancel at period end
+        sub_end = session.get('subscription_end')
+        if sub_end:
+            try:
+                end_date = datetime.fromisoformat(sub_end)
+                days_left = max(0, (end_date - datetime.utcnow()).days)
+                return {'trial_banner': 'sub_ending', 'trial_days_left': days_left, 'stripe_pub_key': pub, 'google_books_api_key': gbk}
+            except Exception:
+                pass
+        return {'trial_banner': None, 'trial_days_left': None, 'stripe_pub_key': pub, 'google_books_api_key': gbk}
+    if role == 'free':
+        # Check if this was a former subscriber (subscription_end in session means it lapsed)
+        if session.get('was_subscriber'):
+            return {'trial_banner': 'sub_expired', 'trial_days_left': 0, 'stripe_pub_key': pub, 'google_books_api_key': gbk}
     trial_end = session.get('trial_end')
     if not trial_end:
-        return {'trial_banner': 'expired', 'trial_days_left': 0, 'stripe_pub_key': STRIPE_PUBLISHABLE_KEY, 'google_books_api_key': GOOGLE_BOOKS_API_KEY}
+        return {'trial_banner': 'expired', 'trial_days_left': 0, 'stripe_pub_key': pub, 'google_books_api_key': gbk}
     try:
         end_date = datetime.fromisoformat(trial_end)
         days_left = max(0, (end_date - datetime.utcnow()).days)
     except Exception:
         days_left = 0
     banner = 'expired' if days_left == 0 else ('urgent' if days_left <= 7 else 'info')
-    return {'trial_banner': banner, 'trial_days_left': days_left, 'stripe_pub_key': STRIPE_PUBLISHABLE_KEY, 'google_books_api_key': GOOGLE_BOOKS_API_KEY}
+    return {'trial_banner': banner, 'trial_days_left': days_left, 'stripe_pub_key': pub, 'google_books_api_key': gbk}
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -1548,10 +1565,21 @@ def stripe_webhook():
         uid = event['data']['object'].get('metadata', {}).get('user_id')
         if uid and cid:
             _stripe_patch(cid, {'role': 'subscriber'}, uid)
+    elif etype == 'customer.subscription.updated':
+        obj = event['data']['object']
+        cancel_at_period_end = obj.get('cancel_at_period_end', False)
+        period_end = obj.get('current_period_end')
+        if cancel_at_period_end and period_end:
+            from datetime import timezone
+            end_iso = datetime.fromtimestamp(period_end, tz=timezone.utc).replace(tzinfo=None).isoformat()
+            _stripe_patch(cid, {'subscription_end': end_iso})
+        else:
+            # Reactivated — clear the subscription_end
+            _stripe_patch(cid, {'subscription_end': None})
     elif etype in ('customer.subscription.deleted', 'customer.subscription.paused'):
-        _stripe_patch(cid, {'role': 'free'})
+        _stripe_patch(cid, {'role': 'free', 'was_subscriber': True, 'subscription_end': None})
     elif etype == 'customer.subscription.resumed':
-        _stripe_patch(cid, {'role': 'subscriber'})
+        _stripe_patch(cid, {'role': 'subscriber', 'subscription_end': None})
     return jsonify({'status': 'ok'}), 200
 
 def _stripe_patch(customer_id, data, user_id=None):

@@ -54,6 +54,10 @@
   <div style="background:#e67e22;color:#fff;text-align:center;padding:12px 20px;font-size:14px;font-weight:600;">&#9203; {{ trial_days_left }} day{{ 's' if trial_days_left != 1 else '' }} left in your free trial. <a href="/subscribe/checkout" style="color:#fff;text-decoration:underline;margin-left:10px;">Subscribe now &rarr;</a></div>
   {% elif trial_banner == 'info' %}
   <div style="background:#2c7a4b;color:#fff;text-align:center;padding:10px 20px;font-size:13px;">&#127881; Free trial active &mdash; {{ trial_days_left }} days remaining. <a href="/subscribe/checkout" style="color:#fff;text-decoration:underline;margin-left:10px;">Subscribe for $1.99/month</a></div>
+  {% elif trial_banner == 'sub_ending' %}
+  <div style="background:#e67e22;color:#fff;text-align:center;padding:12px 20px;font-size:14px;font-weight:600;">&#9203; Your subscription ends in {{ trial_days_left }} day{{ 's' if trial_days_left != 1 else '' }}. <a href="/subscribe/portal" style="color:#fff;text-decoration:underline;margin-left:10px;">Resubscribe to keep access &rarr;</a></div>
+  {% elif trial_banner == 'sub_expired' %}
+  <div style="background:#c0392b;color:#fff;text-align:center;padding:12px 20px;font-size:14px;font-weight:600;">&#9888;&#65039; Your subscription has ended. <a href="/subscribe/checkout" style="color:#fff;text-decoration:underline;margin-left:10px;">Resubscribe for $1.99/month &rarr;</a></div>
   {% endif %}
   <div id="offline-banner" style="display:none;background:#2a1a00;color:#ffb347;text-align:center;padding:8px 16px;font-size:0.85rem;border-bottom:1px solid #553300;">You're offline &mdash; showing your cached library</div>
   <script>
