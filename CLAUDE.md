@@ -820,3 +820,13 @@ done
 - Covers iPhone/iPad (Safari Add to Home Screen), Android (Chrome Add to Home Screen/Install app), and Mac/Windows (Chrome/Edge install icon)
 - Inserted via line-index Python script (lines[:119] + new_lines + lines[119:]) — confirmed correct insertion point before pushing
 - Verified live on my-reading-room2.onrender.com/help
+
+## What Was Done June 24, 2026
+
+### Fixed subscriber role not persisting after logout/login
+- Root cause: `_stripe_patch()` wrote `role='subscriber'` to `profiles` table, but `get_user_role()` reads from `user_roles` table — so after logout/login the role reverted to 'free'
+- Fix: added upsert into `user_roles` at end of `_stripe_patch()` whenever a `user_id` is present
+  - On subscribe: POST to `user_roles` with `role='subscriber'` (upsert via `resolution=merge-duplicates`)
+  - On cancel/pause: DELETE from `user_roles` so `get_user_role()` falls back to 'free'
+  - On resume: re-inserts `role='subscriber'`
+- Uses service role key to bypass RLS
