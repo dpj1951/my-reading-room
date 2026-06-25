@@ -849,3 +849,11 @@ done
 - New helper `load_profile_into_session(user_id)` called at login after `get_user_role()`
 - Reads `trial_end`, `subscription_end`, `was_subscriber` from profiles table into Flask session
 - Ensures correct banner shows on any device/browser after login, not just the session where subscription changed
+
+## What Was Done June 25, 2026
+
+### Clarified deleted user behavior
+- If a user is deleted via Supabase dashboard, their email is freed and they can sign up again from scratch
+- Re-signup creates a new UUID, new 30-day trial, no role (user_roles row cascades on delete)
+- Their books do not return (scoped to old UUID)
+- Potential trial abuse vector: re-signup after self-deletion — not a concern at current scale
