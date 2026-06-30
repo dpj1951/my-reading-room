@@ -164,8 +164,8 @@ def load_profile_into_session(user_id):
         rows = resp.json()
         if rows and isinstance(rows, list) and len(rows) > 0:
             row = rows[0]
-            if row.get('trial_end') and not session.get('trial_end'):
-                    session['trial_end'] = row['trial_end'].replace('+00:00', '').replace('Z', '').split('+')[0]
+            if row.get('trial_end'):
+                session['trial_end'] = row['trial_end'].replace('+00:00', '').replace('Z', '').split('+')[0]
             if row.get('subscription_end'):
                 session['subscription_end'] = row['subscription_end']
             if row.get('was_subscriber'):
