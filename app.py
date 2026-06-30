@@ -171,7 +171,7 @@ def load_profile_into_session(user_id):
             if row.get('was_subscriber'):
                 session['was_subscriber'] = True
     except Exception:
-        pass
+            print(f"DEBUG load_profile_into_session error: {__import__('sys').exc_info()[1]}")
 
 def supabase_sign_up(email, password):
     r = requests.post(
