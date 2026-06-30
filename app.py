@@ -270,7 +270,7 @@ def inject_trial_context():
     if not trial_end:
         return {'trial_banner': 'expired', 'trial_days_left': 0, 'stripe_pub_key': pub, 'google_books_api_key': gbk}
     try:
-        end_date = datetime.fromisoformat(trial_end)
+        end_date = datetime.fromisoformat(trial_end.replace("+00:00", "").replace("Z", "").split("+")[0])
         days_left = max(0, (end_date - datetime.utcnow()).days)
     except Exception:
         days_left = 0
