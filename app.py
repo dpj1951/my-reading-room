@@ -318,8 +318,23 @@ def signup():
             if "access_token" in data:
                 session["access_token"]  = data["access_token"]
                 session["refresh_token"] = data.get("refresh_token", "")
-                session['trial_end'] = (datetime.utcnow() + timedelta(days=30)).isoformat()
+                trial_end_iso = (datetime.utcnow() + timedelta(days=30)).isoformat()
+                session['trial_end'] = trial_end_iso
                 session['user_role'] = 'trial'
+                # Also persist trial_end to profiles table so login reads it correctly
+                user_id = data.get("user", {}).get("id") or data.get("id")
+                if user_id:
+                    import requests as _req
+                    _req.post(
+                        f"{SUPABASE_URL}/rest/v1/profiles",
+                        headers={
+                            "apikey": SUPABASE_SERVICE_ROLE_KEY,
+                            "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
+                            "Content-Type": "application/json",
+                            "Prefer": "resolution=merge-duplicates"
+                        },
+                        json={"id": user_id, "trial_end": trial_end_iso}
+                    )
                 flash("Welcome to My Reading Alcove! Your 30-day free trial has started.", "success")
                 return redirect(url_for("home"))
             elif data.get("id"):
