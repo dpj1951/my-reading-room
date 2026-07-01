@@ -1605,7 +1605,7 @@ def stripe_webhook():
     cid = _sget(obj, 'customer')
     metadata = _sget(obj, 'metadata', {})
     uid = _sget(metadata, 'user_id') if metadata else None
-    print(f"DEBUG webhook: etype={etype} cid={cid} uid={uid} metadata={metadata}")
+    print(f"DEBUG webhook: etype={etype} cid={cid} uid={uid} metadata={metadata}", flush=True)
     if etype == 'checkout.session.completed':
         if uid and cid:
             _stripe_patch(cid, {'role': 'subscriber'}, uid)
@@ -1619,15 +1619,15 @@ def stripe_webhook():
             items_data = _sget(items, 'data', []) if items else []
             if items_data:
                 period_end = _sget(items_data[0], 'current_period_end')
-        print(f"DEBUG webhook: cancel_at_period_end={cancel_at_period_end} period_end={period_end}")
+        print(f"DEBUG webhook: cancel_at_period_end={cancel_at_period_end} period_end={period_end}", flush=True)
         if cancel_at_period_end and period_end:
             from datetime import timezone
             end_iso = datetime.fromtimestamp(period_end, tz=timezone.utc).replace(tzinfo=None).isoformat()
-            print(f"DEBUG webhook: setting subscription_end={end_iso} for uid={uid}")
+            print(f"DEBUG webhook: setting subscription_end={end_iso} for uid={uid}", flush=True)
             _stripe_patch(cid, {'subscription_end': end_iso}, uid)
         else:
             # Reactivated — clear the subscription_end
-            print(f"DEBUG webhook: clearing subscription_end for uid={uid}")
+            print(f"DEBUG webhook: clearing subscription_end for uid={uid}", flush=True)
             _stripe_patch(cid, {'subscription_end': None}, uid)
     elif etype in ('customer.subscription.deleted', 'customer.subscription.paused'):
         _stripe_patch(cid, {'role': 'free', 'was_subscriber': True, 'subscription_end': None}, uid)
@@ -1647,9 +1647,9 @@ def _stripe_patch(customer_id, data, user_id=None):
         params = {'id': f'eq.{user_id}'}
         try:
             resp = requests.patch(f"{url}/rest/v1/profiles", headers=hdrs, params=params, json=profile_data)
-            print(f"DEBUG _stripe_patch: PATCH profiles user_id={user_id} data={profile_data} status={resp.status_code} body={resp.text[:300]}")
+            print(f"DEBUG _stripe_patch: PATCH profiles user_id={user_id} data={profile_data} status={resp.status_code} body={resp.text[:300]}", flush=True)
         except Exception as e:
-            print(f"DEBUG _stripe_patch: PATCH profiles exception: {e}")
+            print(f"DEBUG _stripe_patch: PATCH profiles exception: {e}", flush=True)
     # Also upsert into user_roles so get_user_role() returns correct role on next login
     role = data.get('role')
     if user_id and role in ('subscriber', 'free'):
