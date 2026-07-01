@@ -1586,6 +1586,11 @@ def subscribe_portal():
     flash('Could not find your billing account.', 'error')
     return redirect(url_for('home'))
 
+def _sget(obj, key, default=None):
+    """Safe getter for Stripe objects — stripe-python v15+ removed dict
+    inheritance from StripeObject, so .get() no longer works. Use 'in' + [] instead."""
+    return obj[key] if key in obj else default
+
 @app.route('/stripe/webhook', methods=['POST'])
 def stripe_webhook():
     payload = request.get_data()
@@ -1595,15 +1600,16 @@ def stripe_webhook():
     except (ValueError, stripe.error.SignatureVerificationError):
         return jsonify({'error': 'Invalid signature'}), 400
     etype = event['type']
-    cid = event['data']['object'].get('customer')
+    cid = _sget(event['data']['object'], 'customer')
     if etype == 'checkout.session.completed':
-        uid = event['data']['object'].get('metadata', {}).get('user_id')
+        metadata = _sget(event['data']['object'], 'metadata', {})
+        uid = _sget(metadata, 'user_id') if metadata else None
         if uid and cid:
             _stripe_patch(cid, {'role': 'subscriber'}, uid)
     elif etype == 'customer.subscription.updated':
         obj = event['data']['object']
-        cancel_at_period_end = obj.get('cancel_at_period_end', False)
-        period_end = obj.get('current_period_end')
+        cancel_at_period_end = _sget(obj, 'cancel_at_period_end', False)
+        period_end = _sget(obj, 'current_period_end')
         if cancel_at_period_end and period_end:
             from datetime import timezone
             end_iso = datetime.fromtimestamp(period_end, tz=timezone.utc).replace(tzinfo=None).isoformat()
