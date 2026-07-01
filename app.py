@@ -1547,6 +1547,7 @@ def subscribe_checkout():
             success_url=url_for('subscribe_success', _external=True) + '?session_id={CHECKOUT_SESSION_ID}',
             cancel_url=url_for('subscribe_cancel', _external=True),
             metadata={'user_id': user.get('id', '')},
+            subscription_data={'metadata': {'user_id': user.get('id', '')}},
         )
         return redirect(cs.url, code=303)
     except Exception:
@@ -1600,27 +1601,27 @@ def stripe_webhook():
     except (ValueError, stripe.error.SignatureVerificationError):
         return jsonify({'error': 'Invalid signature'}), 400
     etype = event['type']
-    cid = _sget(event['data']['object'], 'customer')
+    obj = event['data']['object']
+    cid = _sget(obj, 'customer')
+    metadata = _sget(obj, 'metadata', {})
+    uid = _sget(metadata, 'user_id') if metadata else None
     if etype == 'checkout.session.completed':
-        metadata = _sget(event['data']['object'], 'metadata', {})
-        uid = _sget(metadata, 'user_id') if metadata else None
         if uid and cid:
             _stripe_patch(cid, {'role': 'subscriber'}, uid)
     elif etype == 'customer.subscription.updated':
-        obj = event['data']['object']
         cancel_at_period_end = _sget(obj, 'cancel_at_period_end', False)
         period_end = _sget(obj, 'current_period_end')
         if cancel_at_period_end and period_end:
             from datetime import timezone
             end_iso = datetime.fromtimestamp(period_end, tz=timezone.utc).replace(tzinfo=None).isoformat()
-            _stripe_patch(cid, {'subscription_end': end_iso})
+            _stripe_patch(cid, {'subscription_end': end_iso}, uid)
         else:
             # Reactivated — clear the subscription_end
-            _stripe_patch(cid, {'subscription_end': None})
+            _stripe_patch(cid, {'subscription_end': None}, uid)
     elif etype in ('customer.subscription.deleted', 'customer.subscription.paused'):
-        _stripe_patch(cid, {'role': 'free', 'was_subscriber': True, 'subscription_end': None})
+        _stripe_patch(cid, {'role': 'free', 'was_subscriber': True, 'subscription_end': None}, uid)
     elif etype == 'customer.subscription.resumed':
-        _stripe_patch(cid, {'role': 'subscriber', 'subscription_end': None})
+        _stripe_patch(cid, {'role': 'subscriber', 'subscription_end': None}, uid)
     return jsonify({'status': 'ok'}), 200
 
 def _stripe_patch(customer_id, data, user_id=None):
