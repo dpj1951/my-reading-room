@@ -158,7 +158,7 @@ def load_profile_into_session(user_id):
     """Load trial_end, subscription_end, was_subscriber from profiles table into session."""
     try:
         _key = SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY
-        url = SUPABASE_URL + f"/rest/v1/profiles?user_id=eq.{user_id}&select=trial_end,subscription_end,was_subscriber"
+        url = SUPABASE_URL + f"/rest/v1/profiles?id=eq.{user_id}&select=trial_end,subscription_end,was_subscriber"
         hdrs = {"apikey": _key, "Authorization": f"Bearer {_key}"}
         resp = requests.get(url, headers=hdrs, timeout=5)
         rows = resp.json()
@@ -333,7 +333,7 @@ def signup():
                             "Content-Type": "application/json",
                             "Prefer": "resolution=merge-duplicates"
                         },
-                        json={"user_id": user_id, "trial_end": trial_end_iso}
+                        json={"id": user_id, "trial_end": trial_end_iso}
                     )
                 flash("Welcome to My Reading Alcove! Your 30-day free trial has started.", "success")
                 return redirect(url_for("home"))
@@ -1622,11 +1622,15 @@ def _stripe_patch(customer_id, data, user_id=None):
     key = os.environ.get('SUPABASE_ANON_KEY', '')
     hdrs = {'apikey': key, 'Authorization': f'Bearer {key}',
             'Content-Type': 'application/json', 'Prefer': 'return=minimal'}
-    params = {'user_id': f'eq.{user_id}'} if user_id else {'stripe_customer_id': f'eq.{customer_id}'}
-    try:
-        requests.patch(f"{url}/rest/v1/profiles", headers=hdrs, params=params, json=data)
-    except Exception:
-        pass
+    # profiles table only has columns: id, trial_end, subscription_end, was_subscriber
+    # (no user_id, no stripe_customer_id, no role) — filter by id and strip role before patching
+    profile_data = {k: v for k, v in data.items() if k != 'role'}
+    if user_id and profile_data:
+        params = {'id': f'eq.{user_id}'}
+        try:
+            requests.patch(f"{url}/rest/v1/profiles", headers=hdrs, params=params, json=profile_data)
+        except Exception:
+            pass
     # Also upsert into user_roles so get_user_role() returns correct role on next login
     role = data.get('role')
     if user_id and role in ('subscriber', 'free'):
