@@ -1610,7 +1610,14 @@ def stripe_webhook():
             _stripe_patch(cid, {'role': 'subscriber'}, uid)
     elif etype == 'customer.subscription.updated':
         cancel_at_period_end = _sget(obj, 'cancel_at_period_end', False)
+        # current_period_end moved from the Subscription object to each
+        # SubscriptionItem as of Stripe's 2025-03-31 API release
         period_end = _sget(obj, 'current_period_end')
+        if period_end is None:
+            items = _sget(obj, 'items')
+            items_data = _sget(items, 'data', []) if items else []
+            if items_data:
+                period_end = _sget(items_data[0], 'current_period_end')
         if cancel_at_period_end and period_end:
             from datetime import timezone
             end_iso = datetime.fromtimestamp(period_end, tz=timezone.utc).replace(tzinfo=None).isoformat()
