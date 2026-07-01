@@ -333,7 +333,7 @@ def signup():
                             "Content-Type": "application/json",
                             "Prefer": "resolution=merge-duplicates"
                         },
-                        json={"id": user_id, "trial_end": trial_end_iso}
+                        json={"user_id": user_id, "trial_end": trial_end_iso}
                     )
                 flash("Welcome to My Reading Alcove! Your 30-day free trial has started.", "success")
                 return redirect(url_for("home"))
