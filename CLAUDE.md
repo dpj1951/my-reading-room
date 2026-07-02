@@ -857,3 +857,34 @@ done
 - Re-signup creates a new UUID, new 30-day trial, no role (user_roles row cascades on delete)
 - Their books do not return (scoped to old UUID)
 - Potential trial abuse vector: re-signup after self-deletion — not a concern at current scale
+
+## What Was Done July 1, 2026
+
+### Fixed brand-new trial signups showing "trial expired" after logout/login
+- Root cause: `signup()` inserted the new `profiles` row using key `"id": user_id`, but the table's actual primary key column really is `id` — this part was correct. The real bug was `load_profile_into_session()` and `_stripe_patch()` querying by a `user_id` column that doesn't exist on `profiles` (the table only has `id`, `trial_end`, `subscription_end`, `was_subscriber`). PostgREST silently rejected these mismatched-column requests, so `trial_end` never loaded into the session on login, and `inject_trial_context()` fell through to the `expired` banner for brand-new users.
+- Fix: `load_profile_into_session()` and `_stripe_patch()` now filter on `id`, matching the real schema.
+
+### Fixed stripe-python v15 breaking changes (webhook was 500ing on every event)
+- `stripe-python` had no version pin in `requirements.txt`; a routine `pip install` picked up v15, which removed dict inheritance from `StripeObject`. Every `.get()` call on a Stripe event/object in the webhook handler started raising `KeyError: 'get'`, returning 500 to Stripe for `checkout.session.completed` and all `customer.subscription.*` events. This had silently been broken since June 30.
+- Fix: added a `_sget(obj, key, default)` helper using `key in obj` + `obj[key]` instead of `.get()`, used throughout `stripe_webhook()`. Pinned `stripe==15.3.0` in `requirements.txt` to prevent a future silent break.
+
+### Fixed `_stripe_patch()` silently failing to write to `profiles`
+- It was using `SUPABASE_ANON_KEY`, which gets blocked by RLS on `profiles` (enabled since the June security fix). `requests.patch()` doesn't raise on 401/403, so the `try/except` never caught it — the row just silently never updated.
+- Fix: use `SUPABASE_SERVICE_ROLE_KEY` (falling back to anon) to bypass RLS, matching the pattern already used in `load_profile_into_session()`.
+
+### Fixed cancel/downgrade flow never resolving which user to update
+- `_stripe_patch()` requires a `user_id` to do anything (by design, since there's no `stripe_customer_id` column to fall back on). But `user_id` was only ever passed on `checkout.session.completed` — the `customer.subscription.updated/deleted/paused` webhooks had no way to know which user they belonged to, because only the Checkout *Session* had `metadata.user_id`, not the underlying *Subscription* object.
+- Fix: `stripe.checkout.Session.create()` now also sets `subscription_data={'metadata': {'user_id': ...}}`, so the created Subscription carries the same metadata forward into every later webhook event on that subscription.
+
+### Fixed `subscription_end` never getting set on cancellation
+- Two stacked bugs found via live testing (cancelling/reactivating the test subscriber's sub repeatedly):
+  1. `current_period_end` was being read off the Subscription object, but Stripe moved this field to each `SubscriptionItem` as of their 2025-03-31 ("basil") API release — it no longer exists at the top level. Fix: fall back to `items.data[0].current_period_end` when the top-level field is missing.
+  2. Even once `period_end` resolved, the `sub_ending` banner still never appeared. Root cause: `inject_trial_context()` compared a timezone-*aware* `subscription_end` (Postgres returns `timestamp with time zone` values with a `+00:00` offset) against `datetime.utcnow()`, which is naive — this raises `TypeError`, silently swallowed by a bare `except Exception: pass`. Fixed by stripping `tzinfo` before subtracting.
+
+### Verified end-to-end with a real Stripe test subscription (test10@gmail.com)
+- Confirmed via live testing (not just code review): signup → trial banner → subscribe via real $1.99 charge → subscriber role persists across logout/login → cancel (end of period, no refund) → `sub_ending` orange banner shows correctly with accurate days-remaining.
+- Not yet tested: the full lapse to `sub_expired` (red banner) — this only fires once a cancelled subscription's period actually ends and Stripe sends `customer.subscription.deleted`. Given the webhook's `uid` resolution and timezone handling are now consistent across all subscription event types, this path should work, but hasn't been observed live.
+
+### Known follow-ups for next session
+- **Remove debug logging** added during this session's investigation: `print(f"DEBUG webhook: ...")` and `print(f"DEBUG _stripe_patch: ...")` in `stripe_webhook()`/`_stripe_patch()`, and `print(f"DEBUG inject_trial_context sub_ending parse error: ...")` in `inject_trial_context()`. Left in deliberately for now in case the `sub_expired` path needs the same kind of live debugging; safe to strip once that's confirmed working.
+- Manually editing Stripe metadata via the dashboard (as done during testing) can wipe existing metadata rather than merge it — not a concern for the real
