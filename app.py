@@ -257,10 +257,12 @@ def inject_trial_context():
         if sub_end:
             try:
                 end_date = datetime.fromisoformat(sub_end)
+                if end_date.tzinfo is not None:
+                    end_date = end_date.replace(tzinfo=None)
                 days_left = max(0, (end_date - datetime.utcnow()).days)
                 return {'trial_banner': 'sub_ending', 'trial_days_left': days_left, 'stripe_pub_key': pub, 'google_books_api_key': gbk}
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"DEBUG inject_trial_context sub_ending parse error: {e} sub_end={sub_end!r}", flush=True)
         return {'trial_banner': None, 'trial_days_left': None, 'stripe_pub_key': pub, 'google_books_api_key': gbk}
     if role == 'free':
         # Check if this was a former subscriber (subscription_end in session means it lapsed)
