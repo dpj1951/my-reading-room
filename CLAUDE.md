@@ -888,3 +888,9 @@ done
 ### Known follow-ups for next session
 - **Remove debug logging** added during this session's investigation: `print(f"DEBUG webhook: ...")` and `print(f"DEBUG _stripe_patch: ...")` in `stripe_webhook()`/`_stripe_patch()`, and `print(f"DEBUG inject_trial_context sub_ending parse error: ...")` in `inject_trial_context()`. Left in deliberately for now in case the `sub_expired` path needs the same kind of live debugging; safe to strip once that's confirmed working.
 - Manually editing Stripe metadata via the dashboard (as done during testing) can wipe existing metadata rather than merge it — not a concern for the real
+
+## What Was Done July 9, 2026
+
+### Landing page hero copy tweak
+- Changed hero headline from "Every book you've ever *loved*, remembered." to "Every book you've ever *read*, remembered."
+- File: templates/landing.html
