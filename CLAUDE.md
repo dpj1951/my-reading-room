@@ -894,3 +894,17 @@ done
 ### Landing page hero copy tweak
 - Changed hero headline from "Every book you've ever *loved*, remembered." to "Every book you've ever *read*, remembered."
 - File: templates/landing.html
+
+## What Was Done July 28, 2026
+
+### Improved Add Book page readability (templates/add.html)
+- Root cause: `h1` ("Add a book") had no color set, inheriting the near-white `--text` (#f0ede8) while sitting directly on the light page background (#d8d8d8) — contrast ratio ~1.2:1, effectively invisible. `.sub` subtitle used `--muted` (#8a8795) on the same light bg — ~2.5:1, fails WCAG AA.
+- Fix: set `h1` to `#1c1c24` (dark ink, ~12:1 contrast); `.sub` to `#55525f` (~5.3:1)
+- Brightened `--muted` var from `#8a8795` to `#a39fae` (used for labels/meta text throughout the page)
+- Bumped font sizes across the page for legibility: h1 2rem->2.1rem, subtitle 0.875rem->0.95rem, section headers 0.75rem->0.8rem (weight 600->700), field labels 0.775rem->0.85rem (weight 500->600), all inputs/textarea 0.9rem->1rem, search results and preview text similarly bumped ~0.05-0.1rem across the board
+- Increased input/textarea vertical padding 10px->12px; slightly tightened uppercase letter-spacing on labels/headers to compensate for larger size
+
+### Workflow note: large terminal pastes hanging/truncating
+- Multi-line heredoc paste and a long single-line base64 paste both failed in this session's Terminal (hung on `heredoc>` prompt, then truncated a ~5.9k-char single line) — likely a zsh line-editor/paste-buffer limit, not the content itself
+- Workaround used: pushed the change directly from Claude's sandbox using a short-lived fine-grained GitHub token (Contents: Read and write, 1-day expiry, revoked immediately after push) — see "Token Push Workflow" section above, this is the same pattern, just used for a template file instead of images
+- Going forward: prefer the token-push method over terminal paste for any change beyond a few lines
