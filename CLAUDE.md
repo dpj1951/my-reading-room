@@ -908,3 +908,34 @@ done
 - Multi-line heredoc paste and a long single-line base64 paste both failed in this session's Terminal (hung on `heredoc>` prompt, then truncated a ~5.9k-char single line) — likely a zsh line-editor/paste-buffer limit, not the content itself
 - Workaround used: pushed the change directly from Claude's sandbox using a short-lived fine-grained GitHub token (Contents: Read and write, 1-day expiry, revoked immediately after push) — see "Token Push Workflow" section above, this is the same pattern, just used for a template file instead of images
 - Going forward: prefer the token-push method over terminal paste for any change beyond a few lines
+
+
+## What Was Done July 29, 2026
+
+### Investigated suspicious signup (3411096149@qq.com)
+- Account signed up 07:53:52 UTC Jul 27, zero books ever added, never logged in again after the initial session, no role/subscription activity
+- Render app logs around signup time showed a swarm of different fake Android/Windows user-agents each hitting one route once before bouncing off /login unauthenticated, mixed with an explicit WordPress installer probe and Baiduspider - consistent with automated route-enumeration/bot traffic, not a real reader
+- Dennis had already placed a 24-hour ban (Supabase banned_until) and enabled MAINTENANCE_MODE as precautions before this investigation started
+
+### Enabled required email verification (closes the actual hole)
+- Root cause found: Supabase Auth "Confirm email" toggle was OFF - auth/v1/signup returned an access_token immediately, so any email (real or not) got a fully working session with zero verification. Confirmed via the qq.com account's email_confirmed_at being 39ms after created_at.
+- Fix: Authentication -> Sign In / Providers -> turned "Confirm email" ON and saved. No app.py changes needed - the signup route already had the branch handling an unconfirmed account (flash "check your email to confirm" and redirect to /login); it just was never exercised while auto-confirm was on.
+- Verified Site URL (https://myreadingalcove.com) and Redirect URLs (includes /?preview=alcove2026) in URL Configuration are already correct for confirmation email links - no further changes needed there.
+- Decided against CAPTCHA and app-level path/user-agent blocking for now - email verification alone was judged sufficient for this threat (throwaway/no-real-inbox signups). Known gap: it will not stop a human who genuinely controls a real mailbox and wants to poke around.
+
+### Turned maintenance mode back off
+- Render env var MAINTENANCE_MODE set from true to false, triggered a redeploy, verified via cache-busted fetch and a fresh navigation that the live site serves the real landing page again.
+- Note: the PWA service worker aggressively caches the maintenance placeholder page - had to unregister the SW to see the real page in an already-open tab. Anyone who had the site open before today may need a hard refresh or to close/reopen the tab to stop seeing the "Back Soon" page.
+
+### Follow-ups for next session
+- The 24-hour ban on the qq.com account (banned_until 2026-07-30T12:39:30Z) will lapse on its own - no action needed unless new suspicious activity appears
+- Consider app-level bot blocking (reject /wp-admin, /xmlrpc.php etc. instantly, block obvious scanner user-agents) as a second layer if scanner traffic continues - deferred this session in favor of email verification alone
+- Review Render pricing changes before August 1, 2026 (still pending)
+
+## Pre-Launch Checklist (updated July 29, 2026)
+1. www SSL cert - DONE
+2. Stripe webhook registered + secret in Render (live mode) - DONE
+3. Backfill trial_end for pre-May-9 users - DONE (already set)
+4. Resolve Stripe bank connection - DONE
+5. Turn off maintenance mode - DONE - site is live at myreadingalcove.com / my-reading-room2.onrender.com
+6. Require email confirmation on signup - DONE - closes the auto-confirm bot-signup hole
