@@ -1,7 +1,7 @@
-// Service Worker v3 — offline-capable
+// Service Worker v4 — offline-capable
 // Caches app shell + static assets; stores library in Cache API for offline browsing
 
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const SHELL_CACHE = 'alcove-shell-' + CACHE_VERSION;
 const DATA_CACHE  = 'alcove-data-'  + CACHE_VERSION;
 
@@ -11,6 +11,12 @@ const SHELL_ASSETS = [
   '/static/icons/icon-512.png',
   '/static/icons/alcove_logo.png',
 ];
+
+// App shell pages — cached at runtime on every successful online visit.
+// "/" and "/home" are new here: iOS reloads the manifest's start_url ("/")
+// on a cold launch of the installed PWA, so it must be handled the same
+// way "/books" already was, or airplane-mode relaunches fail outright.
+const APP_PAGES = ['/', '/home', '/books'];
 
 // Install — cache shell assets
 self.addEventListener('install', e => {
@@ -50,8 +56,9 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // /books page — network first, fall back to cached version, then /offline
-  if (url.pathname === '/books') {
+  // App shell pages (/, /home, /books) — network first, fall back to their
+  // own cached copy, then the cached /books page, then /offline.
+  if (APP_PAGES.includes(url.pathname)) {
     e.respondWith(
       fetch(e.request).then(res => {
         if (res.ok) {
@@ -61,7 +68,9 @@ self.addEventListener('fetch', e => {
         return res;
       }).catch(() =>
         caches.match(e.request).then(cached =>
-          cached || caches.match('/offline')
+          cached || caches.match('/books').then(booksCached =>
+            booksCached || caches.match('/offline')
+          )
         )
       )
     );
