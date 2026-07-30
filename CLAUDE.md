@@ -939,3 +939,23 @@ done
 4. Resolve Stripe bank connection - DONE
 5. Turn off maintenance mode - DONE - site is live at myreadingalcove.com / my-reading-room2.onrender.com
 6. Require email confirmation on signup - DONE - closes the auto-confirm bot-signup hole
+
+## What Was Done July 30, 2026
+
+### Fixed offline mode failing in airplane mode (SW v4)
+- Root cause: service worker only handled `/books`, `/books/data`, and `/static/*` — never `/` or `/home`. Manifest's `start_url` is `/`, and iOS reloads that on a cold launch of the installed PWA, so opening the app fully offline hit an unintercepted network request and failed outright, before even reaching the custom `/offline` page.
+- Fix: extended the existing network-first/cache-fallback strategy already used for `/books` to also cover `/` and `/home` via a new `APP_PAGES` array, with the same fallback chain: own cached copy -> cached `/books` -> `/offline`.
+- Verified working for background/resume (app stays alive, airplane mode toggled on, resumed via App Switcher) — full library browsable offline.
+- Known remaining gap: a true cold launch (force-quit, then relaunch from the home screen icon) while fully offline still fails with iOS's native "not connected to the internet" error. This is a WebKit/iOS platform limitation — the very first navigation of a terminated PWA doesn't reach the service worker at all when there is zero connectivity. Not fixable in app code; backgrounding instead of force-quitting avoids it.
+
+### Added offline caching for book cover images (SW v5)
+- Root cause: covers are hosted on Google Books / Open Library CDNs (cross-origin), and the service worker's fetch handler exited early for any non-same-origin request — so cover images were never cached and always failed offline, falling back to the existing title/author text card.
+- Fix: added a `COVER_HOSTS` check (`books.google.com`, `books.googleusercontent.com`, `covers.openlibrary.org`) ahead of the same-origin check, using a cache-first strategy. Cross-origin `<img>` requests come back as opaque responses (status hidden by the browser) but can still be cached and replayed; a genuinely broken image still falls through to the existing onerror -> text fallback.
+- New `IMAGE_CACHE` (`alcove-covers-v5`) added alongside `SHELL_CACHE` / `DATA_CACHE`, included in the activate handler's cache-keep allowlist so it survives version bumps.
+- Covers backfill opportunistically — whenever `/books`, the author shelf, or detail pages are viewed online, any covers not yet cached get cached at that point. No separate priming script needed.
+- Verified working live in airplane mode (background/resume test) — full library scrollable with cover art visible.
+
+### Terminal paste workaround reconfirmed
+- Same zsh/Terminal paste-buffer issue from July 28 recurred twice this session (hung on `heredoc>`, then `quote>` after a mangled multi-line paste).
+- Pattern that avoided it entirely: have Claude write the target file to its own output folder (a real path under `~/Library/Application Support/Claude/local-agent-mode-sessions/.../outputs/`), then run a short single-line `cp "<that path>" static/sw.js` in the terminal instead of pasting file contents via heredoc. Follow with separate one-line `git add` / `git commit -m '...'` / `git push` commands — typed individually rather than chained with `&&`, and commit messages in single quotes with no embedded punctuation — to avoid the paste-buffer hang.
+- Recommended over heredoc or token-push for any future multi-line file change in this environment.
