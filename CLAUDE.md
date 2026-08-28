@@ -974,6 +974,7 @@ done
 - templates/signup.html: Turnstile widget added, wrapped in {% if turnstile_site_key %} so nothing changes until configured.
 - Verified via standalone unit tests of all 5 branches and direct Jinja2 rendering (widget absent when unconfigured, present when configured) — could not test live end-to-end since Cloudflare wasn't set up yet this session.
 
-### Still needed
-- Create Cloudflare account + Turnstile widget for myreadingalcove.com and my-reading-room2.onrender.com (Managed mode), add TURNSTILE_SITE_KEY/TURNSTILE_SECRET_KEY to Render env vars.
-- Verify live once configured: signup page shows the widget, real signup still completes.
+### Cloudflare Turnstile — completed
+- Dennis created the Turnstile widget (Managed mode) in Cloudflare for myreadingalcove.com and my-reading-room2.onrender.com, and added TURNSTILE_SITE_KEY / TURNSTILE_SECRET_KEY to Render env vars. Render redeployed automatically.
+- Verified live post-deploy: fetched /signup unauthenticated — the cf-turnstile widget and challenges.cloudflare.com script are present with the correct site key, page still returns 200 with the signup form intact.
+- Consider later: same Turnstile check on /login if scripted login attempts (not just signups) become a problem — not needed yet, this session only saw abuse at signup.
