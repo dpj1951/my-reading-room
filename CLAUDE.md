@@ -959,3 +959,21 @@ done
 - Same zsh/Terminal paste-buffer issue from July 28 recurred twice this session (hung on `heredoc>`, then `quote>` after a mangled multi-line paste).
 - Pattern that avoided it entirely: have Claude write the target file to its own output folder (a real path under `~/Library/Application Support/Claude/local-agent-mode-sessions/.../outputs/`), then run a short single-line `cp "<that path>" static/sw.js` in the terminal instead of pasting file contents via heredoc. Follow with separate one-line `git add` / `git commit -m '...'` / `git push` commands — typed individually rather than chained with `&&`, and commit messages in single quotes with no embedded punctuation — to avoid the paste-buffer hang.
 - Recommended over heredoc or token-push for any future multi-line file change in this environment.
+
+## What Was Done August 28, 2026
+
+### Investigated bot signup (tumiye233@163.com)
+- Confirmed in Supabase that "Confirm email" is still ON — no regression from the July 29 fix.
+- Auth Logs showed one password login at 2026-08-27T11:29:51Z, no other activity — since Confirm Email blocks first sign-in until verified, this account completed real email confirmation. 163.com (NetEase) is free webmail that's trivial to script against.
+- This is the known gap from July 29: email confirmation stops fake-address bots but not one with a real, automatable mailbox.
+- Found Cloudflare Turnstile ("Enable Captcha protection" under Attack Protection) was OFF — the concrete unused lever.
+
+### Added Cloudflare Turnstile to signup
+- app.py: TURNSTILE_SITE_KEY/TURNSTILE_SECRET_KEY env vars + verify_turnstile() helper calling Cloudflare's siteverify. Fails open if not configured yet or on network error; fails closed on missing/invalid token.
+- /signup route checks verify_turnstile() before calling supabase_sign_up().
+- templates/signup.html: Turnstile widget added, wrapped in {% if turnstile_site_key %} so nothing changes until configured.
+- Verified via standalone unit tests of all 5 branches and direct Jinja2 rendering (widget absent when unconfigured, present when configured) — could not test live end-to-end since Cloudflare wasn't set up yet this session.
+
+### Still needed
+- Create Cloudflare account + Turnstile widget for myreadingalcove.com and my-reading-room2.onrender.com (Managed mode), add TURNSTILE_SITE_KEY/TURNSTILE_SECRET_KEY to Render env vars.
+- Verify live once configured: signup page shows the widget, real signup still completes.
