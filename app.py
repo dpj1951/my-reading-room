@@ -53,6 +53,31 @@ SUPABASE_ANON_KEY   = os.environ.get("SUPABASE_ANON_KEY", "")
 SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET", "")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 
+TURNSTILE_SITE_KEY   = os.environ.get("TURNSTILE_SITE_KEY", "")
+TURNSTILE_SECRET_KEY = os.environ.get("TURNSTILE_SECRET_KEY", "")
+
+def verify_turnstile(token, remote_ip=None):
+    """Verify a Cloudflare Turnstile response token on signup.
+    Fails OPEN (allows signup) if TURNSTILE_SECRET_KEY isn't configured yet,
+    so this is safe to deploy before the Cloudflare side is set up.
+    Fails CLOSED (rejects) on a missing/invalid token, but fails open on a
+    network error talking to Cloudflare so a Cloudflare outage can't lock
+    out real signups.
+    """
+    if not TURNSTILE_SECRET_KEY:
+        return True
+    if not token:
+        return False
+    try:
+        r = requests.post(
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            data={"secret": TURNSTILE_SECRET_KEY, "response": token, "remoteip": remote_ip or ""},
+            timeout=10
+        )
+        return bool(r.json().get("success"))
+    except Exception:
+        return True
+
 #  Â¢ Â¢  Role helpers  Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ 
 def get_user_role(user_id):
     """Fetch role from user_roles table. Returns 'free' if not found."""
@@ -315,6 +340,8 @@ def signup():
             error = "Passwords do not match."
         elif len(pw) < 8:
             error = "Password must be at least 8 characters."
+        elif not verify_turnstile(request.form.get("cf-turnstile-response", ""), request.remote_addr):
+            error = "Verification failed — please try again."
         else:
             data = supabase_sign_up(email, pw)
             if "access_token" in data:
@@ -343,7 +370,7 @@ def signup():
                 flash("Account created! Check your email to confirm before logging in.", "info")
                 return redirect(url_for("login"))
             error = data.get("error_description") or data.get("msg") or data.get("message") or "Signup failed."
-    return render_template("signup.html", error=error)
+    return render_template("signup.html", error=error, turnstile_site_key=TURNSTILE_SITE_KEY)
 
 
 @app.route("/reset-password/exchange", methods=["POST"])
