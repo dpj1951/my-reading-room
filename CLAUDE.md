@@ -15,7 +15,7 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 - Repo: https://github.com/dpj1951/my-reading-room
 - Working branch: `reading-alcove`
 - Primary live app: https://myreadingalcove.com / https://my-reading-room2.onrender.com
-- Platform: Render (Starter $7/mo ÃÂ¢ÃÂÃÂ always-on, no sleep) Flask + Gunicorn
+- Platform: Render (Starter $7/mo — always-on, no sleep) Flask + Gunicorn
 - Database: Supabase PostgreSQL (Pro + IPv4, direct connection)
 - Render service ID: srv-d6fo4v1r0fns73ai5e2g
 - Render shell URL: https://dashboard.render.com/web/srv-d6fo4v1r0fns73ai5e2g/shell
@@ -27,16 +27,18 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 - $1.99/month after a 30-day free trial
 - No credit card required to start trial
 - One plan, everything included
-- Stripe: NOT YET wired up (next task)
+- Stripe: live mode, fully wired up (Checkout, webhook, Customer Portal) — see June/July/Sept sections
 - Email: freetrial@myreadingalcove.com (Namecheap Private Email, forwarding to Gmail)
 
 ---
 
-## Current Status (May 7, 2026)
+## Current Status (Sept 24, 2026)
 
-- MAINTENANCE_MODE=true in Render env vars ÃÂ¢ÃÂÃÂ site closed to public
-- Preview bypass: myreadingalcove.com/?preview=alcove2026
-- 215 books in library (213 read + 1 reading + 1 want to read)
+- Site is LIVE (MAINTENANCE_MODE=false since July 29) at myreadingalcove.com / my-reading-room2.onrender.com
+- Preview bypass (only matters if maintenance mode is turned back on): myreadingalcove.com/?preview=alcove2026
+- Signup protected by required email confirmation + Cloudflare Turnstile
+- Stripe live: $1.99/month, 30-day trial, subscribers self-manage via Settings -> Manage Subscription
+- Render service `my-reading-alcove` (srv-d6fo4v1r0fns73ai5e2g) runs the site; `my-reading-room-db` and `alcove-library` are Postgres instances; `reading-alcove-auth` is an older service
 - Use my-reading-room2.onrender.com to verify deploys (DNS caching on custom domain)
 
 ---
@@ -65,20 +67,20 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 
 ## Book Status System
 
-- `read` ÃÂ¢ÃÂÃÂ main grid, sorted by read_date desc
-- `reading` ÃÂ¢ÃÂÃÂ Currently Reading horizontal scroll shelf (top of books page)
-- `want_to_read` ÃÂ¢ÃÂÃÂ Want to Read shelf (bottom of books page)
-- `dnf` ÃÂ¢ÃÂÃÂ Did Not Finish shelf (below Want to Read, dimmed/grayscale)
+- `read` — main grid, sorted by read_date desc
+- `reading` — Currently Reading horizontal scroll shelf (top of books page)
+- `want_to_read` — Want to Read shelf (bottom of books page)
+- `dnf` — Did Not Finish shelf (below Want to Read, dimmed/grayscale)
 - Default is `read` if no status set
 
 ---
 
-## Supabase Schema (books table ÃÂ¢ÃÂÃÂ 14 columns)
+## Supabase Schema (books table — 14 columns)
 
 `id, title, author, isbn, format, pages (varchar), copyright_year, read_date (varchar), rating (varchar/float), cover_url, summary, read_time_hrs, user_id, status`
 
 - read_date formats: %m/%d/%y, %Y-%m-%d, %m/%d/%Y
-- pages stored as varchar string ÃÂ¢ÃÂÃÂ parse with int()
+- pages stored as varchar string — parse with int()
 - rating stored as float (supports half-stars e.g. 2.5, 3.0, 4.5)
 - date_added: timestamptz DEFAULT now() (added May 2, 2026)
 
@@ -97,23 +99,23 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 
 ## Scalability Notes
 
-- Render Starter ($7/mo): always-on, 512MB RAM, 0.5 CPU ÃÂ¢ÃÂÃÂ good for early growth
+- Render Starter ($7/mo): always-on, 512MB RAM, 0.5 CPU — good for early growth
 - Set WEB_CONCURRENCY=3 env var on Render when traffic grows
 - Supabase Pro: handles 100k MAU; switch to PgBouncer pooler at ~200 concurrent users
-- CSV import does synchronous Google Books/Open Library lookups ÃÂ¢ÃÂÃÂ future: use ThreadPoolExecutor
-- **Render pricing update coming August 1, 2026 ÃÂ¢ÃÂÃÂ review before that date**
+- CSV import does synchronous Google Books/Open Library lookups — future: use ThreadPoolExecutor
+- **Render pricing update coming August 1, 2026 — review before that date**
 
 ---
 
 ## PWA Icons & Branding (updated May 6, 2026)
 
-- static/icons/icon-192.png ÃÂ¢ÃÂÃÂ PWA app icon 192ÃÂÃÂ192 (blue alcove illustration on cream background)
-- static/icons/icon-512.png ÃÂ¢ÃÂÃÂ PWA app icon 512ÃÂÃÂ512 (same illustration, higher res)
-- static/icons/alcove_logo.png ÃÂ¢ÃÂÃÂ standalone logo for home page footer (300ÃÂÃÂ400 portrait)
+- static/icons/icon-192.png — PWA app icon 192×192 (blue alcove illustration on cream background)
+- static/icons/icon-512.png — PWA app icon 512×512 (same illustration, higher res)
+- static/icons/alcove_logo.png — standalone logo for home page footer (300×400 portrait)
 - Home page footer logo: centered, 140px wide, 60% opacity, soft drop shadow
 - All icons: blue line-art style matching the uploaded alcove illustration (person reading in arched alcove with bookshelves, lanterns, plants)
 - manifest.json already references icon-192 and icon-512
-- Source image: alcove_logo_copy.jpeg (portrait ~686ÃÂÃÂ1024)
+- Source image: alcove_logo_copy.jpeg (portrait ~686×1024)
 - Icon crop: square crop starting at ~22% from top of source image, capturing arch + reader + bookshelves + lanterns
 
 ---
@@ -138,17 +140,17 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 ## What Was Done May 9, 2026
 
 ### Stripe Test Mode Integration (full end-to-end)
-- Created Stripe product "My Reading Alcove" â $1.99/month recurring (Price ID: price_1TVHJPRvjXqRXrTp1QXcjLTB)
+- Created Stripe product "My Reading Alcove" — $1.99/month recurring (Price ID: price_1TVHJPRvjXqRXrTp1QXcjLTB)
 - Added Stripe env vars to Render: STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY, STRIPE_PRICE_ID, STRIPE_WEBHOOK_SECRET (placeholder)
 - Added `stripe` to requirements.txt
 - Added Stripe config + stripe.api_key init to app.py
 - Added trial_end + user_role = 'trial' to session on successful signup
-- Added context processor inject_trial_context() â injects trial_banner, trial_days_left, stripe_pub_key to all templates
+- Added context processor inject_trial_context() — injects trial_banner, trial_days_left, stripe_pub_key to all templates
 - Added trial banner to home.html (3 states: info=green/30days, urgent=orange/<=7days, expired=red)
 - Added routes: /subscribe/checkout, /subscribe/success, /subscribe/cancel, /subscribe/portal
 - Added /stripe/webhook route with signature verification
 - Added _stripe_patch() helper for Supabase profile updates on webhook events
-- Tested full flow: banner shows â Stripe Checkout â test card 4242... â redirect back â "Your subscription is active" flash â banner gone
+- Tested full flow: banner shows → Stripe Checkout → test card 4242... → redirect back → "Your subscription is active" flash → banner gone
 - Fixed: timedelta import missing (added to datetime import line)
 - Fixed: redirect to /home after signup (was /books)
 - Fixed: set trial_end at login if not already set
@@ -163,8 +165,8 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 ### Updated PWA icons (icon-192 and icon-512) with new crop
 - User provided new pre-cropped source image (window/reader illustration, portrait)
 - Detected and removed large black border surrounding the illustration
-- Found clean content bounds: rows 288Ã¢ÂÂ907, cols 275Ã¢ÂÂ685; trimmed stray bottom line artifacts
-- Generated icon-192.png (192ÃÂ192) and icon-512.png (512ÃÂ512) centered on cream background
+- Found clean content bounds: rows 288–907, cols 275–685; trimmed stray bottom line artifacts
+- Generated icon-192.png (192×192) and icon-512.png (512×512) centered on cream background
 - Uploaded both to static/icons/ via GitHub web UI drag-and-drop
 - Render auto-deployed on push to reading-alcove branch
 
@@ -173,9 +175,9 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 ### Fixed PWA launcher icons (icon-192 and icon-512)
 - Discovered existing icon-192.png and icon-512.png were wrong (showed a barcode/columns logo, not the alcove illustration)
 - User provided alcove_logo_copy.jpeg as source image
-- Generated correct square crops using Pillow ÃÂ¢ÃÂÃÂ crop starts at ~22% from top to show the sitting reader prominently
-- icon-192.png: 192ÃÂÃÂ192px square crop of alcove illustration
-- icon-512.png: 512ÃÂÃÂ512px square crop of same illustration
+- Generated correct square crops using Pillow — crop starts at ~22% from top to show the sitting reader prominently
+- icon-192.png: 192×192px square crop of alcove illustration
+- icon-512.png: 512×512px square crop of same illustration
 - Both uploaded to static/icons/ via GitHub web UI drag-and-drop
 - Render auto-deployed on push to reading-alcove branch
 
@@ -184,16 +186,16 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 ## What Was Done May 4, 2026
 
 ### New app logo & PWA icons
-- User uploaded alcove_logo.jpeg ÃÂ¢ÃÂÃÂ blue line-art reading alcove illustration (portrait orientation)
-- Generated PWA icons (192ÃÂÃÂ192 and 512ÃÂÃÂ512) from the illustration using canvas
-- Generated alcove_logo.png (300ÃÂÃÂ400) for home page footer logo
+- User uploaded alcove_logo.jpeg — blue line-art reading alcove illustration (portrait orientation)
+- Generated PWA icons (192×192 and 512×512) from the illustration using canvas
+- Generated alcove_logo.png (300×400) for home page footer logo
 - Pushed 3 new/updated icon files to static/icons/
 - Updated templates/home.html to add centered footer logo (140px wide, subtle, with drop shadow)
 
 ---
 
-## What Was Done May 4, 2026 ÃÂ¢ÃÂÃÂ Session 2 (Responsive Footer Logo)
-- Created 3 responsive logo sizes: alcove_logo_sm.png (147ÃÂÃÂ220), alcove_logo_md.png (206ÃÂÃÂ307), alcove_logo_lg.png (270ÃÂÃÂ402)
+## What Was Done May 4, 2026 — Session 2 (Responsive Footer Logo)
+- Created 3 responsive logo sizes: alcove_logo_sm.png (147×220), alcove_logo_md.png (206×307), alcove_logo_lg.png (270×402)
 - All 3 uploaded to static/icons/ via GitHub web UI
 - templates/home.html footer updated to use picture element with responsive breakpoints
 
@@ -210,7 +212,7 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 
 ## What Was Done May 1, 2026
 
-- Author shelf feature ÃÂ¢ÃÂÃÂ full publication shelf per author with Google Books API (client-side)
+- Author shelf feature — full publication shelf per author with Google Books API (client-side)
 
 ---
 
@@ -224,7 +226,7 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 ## What Was Done April 29, 2026
 
 - Email setup (freetrial@ and support@)
-- Half-star ratings (0.5ÃÂ¢ÃÂÃÂ5.0)
+- Half-star ratings (0.5–5.0)
 
 ---
 
@@ -260,7 +262,7 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 ## Render Deployment Notes
 
 - Auto-deploys on push to reading-alcove branch
-- If old page serves after deploy: Render Shell ÃÂ¢ÃÂÃÂ kill -9 $(pgrep -f gunicorn) ÃÂ¢ÃÂÃÂ Render restarts automatically
+- If old page serves after deploy: Render Shell → kill -9 $(pgrep -f gunicorn) → Render restarts automatically
 
 ---
 
@@ -270,17 +272,22 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 - Can access: github.com, dashboard.render.com
 - Cannot access: myreadingalcove.com, my-reading-room2.onrender.com
 - Use JS fetch() in extension to call GitHub API
-- Note: extension blocks SHA/base64 values returned from JS ÃÂ¢ÃÂÃÂ use split workarounds to retrieve SHAs
+- Note: extension blocks SHA/base64 values returned from JS — use split workarounds to retrieve SHAs
 
 ---
 
-## Next Tasks
-- Wire up Stripe ($1.99/month after 30-day trial)
-- Turn off maintenance mode when ready to launch
-- Review Render pricing changes before August 1, 2026
-- Consider reducing footer logo max-width (currently rendering large on desktop)
+## Next Tasks (updated Sept 24, 2026)
+- ~~Wire up Stripe~~ DONE (live)
+- ~~Turn off maintenance mode~~ DONE (July 29)
+- ~~Review Render pricing changes before August 1, 2026~~ (date passed — confirm Starter plan cost is still acceptable)
+- ~~Reduce footer logo max-width~~ DONE (120px, May 18)
+- Confirm `sub_expired` red banner live once a cancelled subscription actually lapses, then remove DEBUG prints in `stripe_webhook()`, `_stripe_patch()`, `inject_trial_context()`
+- Remove duplicated `user_roles` upsert block inside `_stripe_patch()` (same block pasted twice, harmless)
+- Consider: Turnstile on /login, app-level bot blocking (/wp-admin, /xmlrpc.php)
 - Consider: date_started column when book moves to reading shelf
-- Consider: stamp date_added on want_to_read ÃÂ¢ÃÂÃÂ reading transition
+- Consider: stamp date_added on want_to_read -> reading transition
+- Consider: Settings subtitle still says "Backup & Restore your library" — now also covers account/billing
+
 ## What Was Done May 13, 2026
 
 ### Fixed garbled separator on authors page
@@ -337,7 +344,7 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 
 Paste this into the chat to get Claude up to speed:
 
-"I'm working on my book tracking app at github.com/dpj1951/my-reading-room (reading-alcove branch), deployed at my-reading-room2.onrender.com. There is a CLAUDE.md in the repo with full context — please read it before we start. You can access it through the Claude Chrome extension. For making changes, SSH is set up so I can push directly from terminal — just tell me what commands to run. To prime the session I'll run `cd ~/my-reading-room && git checkout reading-alcove && git pull` in the terminal."
+"I'm working on my book tracking app at github.com/dpj1951/my-reading-room (reading-alcove branch), deployed at my-reading-room2.onrender.com. There is a CLAUDE.md in the repo with full context — please read it before we start. In Claude Cowork, connect the ~/my-reading-room folder so Claude can edit files directly; I then run the one-line git add / git commit / git push commands from terminal (SSH is set up). To prime the session I'll run `cd ~/my-reading-room && git checkout reading-alcove && git pull` in the terminal."
 
 ## What Was Done May 14, 2026
 
@@ -521,14 +528,6 @@ Paste this into the chat to get Claude up to speed:
 - /utilities/tools route was calling render_template("tools.html") without current_user
 - Fix: added current_user = get_current_user() and passed it to the template
 - Beta user can now see role-gated UI in Tools page
-
-### Custom domain DNS — www SSL issue (May 26, 2026)
-- myreadingalcove.com: Verified + Certificate Issued ✅
-- www.myreadingalcove.com: Verified DNS but Certificate Error ⚠️
-- DNS is correct (www CNAME → my-reading-room2.onrender.com)
-- Render dashboard has no Remove or Reissue option for www (paired with apex)
-- Next step: contact Render support to reissue cert for www
-- Low priority — apex works fine, www redirects to apex when cert is fixed
 
 ### Custom domain DNS — www SSL issue (May 26, 2026)
 - myreadingalcove.com: Verified + Certificate Issued ✅
@@ -744,25 +743,6 @@ Paste this into the chat to get Claude up to speed:
 
 ### Contacted Render support re: www SSL cert
 - www.myreadingalcove.com has correct DNS (CNAME verified) but cert never issued
-- Sent support email; Render AI bot
-cd ~/my-reading-room && git checkout reading-alcove && git pull
-
-cat >> CLAUDE.md << 'DONE'
-
-## What Was Done June 10, 2026
-
-### Fixed Supabase RLS security alert
-- Supabase emailed a CRITICAL alert: `books` table had RLS disabled (rowsecurity = false)
-- `user_roles` table already had RLS enabled
-- Fix: enabled RLS on `books` table and added 4 policies (SELECT, INSERT, UPDATE, DELETE) scoped to `auth.uid()::text = user_id`
-- App unaffected — Flask uses service role key which bypasses RLS
-- All 219 books confirmed loading correctly after fix
-
-### Removed debug print statements
-- Checked app.py for DEBUG prints from June 8 — already gone, no action needed
-
-### Contacted Render support re: www SSL cert
-- www.myreadingalcove.com has correct DNS (CNAME verified) but cert never issued
 - Sent support email; Render AI bot responded — replied asking for human agent escalation
 
 ## Pre-Launch Checklist (as of June 10, 2026)
@@ -770,21 +750,6 @@ cat >> CLAUDE.md << 'DONE'
 2. Backfill trial_end for users who signed up before May 9 (they see expired immediately)
 3. Turn off maintenance mode — remove MAINTENANCE_MODE=true from Render env vars
 4. www SSL cert — awaiting Render human support response
-
-## What Was Done June 11, 2026 — Session 2
-
-### Verified trial_end backfill not needed
-- Checked all 3 pre-May-9 users (alcovetest2026@gmail.com, dpjohnson1951@gmail.com, test@test.com)
-- All already have trial_end set in raw_app_meta_data — no backfill needed
-- Item removed from pre-launch checklist
-
-## Pre-Launch Checklist (updated June 11, 2026 — Session 2)
-1. ~~www SSL cert~~ DONE
-2. ~~Stripe webhook registered + secret in Render (test mode)~~ DONE
-3. ~~Backfill trial_end for pre-May-9 users~~ DONE (already set)
-4. Resolve Stripe bank connection → register webhook in Live mode + swap STRIPE_WEBHOOK_SECRET to live key in Render
-5. Turn off maintenance mode — remove MA
-done
 
 ## What Was Done June 11, 2026 — Session 2
 
@@ -830,12 +795,6 @@ done
   - On cancel/pause: DELETE from `user_roles` so `get_user_role()` falls back to 'free'
   - On resume: re-inserts `role='subscriber'`
 - Uses service role key to bypass RLS
-
-## What Was Done June 24, 2026
-
-### Fixed subscriber role not persisting after logout/login
-- Root cause: `_stripe_patch()` wrote `role='subscriber'` to `profiles` table, but `get_user_role()` reads from `user_roles` table — role reverted to 'free' after logout/login
-- Fix: `_stripe_patch()` now also upserts into `user_roles` when role is 'subscriber' (POST with
 
 ### Added subscription ending and expired banners
 - New banner states: `sub_ending` (orange) and `sub_expired` (red)
@@ -978,3 +937,42 @@ done
 - Dennis created the Turnstile widget (Managed mode) in Cloudflare for myreadingalcove.com and my-reading-room2.onrender.com, and added TURNSTILE_SITE_KEY / TURNSTILE_SECRET_KEY to Render env vars. Render redeployed automatically.
 - Verified live post-deploy: fetched /signup unauthenticated — the cf-turnstile widget and challenges.cloudflare.com script are present with the correct site key, page still returns 200 with the signup form intact.
 - Consider later: same Turnstile check on /login if scripted login attempts (not just signups) become a problem — not needed yet, this session only saw abuse at signup.
+
+## What Was Done September 24, 2026
+
+### Added Log out + Settings to Home, Manage Subscription to Settings
+- Home page had no Log out link and no link to Settings at all (Settings was only reachable via a Utilities upsell link)
+- `home()` and `settings()` routes now pass `current_user=get_current_user()` (Settings' existing user bar never rendered before because current_user wasn't passed — same bug pattern as May 24/26)
+- templates/home.html: email + Log out button fixed at top-right (safe-area aware for iOS PWA); new Settings button between Stats and Help
+- templates/settings.html: "Manage Subscription" button under Account, shown only when `current_user.role == 'subscriber'`; links to existing `/subscribe/portal` (Stripe Customer Portal)
+- `/subscribe/portal`: return_url now goes back to Settings (was Home); failure flash now points to support@myreadingalcove.com
+- Previously a paying subscriber had NO way to cancel from inside the app
+
+### Stripe Customer Portal configured (Live mode)
+- Stripe Dashboard -> Settings -> Billing -> Customer portal: cancellation ON, "Cancel at end of billing period" (matches webhook's sub_ending banner logic)
+- Terms/privacy links set in Settings -> Business -> Public details (https://myreadingalcove.com/terms, /privacy)
+- Verified live as dpggjohnson@gmail.com: Settings -> Manage Subscription opens billing.stripe.com portal showing $1.99/month, next billing date, card, Cancel subscription button
+
+### Replaced stale billing promo on Settings
+- Old green "Notify me when billing is ready" card (mailto freetrial@, pre-Stripe) was shown to everyone including paying subscribers
+- Now wrapped in `{% if current_user and current_user.role in ('trial', 'free') %}`; button changed to "Subscribe — $1.99/month" -> /subscribe/checkout
+
+### Fixed Render deploy failure — pinned SQLAlchemy<2.1 (IMPORTANT, do not remove)
+- Deploy of 74f5584 failed at startup: `ModuleNotFoundError: No module named 'psycopg'`
+- Root cause: SQLAlchemy 2.1 (pulled in unpinned via flask-sqlalchemy) changed the default `postgresql://` driver from psycopg2 to psycopg (v3). requirements.txt only installs psycopg2-binary. Same class of bug as the July 1 stripe-python v15 break.
+- Fix: added `SQLAlchemy<2.1` to requirements.txt. Verified locally: 2.1.0 resolves `postgresql://` to psycopg, 2.0.x to psycopg2
+- Render note: failed deploys leave the last good build running, so the site stayed up; but EVERY rebuild would have failed until pinned
+- Future option: migrate to psycopg v3 (`psycopg[binary]`) deliberately and drop the pin
+- Render build uses Python 3.14
+
+### How to see who is paying (no SQL each time)
+- Provided SQL for a Supabase view `public.subscriber_status` joining auth.users + user_roles + profiles, with a computed `status` column (PAID / cancelling / trial / trial expired / lapsed / beta / owner); once created, open it from Table Editor (not yet confirmed created)
+- `REVOKE ALL ON public.subscriber_status FROM anon, authenticated;` so emails aren't exposed via the public API
+- Cross-check against Stripe Dashboard -> Billing -> Subscriptions (Active)
+
+### Repo cleanup
+- Removed an old nested clone at `my-reading-room/my-reading-room` (was tracked as a gitlink; branch pre-yesterday, fully pushed) and a stray file `CLAUDE.mdtail -30 CLAUDE.md`
+- CLAUDE.md tidied: removed duplicated/truncated June 10, June 11, June 24 and May 26 DNS blocks and pasted shell commands; repaired double-encoded UTF-8 (mojibake); refreshed Current Status / Next Tasks
+
+### Workflow note
+- Claude Cowork with the ~/my-reading-room folder connected can edit repo files directly on the Mac; Dennis runs one-line `git add` / `git commit -m '...'` / `git push` commands. Avoids all terminal paste-buffer problems.
