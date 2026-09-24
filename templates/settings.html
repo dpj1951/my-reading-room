@@ -59,6 +59,7 @@
     {% if current_user %}<span>{{ current_user['email'] }}</span><a href="/logout" style="color:#c9a96e;text-decoration:none;padding:0.2rem 0.6rem;border:1px solid #c9a96e;border-radius:4px;">Log out</a>{% endif %}
   </div>
 
+  {% if current_user and current_user.role in ('trial', 'free') %}
     <div style="width:100%;max-width:360px;background:#1e2a1e;border:1px solid #3a6b3a;border-radius:16px;padding:24px;margin-bottom:24px;text-align:center;">
     <div style="font-size:2rem;margin-bottom:10px;">&#x1F4D6;</div>
     <div style="font-family:'DM Serif Display',serif;font-size:1.4rem;color:#7dcc7d;margin-bottom:6px;">My Reading Alcove</div>
@@ -71,12 +72,13 @@
       when you finished each book.<br>
       After your trial, keep everything for less than a dollar a month.
     </p>
-    <a href="mailto:freetrial@myreadingalcove.com?subject=I%27m%20interested%20in%20My%20Reading%20Alcove&body=Please%20notify%20me%20when%20billing%20is%20ready."
+    <a href="/subscribe/checkout"
        style="display:inline-block;background:#3a6b3a;color:#c8f0c8;border:1px solid #5a9b5a;border-radius:10px;padding:12px 24px;font-size:0.9rem;font-weight:600;text-decoration:none;">
-      &#x2709;&#xFE0F; Notify me when billing is ready
+      Subscribe &mdash; $1.99/month
     </a>
   </div>
   <hr style="width:100%;max-width:360px;border:none;border-top:1px solid #555;margin:4px 0 20px 0;">
+  {% endif %}
 <div class="brand">
     <h1>Settings</h1>
     <p>Backup &amp; Restore your library</p>
