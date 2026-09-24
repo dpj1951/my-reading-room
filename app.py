@@ -494,7 +494,7 @@ def index():
 @app.route("/home")
 @login_required
 def home():
-    return render_template("home.html")
+    return render_template("home.html", current_user=get_current_user())
 
 @app.route("/books")
 @login_required
@@ -945,7 +945,7 @@ def wipe_library():
 @app.route("/settings")
 @login_required
 def settings():
-    return render_template("settings.html")
+    return render_template("settings.html", current_user=get_current_user())
  
 @app.route("/settings/backup")
 @login_required
@@ -1609,12 +1609,12 @@ def subscribe_portal():
         if customers.data:
             portal = stripe.billing_portal.Session.create(
                 customer=customers.data[0].id,
-                return_url=url_for('home', _external=True))
+                return_url=url_for('settings', _external=True))
             return redirect(portal.url, code=303)
     except Exception:
         pass
-    flash('Could not find your billing account.', 'error')
-    return redirect(url_for('home'))
+    flash('Could not find your billing account. Please contact support@myreadingalcove.com.', 'error')
+    return redirect(url_for('settings'))
 
 def _sget(obj, key, default=None):
     """Safe getter for Stripe objects — stripe-python v15+ removed dict

@@ -123,6 +123,13 @@
       Change Password
       <span class="sub">Update your account password</span>
     </button>
+    {% if current_user and current_user.role == 'subscriber' %}
+    <a class="menu-btn" href="/subscribe/portal">
+      <span class="icon">&#x1F4B3;</span>
+      Manage Subscription
+      <span class="sub">Cancel, update card, or view invoices</span>
+    </a>
+    {% endif %}
   </nav>
 
   <a class="back-link" href="/">&#8592; Back to Home</a>
