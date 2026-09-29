@@ -32,7 +32,7 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 
 ---
 
-## Current Status (Sept 24, 2026)
+## Current Status (Sept 29, 2026)
 
 - Site is LIVE (MAINTENANCE_MODE=false since July 29) at myreadingalcove.com / my-reading-room2.onrender.com
 - Preview bypass (only matters if maintenance mode is turned back on): myreadingalcove.com/?preview=alcove2026
@@ -276,7 +276,13 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 
 ---
 
-## Next Tasks (updated Sept 24, 2026)
+## Next Tasks (updated Sept 29, 2026)
+- **FINISH: reset/confirmation emails not arriving** (see Sept 29 section) — search Gmail `from:support@myreadingalcove.com in:anywhere`, check support@ inbox for bounces, then send one fresh reset and trace it (Render logs `RESET-EMAIL`, Supabase Auth logs)
+- Add Redirect URLs in Supabase (Auth -> URL Configuration): `https://myreadingalcove.com/**` and `https://my-reading-room2.onrender.com/**` (needed so recovery links land on /reset-password) — not yet confirmed done
+- Raise Supabase email rate limit (Auth -> Rate Limits) to ~30/hr now that custom SMTP is on — not yet confirmed
+- Check Supabase Auth logs since June for unexpected password changes (old /reset-password bug, see Sept 29)
+- Verify real signups actually receive confirmation emails now that custom SMTP is on
+- Optional: remove unused `/reset-password/exchange` route
 - ~~Wire up Stripe~~ DONE (live)
 - ~~Turn off maintenance mode~~ DONE (July 29)
 - ~~Review Render pricing changes before August 1, 2026~~ (date passed — confirm Starter plan cost is still acceptable)
@@ -614,6 +620,7 @@ Paste this into the chat to get Claude up to speed:
 ## What Was Done June 6, 2026
 
 ### Fixed reset password flow (fully self-service, works from any email client)
+- **SUPERSEDED Sept 29, 2026 — this approach was an account-takeover hole; see Sept 29 section.**
 - Root cause: Supabase switched to PKCE flow by default — reset links send ?code= param which requires a code_verifier stored in localStorage from the same browser session. Outlook in-app browser and cross-browser flows broke this.
 - Fix: rewrote /reset-password POST route to use Supabase Admin API (service role key) — user enters their email + new password, server looks up UUID by email and calls PUT /auth/v1/admin/users/{uuid} directly
 - Rewrote templates/reset_password.html — simple form with email, new password, confirm password fields
@@ -976,3 +983,27 @@ Paste this into the chat to get Claude up to speed:
 
 ### Workflow note
 - Claude Cowork with the ~/my-reading-room folder connected can edit repo files directly on the Mac; Dennis runs one-line `git add` / `git commit -m '...'` / `git push` commands. Avoids all terminal paste-buffer problems.
+
+## What Was Done September 29, 2026
+
+### SECURITY FIX: /reset-password allowed account takeover (commit 817e2a2)
+- The June 6 rewrite let anyone set any password by typing an email + new password, with no verification at all
+- Worse: it looked up the user via `GET /auth/v1/admin/users?email=...`, but GoTrue ignores `email` (only `filter`, `page`, `per_page` are supported — confirmed in supabase/auth source). It returned all users newest-first and the code took `users[0]` — so every use changed the password of the MOST RECENTLY CREATED user, whatever email was typed
+- The June 6 section below describing this approach is superseded — do not reintroduce admin-API password resets keyed on a user-supplied email
+- New flow: `/forgot-password` calls Supabase `/auth/v1/recover` server-side (no code_challenge -> implicit flow). The emailed link lands on `/reset-password#access_token=...&type=recovery`. JS in reset_password.html copies the token from the URL fragment into a hidden field and strips it from the address bar; POST calls `PUT /auth/v1/user` with that bearer token (same as change-password). No email field, no service role key
+- Opening /reset-password without a token shows "open the link in your email / request a new link"; expired/used tokens (401/403) show a clear message; Supabase `error_description` in the fragment is displayed
+- `supabase_reset_password()` now logs `RESET-EMAIL requested/failed ...` to Render logs (search `RESET` in Render logs)
+- Tested with mocked Supabase (Flask test client) + Playwright for the fragment JS; live deploy verified (an old link's token was correctly rejected as malformed)
+- Known limitation: email link scanners (Outlook Safe Links) can consume one-time links. Future option: switch recovery email template to a 6-digit OTP (`{{ .Token }}`) + verifyOtp
+
+### Password reset emails not arriving — root cause and partial fix (UNRESOLVED)
+- Render logs showed Supabase returning `429 over_email_send_rate_limit` — project had NO custom SMTP, so it used Supabase's built-in sender (~2 emails/hour, best-effort, not for production; also likely only delivers to org team members — which means real users' signup confirmation emails may not have been arriving either)
+- Dennis enabled custom SMTP in Supabase (Auth -> Emails -> SMTP Settings): sender support@myreadingalcove.com, name "My Reading Alcove", host mail.privateemail.com, port 465, username support@myreadingalcove.com, min interval 60s
+- After that, a reset at 6:25 PM for ggdpjohnson@gmail.com: Render `RESET-EMAIL requested`, Supabase `/recover | request completed` (no SMTP error) — yet the email still was not seen in Gmail. Not yet checked: Gmail All Mail/Spam search, bounce in support@ inbox
+- DNS for myreadingalcove.com: SPF `v=spf1 include:spf.privateemail.com ~all` present; DKIM `default._domainkey` present; DMARC was MISSING -> added TXT `_dmarc` = `v=DMARC1; p=none; rua=mailto:support@myreadingalcove.com` in Namecheap Advanced DNS (DMARC aggregate reports will arrive at support@)
+- If Namecheap Private Email keeps failing, consider Resend/Postmark as the SMTP provider
+
+### Tooling notes
+- Cowork device shell cannot `git fetch`/push (no SSH keys in the VM) — Dennis pushes from Terminal; remember to `cd ~/my-reading-room` first
+- DNS lookups: use https://dns.google/resolve?name=...&type=TXT via the Chrome extension (sandbox/VM DNS is blocked)
+- Chrome extension can access Render dashboard, Supabase dashboard and Namecheap
