@@ -209,10 +209,17 @@ def supabase_reset_password(email, redirect_to=None):
     payload = {"email": email}
     if redirect_to:
         payload["redirect_to"] = redirect_to
-    requests.post(
-        SUPABASE_URL + "/auth/v1/recover",
-        headers={"apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json"},
-        json=payload, timeout=10)
+    try:
+        r = requests.post(
+            SUPABASE_URL + "/auth/v1/recover",
+            headers={"apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json"},
+            json=payload, timeout=10)
+        if r.status_code != 200:
+            print(f"RESET-EMAIL failed for {email}: HTTP {r.status_code} {r.text[:300]}")
+        else:
+            print(f"RESET-EMAIL requested for {email}")
+    except Exception as e:
+        print(f"RESET-EMAIL error for {email}: {e}")
 
 #  Â¢ Â¢  DB init  Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ Â¢ 
 def load_library():
@@ -402,47 +409,51 @@ def forgot_password():
 
 @app.route("/reset-password", methods=["GET", "POST"])
 def reset_password():
+    # Only works with the one-time recovery token from the emailed reset link.
+    # The link lands here with #access_token=... in the URL fragment; JS in the
+    # template copies it into a hidden field. The password is changed on behalf
+    # of whoever owns that token -- no email lookup, no service role key.
     if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
+        token = request.form.get("access_token", "").strip()
         new_password = request.form.get("password", "").strip()
         confirm = request.form.get("password2", "").strip()
-        if not email or not new_password:
-            return render_template("reset_password.html", error="Email and password are required.", done=False)
-        if new_password != confirm:
-            return render_template("reset_password.html", error="Passwords do not match.", done=False)
+        if not token:
+            return render_template("reset_password.html", done=False, access_token="",
+                                   error="This reset link is missing or has expired. Please request a new one.")
         if len(new_password) < 8:
-            return render_template("reset_password.html", error="Password must be at least 8 characters.", done=False)
-        # Look up user by email using service role key
-        lookup = requests.get(
-            SUPABASE_URL + "/auth/v1/admin/users",
-            headers={
-                "apikey": SUPABASE_SERVICE_ROLE_KEY,
-                "Authorization": "Bearer " + SUPABASE_SERVICE_ROLE_KEY,
-            },
-            params={"email": email},
-            timeout=10
-        )
-        users = lookup.json().get("users", [])
-        if not users:
-            return render_template("reset_password.html", error="No account found with that email address.", done=False)
-        user_id = users[0]["id"]
-        # Update password via Admin API
-        upd = requests.put(
-            SUPABASE_URL + "/auth/v1/admin/users/" + user_id,
-            headers={
-                "apikey": SUPABASE_SERVICE_ROLE_KEY,
-                "Authorization": "Bearer " + SUPABASE_SERVICE_ROLE_KEY,
-                "Content-Type": "application/json"
-            },
-            json={"password": new_password},
-            timeout=10
-        )
+            return render_template("reset_password.html", done=False, access_token=token,
+                                   error="Password must be at least 8 characters.")
+        if new_password != confirm:
+            return render_template("reset_password.html", done=False, access_token=token,
+                                   error="Passwords do not match.")
+        try:
+            upd = requests.put(
+                SUPABASE_URL + "/auth/v1/user",
+                headers={
+                    "apikey": SUPABASE_ANON_KEY,
+                    "Authorization": "Bearer " + token,
+                    "Content-Type": "application/json"
+                },
+                json={"password": new_password},
+                timeout=10
+            )
+        except Exception as e:
+            print(f"RESET-PASSWORD error: {e}")
+            return render_template("reset_password.html", done=False, access_token=token,
+                                   error="Could not reach the server. Please try again.")
         if upd.status_code == 200:
-            return render_template("reset_password.html", done=True, error=None)
-        else:
-            err = upd.json().get("message") or "Password update failed. Please try again."
-            return render_template("reset_password.html", error=err, done=False)
-    return render_template("reset_password.html", done=False, error=None)
+            return render_template("reset_password.html", done=True, error=None, access_token="")
+        try:
+            body = upd.json()
+        except Exception:
+            body = {}
+        print(f"RESET-PASSWORD failed: HTTP {upd.status_code} {str(body)[:300]}")
+        if upd.status_code in (401, 403):
+            return render_template("reset_password.html", done=False, access_token="",
+                                   error="This reset link has expired or was already used. Please request a new one.")
+        err = body.get("msg") or body.get("message") or body.get("error_description") or "Password update failed. Please try again."
+        return render_template("reset_password.html", done=False, access_token=token, error=err)
+    return render_template("reset_password.html", done=False, error=None, access_token="")
 
 
 
