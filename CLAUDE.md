@@ -32,7 +32,7 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 
 ---
 
-## Current Status (Sept 29, 2026)
+## Current Status (Sept 30, 2026)
 
 - Site is LIVE (MAINTENANCE_MODE=false since July 29) at myreadingalcove.com / my-reading-room2.onrender.com
 - Preview bypass (only matters if maintenance mode is turned back on): myreadingalcove.com/?preview=alcove2026
@@ -40,6 +40,7 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 - Stripe live: $1.99/month, 30-day trial, subscribers self-manage via Settings -> Manage Subscription
 - Render service `my-reading-alcove` (srv-d6fo4v1r0fns73ai5e2g) runs the site; `my-reading-room-db` and `alcove-library` are Postgres instances; `reading-alcove-auth` is an older service
 - Use my-reading-room2.onrender.com to verify deploys (DNS caching on custom domain)
+- Password reset works end to end (fixed and verified live Sept 30) - see Sept 30 section
 
 ---
 
@@ -276,12 +277,13 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 
 ---
 
-## Next Tasks (updated Sept 29, 2026)
-- **FINISH: reset/confirmation emails not arriving** (see Sept 29 section) — search Gmail `from:support@myreadingalcove.com in:anywhere`, check support@ inbox for bounces, then send one fresh reset and trace it (Render logs `RESET-EMAIL`, Supabase Auth logs)
-- Add Redirect URLs in Supabase (Auth -> URL Configuration): `https://myreadingalcove.com/**` and `https://my-reading-room2.onrender.com/**` (needed so recovery links land on /reset-password) — not yet confirmed done
-- Raise Supabase email rate limit (Auth -> Rate Limits) to ~30/hr now that custom SMTP is on — not yet confirmed
+## Next Tasks (updated Sept 30, 2026)
+- ~~FINISH: reset/confirmation emails not arriving~~ DONE Sept 30 (emails were arriving in Gmail Spam; reset template link was broken) - see Sept 30 section
+- Sept 30 test reset landed in Gmail INBOX with SPF/DKIM/DMARC all PASS. Keep an eye on real users' signup/reset emails; if any report Spam, consider Resend/Postmark for SMTP
+- Consider: rewrite the Confirm sign up email template too (still the stock Supabase 2-liner, which looks phishy to Gmail; its {{ .ConfirmationURL }} link does work)
+- Raise Supabase email rate limit (Auth -> Rate Limits) to ~30/hr now that custom SMTP is on - not yet confirmed
 - Check Supabase Auth logs since June for unexpected password changes (old /reset-password bug, see Sept 29)
-- Verify real signups actually receive confirmation emails now that custom SMTP is on
+- Redirect URLs in Supabase (Auth -> URL Configuration) no longer needed for password reset (link goes straight to our domain); only matters for {{ .ConfirmationURL }} redirects
 - Optional: remove unused `/reset-password/exchange` route
 - ~~Wire up Stripe~~ DONE (live)
 - ~~Turn off maintenance mode~~ DONE (July 29)
@@ -1007,3 +1009,29 @@ Paste this into the chat to get Claude up to speed:
 - Cowork device shell cannot `git fetch`/push (no SSH keys in the VM) — Dennis pushes from Terminal; remember to `cd ~/my-reading-room` first
 - DNS lookups: use https://dns.google/resolve?name=...&type=TXT via the Chrome extension (sandbox/VM DNS is blocked)
 - Chrome extension can access Render dashboard, Supabase dashboard and Namecheap
+
+## What Was Done September 30, 2026
+
+### Password reset emails - root cause found and fixed (verified live)
+- Emails WERE being delivered: Supabase -> Namecheap SMTP -> Gmail in 12s, but Gmail put them in **Spam** with a "might be dangerous" phishing warning. A `from:support@myreadingalcove.com` Gmail search missed it; searching `myreadingalcove` found it
+- Headers of the Sept 29 6:25 PM email: SPF pass, DKIM pass (d=myreadingalcove.com), no DMARC result (DMARC TXT record was added after it was sent)
+- support@ mailbox (privateemail.com webmail) is completely empty (0 MB) - it forwards to Gmail without keeping copies, so no bounces live there
+- **Bigger bug:** the Supabase "Reset password" email template had been hand-edited to `https://myreadingalcove.com/reset-password#access_token={{ .Token }}&type=recovery`. `{{ .Token }}` is the short OTP code, not a JWT, so every reset link was dead (the "malformed token" seen Sept 29)
+- Note: with custom SMTP on, Supabase Auth logs do NOT show a `mail.send` line - a `/recover` 200 taking ~1s means the SMTP handoff succeeded
+
+### New reset flow (commit 6a733f1)
+- Email template (Supabase Auth -> Emails -> Reset password), subject "Reset your My Reading Alcove password"; link is `https://myreadingalcove.com/reset-password?token_hash={{ .TokenHash }}&type=recovery`; body names the account ({{ .Email }}), says link is single-use, and "ignore if you didn't ask"
+- `/reset-password` GET puts token_hash in a hidden field (JS strips it from the address bar). It is only redeemed on POST via `POST /auth/v1/verify {"type":"recovery","token_hash":...}` -> access_token -> `PUT /auth/v1/user`. So link scanners (Outlook Safe Links) that pre-fetch the URL can't burn it
+- Password length/match validated BEFORE redeeming the token; if the update fails after redeeming, the access token is kept in the form so the user can retry
+- Legacy `#access_token=` fragment path still accepted
+- Render logs: `RESET-PASSWORD success`, `RESET-PASSWORD verify failed ...`, `RESET-PASSWORD failed ...`
+- Tested with mocked Supabase (Flask test client, all branches) + Playwright for the page JS; then verified live: Dennis requested a reset, got the email, set a new password and logged in
+
+### Deliverability confirmed
+- The Sept 30 3:50 PM reset (new template) landed in the Gmail **Inbox**, not Spam, delivered in 19s
+- Gmail Show original: SPF PASS (Namecheap relay IP), DKIM PASS (d=myreadingalcove.com), **DMARC PASS**. The Sept 29 Spam placement was most likely the missing DMARC record plus the bare stock-looking template
+
+### Tooling notes
+- Supabase Logs Explorer now uses ClickHouse SQL (BigQuery-style queries fail); the Auth logs page search box is easier (e.g. search `recover`)
+- The cloud sandbox cannot reach dns.google or onrender.com - use the Chrome extension (open the dns.google/resolve URL directly and read the page text) and the Render dashboard Events page to confirm deploys
+- Running git commands from the Cowork device shell can leave a stale `.git/index.lock` it can't delete - if `git add` says "Another git process seems to be running", run `rm -f .git/index.lock` first. Prefer not to run git in the device shell at all
