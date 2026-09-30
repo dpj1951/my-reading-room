@@ -16,7 +16,7 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 - Working branch: `reading-alcove`
 - Primary live app: https://myreadingalcove.com / https://my-reading-room2.onrender.com
 - Platform: Render (Starter $7/mo — always-on, no sleep) Flask + Gunicorn
-- Database: Supabase PostgreSQL (Pro + IPv4, direct connection)
+- Database: Supabase PostgreSQL (Pro + IPv4, direct connection) - Render env DATABASE_URL points at Supabase (verified Sept 30)
 - Render service ID: srv-d6fo4v1r0fns73ai5e2g
 - Render shell URL: https://dashboard.render.com/web/srv-d6fo4v1r0fns73ai5e2g/shell
 
@@ -38,7 +38,7 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 - Preview bypass (only matters if maintenance mode is turned back on): myreadingalcove.com/?preview=alcove2026
 - Signup protected by required email confirmation + Cloudflare Turnstile
 - Stripe live: $1.99/month, 30-day trial, subscribers self-manage via Settings -> Manage Subscription
-- Render service `my-reading-alcove` (srv-d6fo4v1r0fns73ai5e2g) runs the site; `my-reading-room-db` and `alcove-library` are Postgres instances; `reading-alcove-auth` is an older service
+- Render service `my-reading-alcove` (srv-d6fo4v1r0fns73ai5e2g) runs the site. It is the ONLY Render service for this app (the other Render service in the account is cruise-journal). All data lives in Supabase - there are no Render Postgres databases any more (deleted Sept 30)
 - Use my-reading-room2.onrender.com to verify deploys (DNS caching on custom domain)
 - Password reset works end to end (fixed and verified live Sept 30) - see Sept 30 section
 
@@ -1035,3 +1035,12 @@ Paste this into the chat to get Claude up to speed:
 - Supabase Logs Explorer now uses ClickHouse SQL (BigQuery-style queries fail); the Auth logs page search box is easier (e.g. search `recover`)
 - The cloud sandbox cannot reach dns.google or onrender.com - use the Chrome extension (open the dns.google/resolve URL directly and read the page text) and the Render dashboard Events page to confirm deploys
 - Running git commands from the Cowork device shell can leave a stale `.git/index.lock` it can't delete - if `git add` says "Another git process seems to be running", run `rm -f .git/index.lock` first. Prefer not to run git in the device shell at all
+
+### Render cleanup - removed unused services (Sept 30)
+- Audit: live `my-reading-alcove` DATABASE_URL points at Supabase; cruise-journal has no DATABASE_URL (Supabase via API). Both Render Postgres instances had 0 open connections
+- Dennis exported both Render databases (Recovery tab -> Export) and saved the files in the "render db recovery" folder on his Mac, then deleted from the Render dashboard:
+  - `alcove-library` (Postgres, ~110 MB, ~$10.44/mo)
+  - `my-reading-room-db` (Postgres Basic-256mb, ~85 MB, ~$6.27/mo)
+  - `reading-alcove-auth` (old free web service, $0)
+- Remaining Render services: `my-reading-alcove` (Starter) and `cruise-journal`. Bill drops from ~$31/mo to ~$14/mo
+- If old pre-Supabase book data is ever needed, it is in those export files - not in Render
