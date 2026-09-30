@@ -409,51 +409,78 @@ def forgot_password():
 
 @app.route("/reset-password", methods=["GET", "POST"])
 def reset_password():
-    # Only works with the one-time recovery token from the emailed reset link.
-    # The link lands here with #access_token=... in the URL fragment; JS in the
-    # template copies it into a hidden field. The password is changed on behalf
-    # of whoever owns that token -- no email lookup, no service role key.
-    if request.method == "POST":
-        token = request.form.get("access_token", "").strip()
-        new_password = request.form.get("password", "").strip()
-        confirm = request.form.get("password2", "").strip()
-        if not token:
-            return render_template("reset_password.html", done=False, access_token="",
-                                   error="This reset link is missing or has expired. Please request a new one.")
-        if len(new_password) < 8:
-            return render_template("reset_password.html", done=False, access_token=token,
-                                   error="Password must be at least 8 characters.")
-        if new_password != confirm:
-            return render_template("reset_password.html", done=False, access_token=token,
-                                   error="Passwords do not match.")
+    # The reset email links here with ?token_hash=...&type=recovery (see the
+    # Supabase "Reset password" email template). The token_hash is only redeemed
+    # (POST /auth/v1/verify) when the user submits the new password -- never on
+    # GET -- so email link scanners that pre-fetch the link can't burn it.
+    # Legacy: an #access_token=... fragment (Supabase {{ .ConfirmationURL }}
+    # redirect) is still accepted; JS copies it into the hidden field.
+    # No email lookup, no service role key.
+    def page(error=None, done=False, access_token="", token_hash=""):
+        return render_template("reset_password.html", done=done, error=error,
+                               access_token=access_token, token_hash=token_hash)
+
+    if request.method == "GET":
+        th = request.args.get("token_hash", "").strip()
+        if request.args.get("type", "recovery") != "recovery":
+            th = ""
+        return page(token_hash=th)
+
+    token = request.form.get("access_token", "").strip()
+    token_hash = request.form.get("token_hash", "").strip()
+    new_password = request.form.get("password", "").strip()
+    confirm = request.form.get("password2", "").strip()
+    if not token and not token_hash:
+        return page(error="This reset link is missing or has expired. Please request a new one.")
+    if len(new_password) < 8:
+        return page(error="Password must be at least 8 characters.", access_token=token, token_hash=token_hash)
+    if new_password != confirm:
+        return page(error="Passwords do not match.", access_token=token, token_hash=token_hash)
+
+    if not token:
+        # Redeem the one-time recovery token for a session access token
         try:
-            upd = requests.put(
-                SUPABASE_URL + "/auth/v1/user",
-                headers={
-                    "apikey": SUPABASE_ANON_KEY,
-                    "Authorization": "Bearer " + token,
-                    "Content-Type": "application/json"
-                },
-                json={"password": new_password},
-                timeout=10
-            )
+            v = requests.post(
+                SUPABASE_URL + "/auth/v1/verify",
+                headers={"apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json"},
+                json={"type": "recovery", "token_hash": token_hash},
+                timeout=10)
+            vbody = v.json() if v.content else {}
         except Exception as e:
-            print(f"RESET-PASSWORD error: {e}")
-            return render_template("reset_password.html", done=False, access_token=token,
-                                   error="Could not reach the server. Please try again.")
-        if upd.status_code == 200:
-            return render_template("reset_password.html", done=True, error=None, access_token="")
-        try:
-            body = upd.json()
-        except Exception:
-            body = {}
-        print(f"RESET-PASSWORD failed: HTTP {upd.status_code} {str(body)[:300]}")
-        if upd.status_code in (401, 403):
-            return render_template("reset_password.html", done=False, access_token="",
-                                   error="This reset link has expired or was already used. Please request a new one.")
-        err = body.get("msg") or body.get("message") or body.get("error_description") or "Password update failed. Please try again."
-        return render_template("reset_password.html", done=False, access_token=token, error=err)
-    return render_template("reset_password.html", done=False, error=None, access_token="")
+            print(f"RESET-PASSWORD verify error: {e}")
+            return page(error="Could not reach the server. Please try again.", token_hash=token_hash)
+        token = vbody.get("access_token", "") if v.status_code == 200 else ""
+        if not token:
+            print(f"RESET-PASSWORD verify failed: HTTP {v.status_code} {str(vbody)[:300]}")
+            return page(error="This reset link has expired or was already used. Please request a new one.")
+
+    try:
+        upd = requests.put(
+            SUPABASE_URL + "/auth/v1/user",
+            headers={
+                "apikey": SUPABASE_ANON_KEY,
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            },
+            json={"password": new_password},
+            timeout=10
+        )
+    except Exception as e:
+        print(f"RESET-PASSWORD error: {e}")
+        return page(error="Could not reach the server. Please try again.", access_token=token)
+    if upd.status_code == 200:
+        print("RESET-PASSWORD success")
+        return page(done=True)
+    try:
+        body = upd.json()
+    except Exception:
+        body = {}
+    print(f"RESET-PASSWORD failed: HTTP {upd.status_code} {str(body)[:300]}")
+    if upd.status_code in (401, 403):
+        return page(error="This reset link has expired or was already used. Please request a new one.")
+    err = body.get("msg") or body.get("message") or body.get("error_description") or "Password update failed. Please try again."
+    # token is already redeemed; keep the access token so the user can retry
+    return page(error=err, access_token=token)
 
 
 
