@@ -277,7 +277,7 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 
 ---
 
-## Next Tasks (updated Sept 30, 2026)
+## Next Tasks (updated Oct 8, 2026)
 - ~~FINISH: reset/confirmation emails not arriving~~ DONE Sept 30 (emails were arriving in Gmail Spam; reset template link was broken) - see Sept 30 section
 - Sept 30 test reset landed in Gmail INBOX with SPF/DKIM/DMARC all PASS. Keep an eye on real users' signup/reset emails; if any report Spam, consider Resend/Postmark for SMTP
 - Consider: rewrite the Confirm sign up email template too (still the stock Supabase 2-liner, which looks phishy to Gmail; its {{ .ConfirmationURL }} link does work)
@@ -295,6 +295,9 @@ My Reading Alcove is a personal book tracking web app. Users can log books they'
 - Consider: date_started column when book moves to reading shelf
 - Consider: stamp date_added on want_to_read -> reading transition
 - Consider: Settings subtitle still says "Backup & Restore your library" — now also covers account/billing
+- Consider: author shelf category filter - hide Google Books results whose category does not overlap the categories of books the user owns by that author (would drop same-name authors such as the basketball/maths Peter Mays); keep uncategorised books. Deferred Oct 8, Dennis is fine with the shelf as is
+- Consider: request a Books API quota increase if shelf views grow (5+ calls per view, 1,000/day)
+- Optional: remove the duplicate "Extraordinary people" (Peter May) via Utilities -> Remove Duplicates
 
 ## What Was Done May 13, 2026
 
@@ -1063,3 +1066,13 @@ Paste this into the chat to get Claude up to speed:
 - `sameAuthor()` now requires first and last name to line up ("Wolfgang Peter May" no longer passes as "Peter May"); initials still match ("J K Rowling"), middle names ignored
 - New `isCollection()` drops box sets, trilogies, omnibuses and "Books 1-3" style bundles unless the user owns that exact title
 - Still not filtered: other real authors with the identical name (e.g. the basketball and mathematics Peter Mays) and foreign editions Google mislabels as English - Google gives no reliable signal to separate them
+
+### Author shelf - final state (Oct 8, evening)
+- Three commits: 4497d4b (query fix), 047868d (CLAUDE.md only), then 'Tighten author shelf filtering code' (the sameAuthor/isCollection changes)
+- Verified live by Dennis: Peter May shelf shows 39 books, "16 books in your library - 24 more to discover", owned books highlighted READ, collections gone, garbled legend text fixed
+- Known leftovers, accepted for now: same-name authors (Top of the World, The Big Three, Recovering From Catastrophes, the 1769 surveyor document), "The War Around Us" (cover says Wolfgang Peter May, Google apparently lists plain "Peter May"), and Czech editions Google labels as English (Skala, Muz z ostrova Lewis). Results vary slightly between loads because Google's result set is not stable
+- See Next Tasks for the deferred category-filter idea
+
+### Tooling note (Oct 8)
+- Cowork file copy to the Mac can silently write a stale version: re-copying from the SAME staging path after editing it reported success but wrote the earlier contents, so commit 047868d went out without the code change. After any copy, verify on the Mac (grep for the new code or compare md5) before telling Dennis to commit; use a fresh staging filename for each revision
+- `git status -sb` and `git log` in the Cowork device shell were fine today (no stale index.lock)
