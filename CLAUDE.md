@@ -1044,3 +1044,17 @@ Paste this into the chat to get Claude up to speed:
   - `reading-alcove-auth` (old free web service, $0)
 - Remaining Render services: `my-reading-alcove` (Starter) and `cruise-journal`. Bill drops from ~$31/mo to ~$14/mo
 - If old pre-Supabase book data is ever needed, it is in those export files - not in Render
+
+## What Was Done October 8, 2026
+
+### Fixed author shelf showing only library books (templates/author_shelf.html)
+- Symptom: /author/<name> showed only the user's own books, sometimes with "Google Books unavailable", sometimes with no notice at all
+- Root cause: Google Books changed its search behavior. The quoted query `inauthor:"Peter May"` now returns HTTP 200 with totalItems 0 for every author (unquoted `inauthor:Peter May` works). It also now caps each page at 20 items regardless of maxResults, and still throws intermittent 503s
+- Not a key or quota problem: Cloud Console showed 2 of 1,000 queries used that day (quota is 1,000/day, not 10,000 as noted earlier)
+- Fix: unquoted `inauthor:` query; 5 pages of 20 fetched in parallel, each retried up to 4 times on error (`gbFetch()`); authors filtered client-side with `sameAuthor()` (last name must match, first name or initial must match); non-English editions dropped unless the user owns them; duplicate editions merged by normalized title keeping the earliest publish year
+- "N more to discover" now counts shelf books not in the library (was books.length - library count, which was wrong when library books are missing from Google's results)
+- Cleaned remaining mojibake in the template (Loading..., legend dash, apostrophe, toast check mark)
+- Verified by running the new code in the live page (logged-in Chrome tab on my-reading-room2.onrender.com): Peter May shelf went from 16 library-only cards to 43 books with 15 highlighted READ, loading in about 1 second
+- Cost: 5+ Books API calls per shelf view. At 1,000/day that is roughly 150-200 shelf views a day across all users; request a quota increase in Cloud Console if usage grows
+- Note: the Chrome extension CAN reach my-reading-room2.onrender.com when Dennis is logged in there in Chrome (myreadingalcove.com was not logged in). Running fetch() from that tab is the quickest way to test the referrer-restricted Google Books key
+- Library has "Extraordinary people" by Peter May twice (duplicate entry) - Utilities -> Remove Duplicates would clear it

@@ -103,24 +103,24 @@
   </nav>
   <div class="page-header">
     <div class="author-title">{{ author_name }}</div>
-    <div class="author-subtitle" id="subtitle">Loading booksâ¦</div>
+    <div class="author-subtitle" id="subtitle">Loading books&hellip;</div>
     <div class="legend">
       <div class="legend-item"><div class="legend-dot" style="background:#3b9eff;box-shadow:0 0 6px rgba(59,158,255,0.5);"></div> Read</div>
       <div class="legend-item"><div class="legend-dot" style="background:#7ec8b5;box-shadow:0 0 6px rgba(126,200,181,0.5);"></div> Reading</div>
       <div class="legend-item"><div class="legend-dot" style="background:#a78bfa;box-shadow:0 0 6px rgba(167,139,250,0.4);"></div> Want to Read</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#2a2a36;border:1px solid #8a8795;"></div> Not in library â click to add</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2a2a36;border:1px solid #8a8795;"></div> Not in library &mdash; click to add</div>
     </div>
   </div>
   <div class="shelf-section">
     <div id="loading-state" class="loading-state">
       <div class="spinner"></div>
-      <p>Fetching books by {{ author_name }}â¦</p>
+      <p>Fetching books by {{ author_name }}&hellip;</p>
     </div>
     <div id="shelf-label" class="shelf-label" style="display:none"></div>
     <div id="shelf" class="shelf"></div>
     <div id="empty-state" class="empty-state" style="display:none">
       <h3>No books found</h3>
-      <p>Couldnât find any books by {{ author_name }} in Google Books.</p>
+      <p>Couldn&rsquo;t find any books by {{ author_name }} in Google Books.</p>
     </div>
   </div>
   <div class="modal-overlay" id="addModal">
@@ -148,53 +148,88 @@
     });
     let pendingBook = null;
 
-    async function fetchAllBooks() {
-      const allBooks = [];
-      const seenTitles = new Set();
-      const lastName = AUTHOR_NAME.trim().split(' ').pop().toLowerCase();
-      let apiError = false;
-      for (const startIndex of [0, 40]) {
-        const params = new URLSearchParams({
-          q: `inauthor:"${AUTHOR_NAME}"`,
-          maxResults: '40',
-          startIndex: String(startIndex),
-          printType: 'books',
-          key: GOOGLE_API_KEY,
-        });
-        let data;
+    // Google Books returns intermittent 503s - retry a few times before giving up
+    async function gbFetch(params) {
+      for (let attempt = 0; attempt < 4; attempt++) {
         try {
           const resp = await fetch(`https://www.googleapis.com/books/v1/volumes?${params}`);
-          data = await resp.json();
-        } catch(e) { apiError = true; break; }
-        if (data.error) { apiError = true; break; }
-        const items = data.items || [];
-        if (!items.length) break;
-        for (const item of items) {
+          const data = await resp.json();
+          if (!data.error) return data;
+        } catch(e) {}
+        if (attempt < 3) await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+      }
+      return null;
+    }
+
+    function nameWords(s) { return (s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().split(' ').filter(Boolean); }
+    // True when a Google Books author string is the same person as AUTHOR_NAME
+    // (last name must match; first name must match or share an initial, e.g. "J K Rowling")
+    function sameAuthor(candidate) {
+      const want = nameWords(AUTHOR_NAME), got = nameWords(candidate);
+      if (!want.length) return true;
+      if (!got.includes(want[want.length-1])) return false;
+      if (want.length === 1) return true;
+      const first = want[0];
+      return got.some(w => w === first || ((w.length === 1 || first.length === 1) && w[0] === first[0]));
+    }
+
+    async function fetchAllBooks() {
+      // Oct 2026: Google Books stopped returning results for the quoted form
+      // inauthor:"Name" (200 with totalItems 0) and now caps pages at 20 items
+      // whatever maxResults says. So: unquoted query, five pages of 20 fetched
+      // in parallel (each retried on its own), authors filtered client-side.
+      // Cost: 5+ API calls per shelf view against the 1,000/day quota.
+      const byTitle = new Map();
+      const PAGE_SIZE = 20, PAGES = 5;
+      const results = await Promise.all(Array.from({length: PAGES}, (_, page) =>
+        gbFetch(new URLSearchParams({
+          q: `inauthor:${AUTHOR_NAME.replace(/"/g, '')}`,
+          maxResults: String(PAGE_SIZE),
+          startIndex: String(page * PAGE_SIZE),
+          printType: 'books',
+          langRestrict: 'en',
+          key: GOOGLE_API_KEY,
+        }))));
+      const apiError = results.every(d => !d);
+      for (const data of results) {
+        if (!data) continue;
+        for (const item of (data.items || [])) {
           const vi = item.volumeInfo || {};
           const title = (vi.title || '').trim();
           if (!title) continue;
-          const normTitle = title.toLowerCase();
-          if (seenTitles.has(normTitle)) continue;
-          const authorsList = (vi.authors || []).map(a => a.toLowerCase());
-          if (authorsList.length && !authorsList.some(a => a.includes(lastName))) continue;
-          seenTitles.add(normTitle);
+          const authorsList = vi.authors || [];
+          if (authorsList.length && !authorsList.some(sameAuthor)) continue;
           let pubYear = null;
           if (vi.publishedDate) { const y = parseInt(vi.publishedDate.substring(0,4)); if (!isNaN(y)) pubYear = y; }
-          const imgLinks = vi.imageLinks || {};
-          let coverUrl = imgLinks.thumbnail || imgLinks.smallThumbnail || null;
-          if (coverUrl) coverUrl = coverUrl.replace('http://', 'https://');
           let isbn = null;
           for (const id of (vi.industryIdentifiers || [])) {
             if (id.type === 'ISBN_13') { isbn = id.identifier; break; }
             if (id.type === 'ISBN_10') isbn = id.identifier;
           }
-          let match = null;
-          if (isbn && libraryByIsbn[isbn]) match = libraryByIsbn[isbn];
-          else if (libraryByTitle[normTitle]) match = libraryByTitle[normTitle];
-          allBooks.push({ title, isbn, coverUrl, pubYear, status: match ? match.status : null, libraryId: match ? match.id : null });
+          const key = normTitle(title);
+          const inLibrary = LIBRARY.some(l =>
+            (isbn && l.isbn && normIsbn(isbn) === normIsbn(l.isbn)) ||
+            (l.title && normTitle(l.title) === key));
+          // Skip foreign-language editions unless it is one the user owns
+          if (vi.language && vi.language !== 'en' && !inLibrary) continue;
+          const existing = byTitle.get(key);
+          if (existing) {
+            // Same title, another edition: keep the earliest publish year
+            if (pubYear && (!existing.pubYear || pubYear < existing.pubYear)) existing.pubYear = pubYear;
+            if (!existing.coverUrl) {
+              const il = vi.imageLinks || {};
+              const c = il.thumbnail || il.smallThumbnail || null;
+              if (c) existing.coverUrl = c.replace('http://', 'https://');
+            }
+            continue;
+          }
+          const imgLinks = vi.imageLinks || {};
+          let coverUrl = imgLinks.thumbnail || imgLinks.smallThumbnail || null;
+          if (coverUrl) coverUrl = coverUrl.replace('http://', 'https://');
+          byTitle.set(key, { title, isbn, coverUrl, pubYear, status: null, libraryId: null });
         }
-        if (items.length < 40) break;
       }
+      const allBooks = [...byTitle.values()];
       allBooks.sort((a,b) => (a.pubYear||9999)-(b.pubYear||9999) || a.title.localeCompare(b.title));
       return { books: allBooks, apiError };
     }
@@ -260,9 +295,12 @@
         return;
       }
         const ownedCount = {{ library_books|length }};
-      document.getElementById('subtitle').textContent =
+      const discoverCount = books.filter(b => !LIBRARY.some(l =>
+        (b.isbn && l.isbn && normIsbn(b.isbn) === normIsbn(l.isbn)) ||
+        (b.title && l.title && normTitle(b.title) === normTitle(l.title)))).length;
+      document.getElementById('subtitle').innerHTML =
         ownedCount + ' book' + (ownedCount!==1?'s':'') + ' in your library' +
-        (books.length > ownedCount ? ' · ' + (books.length-ownedCount) + ' more to discover' : '');
+        (discoverCount > 0 ? ' &middot; ' + discoverCount + ' more to discover' : '');
       const label = document.getElementById('shelf-label');
       label.textContent = books.length + ' book' + (books.length!==1?'s':'') + ' by ' + AUTHOR_NAME + ', sorted by publish year';
       label.style.display = 'block';
@@ -304,7 +342,7 @@
         });
         var data = await res.json();
         if (data.success) {
-          showToast('â Added "' + book.title + '" to Want to Read');
+          showToast('\u2713 Added "' + book.title + '" to Want to Read');
           var allCards = document.querySelectorAll('.book-card');
           for (var i = 0; i < allCards.length; i++) {
             var card = allCards[i];
