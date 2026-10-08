@@ -1058,3 +1058,8 @@ Paste this into the chat to get Claude up to speed:
 - Cost: 5+ Books API calls per shelf view. At 1,000/day that is roughly 150-200 shelf views a day across all users; request a quota increase in Cloud Console if usage grows
 - Note: the Chrome extension CAN reach my-reading-room2.onrender.com when Dennis is logged in there in Chrome (myreadingalcove.com was not logged in). Running fetch() from that tab is the quickest way to test the referrer-restricted Google Books key
 - Library has "Extraordinary people" by Peter May twice (duplicate entry) - Utilities -> Remove Duplicates would clear it
+
+### Tightened author shelf filtering (Oct 8, later)
+- `sameAuthor()` now requires first and last name to line up ("Wolfgang Peter May" no longer passes as "Peter May"); initials still match ("J K Rowling"), middle names ignored
+- New `isCollection()` drops box sets, trilogies, omnibuses and "Books 1-3" style bundles unless the user owns that exact title
+- Still not filtered: other real authors with the identical name (e.g. the basketball and mathematics Peter Mays) and foreign editions Google mislabels as English - Google gives no reliable signal to separate them
