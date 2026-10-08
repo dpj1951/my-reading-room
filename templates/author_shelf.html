@@ -163,14 +163,23 @@
 
     function nameWords(s) { return (s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().split(' ').filter(Boolean); }
     // True when a Google Books author string is the same person as AUTHOR_NAME
-    // (last name must match; first name must match or share an initial, e.g. "J K Rowling")
+    // First and last names must line up exactly ("Wolfgang Peter May" is not "Peter May");
+    // a first name may match on its initial when either side is only an initial ("J K Rowling").
+    // Middle names are ignored.
     function sameAuthor(candidate) {
       const want = nameWords(AUTHOR_NAME), got = nameWords(candidate);
       if (!want.length) return true;
-      if (!got.includes(want[want.length-1])) return false;
+      if (!got.length) return false;
+      if (got[got.length-1] !== want[want.length-1]) return false;
       if (want.length === 1) return true;
-      const first = want[0];
-      return got.some(w => w === first || ((w.length === 1 || first.length === 1) && w[0] === first[0]));
+      if (got.length === 1) return false;
+      const a = want[0], b = got[0];
+      return a === b || ((a.length === 1 || b.length === 1) && a[0] === b[0]);
+    }
+
+    // Box sets, trilogies and other multi-book bundles
+    function isCollection(title) {
+      return /\b(collection|trilogy|quartet|omnibus|anthology|box(ed)?[\s-]?set|bundle|\d+[\s-]book|books?\s+\d+\s*(-|\u2013|to|&|and)\s*\d+|complete\s+(series|novels|works))\b/i.test(title || '');
     }
 
     async function fetchAllBooks() {
@@ -212,6 +221,8 @@
             (l.title && normTitle(l.title) === key));
           // Skip foreign-language editions unless it is one the user owns
           if (vi.language && vi.language !== 'en' && !inLibrary) continue;
+          // Skip box sets and collections unless the user owns that one
+          if (isCollection(title) && !inLibrary) continue;
           const existing = byTitle.get(key);
           if (existing) {
             // Same title, another edition: keep the earliest publish year
